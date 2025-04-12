@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="auth-container">
+        <h1>Register</h1>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="userType">User Type</label>
+                <select id="userType" name="userType" required>
+                    <option value="" disabled selected>Select user type</option>
+                    <option value="userAdmin">User Admin</option>
+                    <option value="platformManager">Platform Manager</option>
+                    <option value="cleaners">Cleaners</option>
+                    <option value="homeowners">Homeowners</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" id="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <i class="fas fa-envelope input-icon"></i>
+                <input type="email" id="email" required>
+                <span id="passwordValidationMessage"></span>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <i class="fas fa-lock input-icon"></i>
+                <input type="password" id="createPassword" required>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <i class="fas fa-lock input-icon"></i>
+                <input type="password" id="confirmPassword" required>
+            </div>
+            <button type="submit" class="btn">Register</button>
+            <div class="auth-link">
+                <span>Already have an account?</span>
+                <a href="loginPage.html">Login</a>
+            </div>
+        </form>
+    </div>
+    <script>
+        document.getElementById("createPassword").addEventListener("input", validatePassword);
+        function validatePassword() {
+            var password = document.getElementById("createPassword").value;
+            var uppercaseRegex = /[A-Z]/;
+            var numberRegex = /[0-9]/;
+            var symbolRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+
+            var hasUppercase = uppercaseRegex.test(password);
+            var hasNumber = numberRegex.test(password);
+            var hasSymbol = symbolRegex.test(password);
+
+            var isValid = hasUppercase && hasNumber && hasSymbol;
+
+            if (!isValid) {
+                document.getElementById("createPassword").setCustomValidity("Password must contain at least one uppercase letter, one number, and one symbol.");
+                document.getElementById("passwordValidationMessage").innerText = "Password must contain at least one uppercase letter, one number, and one symbol.";
+            } else {
+                document.getElementById("createPassword").setCustomValidity("");
+                document.getElementById("passwordValidationMessage").innerText = "";
+            }
+        }
+    </script>
+
+    <script type="module">
+        //importing from registration javascript
+        import {registeration} from "./js/registration.js";
+        
+        class userData{
+        constructor(firstName, lastName, userEmail, userPass, userType) {
+            this.firstName = firstName;
+            this.lastName = lastName;
+            this.userEmail = userEmail;
+            this.userPass = userPass;
+            this.userType = userType;
+        }
+        }
+
+        class registerUser{
+            
+        }
+
+
+        
+
+
+
+
+
+
+    </script>
+
+</body>
+</html>
