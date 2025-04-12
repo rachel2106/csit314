@@ -16,7 +16,6 @@ import {getAuth,
     getDocs,
     updateDoc,
     deleteDoc,
-    add,
     query,
     where
  } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js'
@@ -32,53 +31,60 @@ import {getAuth,
     measurementId: "G-561HSJR7FB"
 };
 
-  const app = initializeApp (firebaseConfig)
+  const app = initializeApp(firebaseConfig);
 
-  const db = getFirestore(app)
+  //Initialize cloud firestore and get a reference to the service
+  const db = getFirestore(app);
 
-  export const auth = getAuth(app)
+  export const auth = getAuth(app);
 
   export default class Firebase {
 
     // Registration Function
-async registerUser(newUser) {
-    try {
-        // Check for duplicate user (email)
-        const userQuery = query(
-            collection(db, "csit314/AllUsers/UserData"), // Firestore path
-            where("email", "==", newUser.userEmail) // Use newUser.userEmail instead of document.getElementById()
-        );
-        const queryResult = await getDocs(userQuery);
+    async registerUser(newUser) {
+        try {
+            // Create user in Firebase Authentication
+            const userCredential = await createUserWithEmailAndPassword(
+                auth, // Firebase auth instance
+                newUser.userEmail,
+                newUser.userPass
+            );
+            const user = userCredential.user;
 
-        let userExists = false;
-        queryResult.forEach((doc) => {
-            userExists = true; // Set flag if duplicate email is found
-            console.log("Duplicate user found:", doc.id);
-        });
+            // Log the Firebase user
+            console.log("User successfully created in Firebase Auth:", user.email);
 
-        if (userExists) {
-            alert("A user with this email already exists!");
-            return; // Stop registration process
+            // Now, add the user to Firestore (excluding password)
+            const usersData = collection(db, "csit314/AllUsers/UserData");
+            const userDocRef = doc(usersData, user.email); // Use user email as the document ID
+
+            // Save user data to Firestore
+            await setDoc(userDocRef, {
+                firstName: newUser.firstName,
+                lastName: newUser.lastName,
+                email: user.email,
+                password: newUser.userPass,
+                userType: newUser.userType,
+                userStatus: "Active",
+            });
+
+            console.log("User successfully added to Firestore:", user.email);
+            alert("Registration successful!");
+
+            //lead users back to login page
+            window.location.href = "loginPage.html";
+
+        } catch (error) {
+            console.error("Error during registration:", error);
+            alert("Registration failed. Please try again.");
         }
-
-        // Add new user to Firestore
-        const usersData = collection(db, "csit314/AllUsers/UserData");
-        const docRef = await addDoc(usersData, {
-            firstName: newUser.firstName, // Use newUser properties
-            lastName: newUser.lastName,
-            email: newUser.userEmail,
-            password: newUser.userPass,
-            userType: newUser.userType,
-            userStatus: "Active"
-        });
-
-        console.log(`User registered successfully with ID: ${docRef.id}`);
-        alert("Registration successful!");
-    } catch (error) {
-        console.error("Error registering user:", error);
-        alert("Registration failed. Please try again.");
     }
 }
-
     
-}
+
+
+
+
+
+
+
