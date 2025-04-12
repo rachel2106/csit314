@@ -1,18 +1,30 @@
-import Firebase from "./js/firebaseAuth.js";
+import Firebase from "./firebaseAuth.js";
 
-export class userEntity{
-
-    creatingtoDatabase(newUser){
-        let dataObj = new Firebase();
-        var result = dataObj.registerNewUser(newUser);
-        return result
+export class userEntity {
+    constructor() {
+        this.Firebase = new Firebase(); // Create Firebase instance
     }
 
-    loggintoDatabase(newUser){
-        let dataObj = new Firebase();
-        var result = dataObj.loggintoDatabase(newUser);
-        return result
+    // Create a user in both Firebase Auth and Firestore
+    async createToDB(newUser) {
+        try {
+            // Call Firebase's registerUser method to handle both Firebase Auth and Firestore
+            await this.Firebase.registerUser(newUser);
+            console.log("User created successfully in both Firebase Authentication and Firestore.");
+        } catch (error) {
+            console.error("Error creating user:", error);
+            throw new Error("Registration failed.");
+        }
     }
 
-    
+    // You can add any other methods for user login if needed
+    async loggintoDatabase(newUser) {
+        try {
+            const result = await this.Firebase.loggintoDatabase(newUser);
+            return result;
+        } catch (error) {
+            console.error("Error logging into database:", error);
+            throw new Error("Login failed.");
+        }
+    }
 }
