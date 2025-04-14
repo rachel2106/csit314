@@ -105,36 +105,32 @@ import {getAuth,
             } else {
                 return { success: false, message: "User not found in Firestore." };
             }
-        } catch (error) {
-            console.error("Login failed:", error.message);
-                // Handle Firebase auth error codes for better feedback
-        let friendlyMessage;
-
-        switch (error.code) {
-            case "auth/wrong-password":
-                friendlyMessage = "Incorrect password.";
-                break;
-            case "auth/user-not-found":
-                friendlyMessage = "No account found with this email.";
-                break;
-            case "auth/invalid-email":
-                friendlyMessage = "Invalid email format.";
-                break;
-            case "auth/invalid-credential":
-                friendlyMessage = "Invalid email or password.";
-                break;
-            default:
-                friendlyMessage = error.message; // fallback to raw Firebase error
+        } 
+        catch (error) {
+            console.error("Login failed:", error.code, error.message);
+            let message;
+            switch (error.code) {
+                case "auth/user-not-found":
+                    message = "No account found with this email.";
+                    break;
+                case "auth/wrong-password":
+                    message = "Incorrect password. Please try again.";
+                    break;
+                case "auth/invalid-email":
+                    message = "Invalid email format.";
+                    break;
+                case "auth/invalid-credential":
+                    message = "Email and Password do not match.";
+                    break;
+                default:
+                    message = "Login failed. Please try again.";
+            }
+            return { success: false, message };
         }
-            
-            return { success: false, message: error.message };
-        }
+        
     }
-
-
-}
     
-
+}
 
 
 
