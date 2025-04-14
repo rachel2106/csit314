@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cleaner Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="cleaner-page">
+    <div class="cleanerHeaderBanner">
+        <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img">
+        <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
+    </div>
+    
+    <main>
+        <div class="cleaners">
+            Welcome to your cleaner's page
+        </div>
+
+        <div class="view-container" id="view-container">
+            <div class="">
+
+            </div>
+    </main>
+<script>
+    document.getElementById("logout").addEventListener("click", function logOut() {
+        console.log("Logout link has been clicked");
+        windows.location.href = "loginPage.html";
+        });
+    </script>
+
+
+
+</body>
+</html>
