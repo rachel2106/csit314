@@ -17,10 +17,10 @@ export class userEntity {
         }
     }
 
-    // You can add any other methods for user login if needed
-    async loggintoDatabase(newUser) {
+    // Login user by checking Firebase Auth and Firestore
+       async loginToDatabase(email, password, selectedUserType) {
         try {
-            const result = await this.Firebase.loggintoDatabase(newUser);
+            const result = await this.Firebase.loginUser(email, password, selectedUserType);
             return result;
         } catch (error) {
             console.error("Error logging into database:", error);
