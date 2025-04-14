@@ -79,6 +79,59 @@ import {getAuth,
             alert("Registration failed. Please try again.");
         }
     }
+
+
+    //Login for users
+    async loginUser(email, password, selectedUserType) {
+        try {
+            // Sign in with Firebase Authentication
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // Get user data from Firestore
+            const usersData = collection(db, "csit314/AllUsers/UserData");
+            const userDocRef = doc(usersData, user.email);
+            const userDocSnap = await getDoc(userDocRef);
+
+            if (userDocSnap.exists()) {
+                const userData = userDocSnap.data();
+
+                // Validate account type
+                if (userData.userType !== selectedUserType) {
+                    return { success: false, message: `Incorrect account type. You registered as ${userData.userType}.` };
+                }
+
+                return { success: true, userData };
+            } else {
+                return { success: false, message: "User not found in Firestore." };
+            }
+        } catch (error) {
+            console.error("Login failed:", error.message);
+                // Handle Firebase auth error codes for better feedback
+        let friendlyMessage;
+
+        switch (error.code) {
+            case "auth/wrong-password":
+                friendlyMessage = "Incorrect password.";
+                break;
+            case "auth/user-not-found":
+                friendlyMessage = "No account found with this email.";
+                break;
+            case "auth/invalid-email":
+                friendlyMessage = "Invalid email format.";
+                break;
+            case "auth/invalid-credential":
+                friendlyMessage = "Invalid email or password.";
+                break;
+            default:
+                friendlyMessage = error.message; // fallback to raw Firebase error
+        }
+            
+            return { success: false, message: error.message };
+        }
+    }
+
+
 }
     
 
