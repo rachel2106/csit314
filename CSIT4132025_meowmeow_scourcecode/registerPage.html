@@ -6,41 +6,46 @@
     <title>Register</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script type="module" src="./js/registration.js"></script>
 </head>
 <body>
     <div class="auth-container">
-        <h1>Register</h1>
-        <form id="registerForm">
+        <h1>Register New Account</h1>
+        <form id="userRegisterForm">
             <div class="form-group">
-                <label for="userType">User Type</label>
-                <select id="userType" name="userType" required>
-                    <option value="" disabled selected>Select user type</option>
-                    <option value="userAdmin">User Admin</option>
-                    <option value="platformManager">Platform Manager</option>
-                    <option value="cleaners">Cleaners</option>
-                    <option value="homeowners">Homeowners</option>
-                </select>
+                <label>User Type</label>
+                <div class="radio-group" style="display: flex; gap: 20px; margin-top: 5px;">
+                    <label style="display: flex; align-items: center; gap: 5px;">
+                        <input type="radio" name="userType" value="cleaners" required>
+                        Cleaners
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 5px;">
+                        <input type="radio" name="userType" value="homeowners" required>
+                        Homeowners
+                    </label>
+                </div>
             </div>
             <div class="form-group">
-                <label for="name">Full Name</label>
+                <label for="name">First Name:</label>
                 <i class="fas fa-user input-icon"></i>
-                <input type="text" id="name" required>
+                <input type="text" id="firstName" required>
             </div>
             <div class="form-group">
-                <label for="email">Email</label>
+                <label for="name">Last Name:</label>
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" id="lastName" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
                 <i class="fas fa-envelope input-icon"></i>
                 <input type="email" id="email" required>
-                <span id="passwordValidationMessage"></span>
+                
             </div>
             <div class="form-group">
-                <label for="password">Password</label>
+                <label for="password">Password:</label>
                 <i class="fas fa-lock input-icon"></i>
                 <input type="password" id="createPassword" required>
-            </div>
-            <div class="form-group">
-                <label for="confirmPassword">Confirm Password</label>
-                <i class="fas fa-lock input-icon"></i>
-                <input type="password" id="confirmPassword" required>
+                <span id="passwordValidationMessage"></span>
             </div>
             <button type="submit" class="btn">Register</button>
             <div class="auth-link">
@@ -71,34 +76,6 @@
                 document.getElementById("passwordValidationMessage").innerText = "";
             }
         }
-    </script>
-
-    <script type="module">
-        //importing from registration javascript
-        import {registeration} from "./js/registration.js";
-        
-        class userData{
-        constructor(firstName, lastName, userEmail, userPass, userType) {
-            this.firstName = firstName;
-            this.lastName = lastName;
-            this.userEmail = userEmail;
-            this.userPass = userPass;
-            this.userType = userType;
-        }
-        }
-
-        class registerUser{
-            
-        }
-
-
-        
-
-
-
-
-
-
     </script>
 
 </body>
