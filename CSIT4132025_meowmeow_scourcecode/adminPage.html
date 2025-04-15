@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Admin Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="useradmin-page">
+    <div class="userAdminHeaderBanner">
+        <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img">
+        <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
+    </div>
+    
+    <main>
+        <div class="useradmin">
+            Welcome to User Admin page
+        </div>
+
+        <div class="view-container" id="view-container">
+            <div class="">
+
+            </div>
+    </main>
+<script>
+    document.getElementById("logout").addEventListener("click", function logOut() {
+        console.log("Logout link has been clicked");
+        windows.location.href = "loginPage.html";
+        });
+    </script>
+
+    <script type="module" src="./js/loginController.js">
+
+    </script>
+
+
+
+</body>
+</html>
