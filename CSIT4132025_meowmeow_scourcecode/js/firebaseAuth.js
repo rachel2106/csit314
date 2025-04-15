@@ -120,7 +120,7 @@ import {getAuth,
                     message = "Invalid email format.";
                     break;
                 case "auth/invalid-credential":
-                    message = "Email and Password do not match.";
+                    message = "Invalid email or password.";
                     break;
                 default:
                     message = "Login failed. Please try again.";
