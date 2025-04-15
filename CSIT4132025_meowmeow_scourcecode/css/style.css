@@ -1,14 +1,50 @@
-/* Enhanced General Styles */
+/* ---------------------------------- */
+/* Enhanced General Styles            */
+/* ---------------------------------- */
 body {
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #433A3F 0%, #dfe6e9 100%);
     margin: 0;
     padding: 0;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     min-height: 100vh;
     color: #2d3436;
+}
+/* overwrite the body for cleanerPage.html*/
+body.cleaner-page {
+    background: #C5AFA4;
+    color: #000;
+    display: block;
+}
+
+body.homeowners-page{
+    background: #C5AFA4;
+    color: #000;
+    display: block;
+}
+
+body.useradmin-page{
+    background: #C5AFA4;
+    color: #000;
+    display: block;
+}
+
+body.platformManager-page{
+    background: #C5AFA4;
+    color: #000;
+    display: block;
+}
+
+
+/* Login Page Image */
+.login-image {
+    display: block;
+    margin: 0 auto 1.5rem;
+    max-width: 100%;
+    height: auto;
+    padding: 0;
 }
 
 /* Enhanced Auth Container */
@@ -20,6 +56,8 @@ body {
     width: 100%;
     max-width: 420px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-top: 1rem;
+    animation: fadeIn 0.6s ease-out forwards;
 }
 
 .auth-container:hover {
@@ -44,13 +82,8 @@ body {
 .form-group label {
     display: block;
     margin-bottom: 0.75rem;
-    color: #636e72;
+    color: #000000;
     font-weight: 500;
-}
-
-/* Add Font Awesome to head */
-.form-group {
-    position: relative;
 }
 
 .form-group input {
@@ -58,7 +91,7 @@ body {
     padding: 0.8rem 1rem 0.8rem 2.8rem;
     border: 2px solid #dfe6e9;
     border-radius: 8px;
-    font-size: 1.2rem;
+    font-size: 1.0rem;
     transition: all 0.3s ease;
     background-color: #f8f9fa;
     display: block;
@@ -86,7 +119,7 @@ body {
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
-    border-color: #6c5ce7;
+    border-color: #000000;
     box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
     background-color: white;
 }
@@ -143,7 +176,7 @@ body {
 .btn {
     width: 100%;
     padding: 1rem;
-    background: linear-gradient(to right, #6c5ce7, #a29bfe);
+    background: linear-gradient(to right, #433A3F, #878a8d);
     color: white;
     border: none;
     border-radius: 8px;
@@ -157,7 +190,7 @@ body {
 }
 
 .btn:hover {
-    background: linear-gradient(to right, #5d4aec, #8c7ae6);
+    background: linear-gradient(to right, #000000, #686065);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
 }
@@ -166,12 +199,12 @@ body {
 .auth-link {
     text-align: center;
     margin-top: 1.5rem;
-    color: #636e72;
-    font-size: 0.95rem;
+    color: #432818;
+    font-size: 1.0rem;
 }
 
 .auth-link a {
-    color: #6c5ce7;
+    color: #504b4e;
     text-decoration: none;
     margin-left: 0.5rem;
     font-weight: 600;
@@ -179,9 +212,174 @@ body {
 }
 
 .auth-link a:hover {
-    color: #5d4aec;
+    color: #000000;
     text-decoration: underline;
 }
+
+
+/* styling for cleaner page*/
+.cleanerHeaderBanner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    padding: 15px 30px;
+    position: relative;
+    z-index: 10;
+}
+
+.cleanerHeaderBanner .logo-img {
+    width: 160px;
+    height: 160px;
+}
+
+.logoutBtn {
+    color: black;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    margin-right: 25px;
+    font-size: 20px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.logoutBtn:hover {
+    text-decoration: underline;
+}
+
+.cleaners{
+    text-align: center;
+    margin-top: 10px;
+    font-size: 35px;
+    font-weight: 600;
+}
+
+/*styling for homeowners page*/
+.homeownersHeaderBanner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    padding: 15px 30px;
+    position: relative;
+    z-index: 10;
+}
+
+.homeownersHeaderBanner .logo-img {
+    width: 160px;
+    height: 160px;
+}
+
+.logoutBtn {
+    color: black;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    margin-right: 25px;
+    font-size: 20px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.logoutBtn:hover {
+    text-decoration: underline;
+}
+
+.homeowners {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 35px;
+    font-weight: 600;
+}
+
+/* styling for useradmin page */
+
+.userAdminHeaderBanner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    padding: 15px 30px;
+    position: relative;
+    z-index: 10;
+}
+
+.userAdminHeaderBanner .logo-img {
+    width: 200px;
+    height: 200px;
+}
+
+.logoutBtn {
+    color: black;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    margin-right: 25px;
+    font-size: 20px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.logoutBtn:hover {
+    text-decoration: underline;
+}
+
+.useradmin {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 35px;
+    font-weight: 600;
+}
+
+/* styling for platform manager page */
+.platformManagerHeaderBanner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    padding: 15px 30px;
+    position: relative;
+    z-index: 10;
+}
+
+.platformManagerHeaderBanner .logo-img {
+    width: 200px;
+    height: 200px;
+}
+
+.logoutBtn {
+    color: black;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    margin-right: 25px;
+    font-size: 20px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.logoutBtn:hover {
+    text-decoration: underline;
+}
+
+.platformManager {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 35px;
+    font-weight: 600;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 /* Responsive Design */
 @media (max-width: 480px) {
@@ -189,7 +387,7 @@ body {
         padding: 2rem 1.5rem;
         margin: 0 1rem;
     }
-    
+
     body {
         background: #6c5ce7;
     }
@@ -199,8 +397,4 @@ body {
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
-}
-
-.auth-container {
-    animation: fadeIn 0.6s ease-out forwards;
 }
