@@ -5,23 +5,31 @@ const user = new userEntity();
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
     const selectedType = document.getElementById("userType").value;
 
     const errorMsg = document.getElementById("error-msg");
+    errorMsg.innerText = ""; // Clear any existing error message
+
+    if (!email || !password || !selectedType) {
+        errorMsg.innerText = "Please fill in all fields.";
+        return;
+    }
+
     try {
         const result = await user.loginToDatabase(email, password, selectedType);
 
         if (result.success) {
             const userData = result.userData;
 
+            // Redirect based on user type
             switch (userData.userType) {
                 case "userAdmin":
-                    window.location.href = "adminDashboard.html";
+                    window.location.href = "adminPage.html";
                     break;
                 case "platformManager":
-                    window.location.href = "platformManagerDashboard.html";
+                    window.location.href = "platformManagerPage.html";
                     break;
                 case "cleaners":
                     window.location.href = "cleanerPage.html";
@@ -30,13 +38,13 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
                     window.location.href = "homeownersPage.html";
                     break;
                 default:
-                    window.location.href = "homepage.html";
+                    errorMsg.innerText = "Unknown user type.";
             }
         } else {
-            alert(result.message);
+            errorMsg.innerText = result.message;
         }
     } catch (err) {
-        console.log("Login error:", err.message);
-        alert("Login failed. Please try again.");
+        console.error("Login error:", err.message);
+        errorMsg.innerText = "Login failed. Please check your credentials and try again.";
     }
 });
