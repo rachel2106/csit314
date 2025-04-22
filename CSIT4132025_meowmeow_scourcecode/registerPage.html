@@ -6,7 +6,6 @@
     <title>Register</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script type="module" src="./js/registrationController.js"></script>
 </head>
 <body>
     <div class="auth-container">
@@ -39,7 +38,6 @@
                 <label for="email">Email:</label>
                 <i class="fas fa-envelope input-icon"></i>
                 <input type="email" id="email" required>
-                
             </div>
             <div class="form-group">
                 <label for="password">Password:</label>
@@ -54,8 +52,10 @@
             </div>
         </form>
     </div>
+
     <script>
         document.getElementById("createPassword").addEventListener("input", validatePassword);
+        
         function validatePassword() {
             var password = document.getElementById("createPassword").value;
             var uppercaseRegex = /[A-Z]/;
@@ -78,48 +78,14 @@
         }
     </script>
 
+    <!-- The script to handle registration logic will be here -->
     <script type="module">
-    
-        // Initialize Firebase
-        const firebase = new Firebase();
-    
+        import { RegistrationController } from "./js/registrationController.js";
+
         document.addEventListener("DOMContentLoaded", () => {
-            const form = document.getElementById("userRegisterForm");
-    
-            form.addEventListener("submit", async (event) => {
-                event.preventDefault(); // Prevent form submission from refreshing page
-    
-                // Get values from form
-                const firstName = document.getElementById("firstName").value.trim();
-                const lastName = document.getElementById("lastName").value.trim();
-                const email = document.getElementById("email").value.trim();
-                const password = document.getElementById("createPassword").value.trim();
-    
-                // Get user type from radio buttons
-                const userTypeInput = document.querySelector('input[name="userType"]:checked');
-                const userType = userTypeInput ? userTypeInput.value : null;
-    
-                // Validate all fields are filled
-                if (!firstName || !lastName || !email || !password || !userType) {
-                    alert("Please fill out all fields.");
-                    return;
-                }
-    
-                // Create new user object directly here
-                const newUser = {
-                    firstName,
-                    lastName,
-                    userEmail: email,
-                    userPass: password,
-                    userType
-                };
-    
-                // Call Firebase register function
-                await firebase.registerUser(newUser); // Pass the object to Firebase class
-            });
+            // Initialize the RegistrationController
+            const registrationController = new RegistrationController('userRegisterForm');
         });
     </script>
-    
-
 </body>
 </html>
