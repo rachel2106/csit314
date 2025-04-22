@@ -1,12 +1,12 @@
 import { userEntity } from "./userEntity.js";
 
-class RegistrationController {
+export class RegistrationController {
     constructor(formId) {
         this.form = document.getElementById(formId);
         this.form.addEventListener('submit', (event) => this.handleSubmit(event));
     }
 
-    // Collect form data
+    // Collect form data from the HTML
     collectFormData() {
         const firstName = document.getElementById('firstName').value.trim();
         const lastName = document.getElementById('lastName').value.trim();
@@ -53,6 +53,3 @@ class RegistrationController {
         }
     }
 }
-
-// Initialize the RegistrationController
-const registrationController = new RegistrationController('userRegisterForm');
