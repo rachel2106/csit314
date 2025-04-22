@@ -87,26 +87,36 @@ import {getAuth,
             // Sign in with Firebase Authentication
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-
+    
             // Get user data from Firestore
             const usersData = collection(db, "csit314/AllUsers/UserData");
             const userDocRef = doc(usersData, user.email);
             const userDocSnap = await getDoc(userDocRef);
-
+    
             if (userDocSnap.exists()) {
                 const userData = userDocSnap.data();
-
+    
                 // Validate account type
                 if (userData.userType !== selectedUserType) {
-                    return { success: false, message: `Incorrect account type. You registered as ${userData.userType}.` };
+                    return { 
+                        status: "error", 
+                        message: `Incorrect account type. You registered as ${userData.userType}.`
+                    };
                 }
-
-                return { success: true, userData };
+    
+                // Return the user data upon successful login
+                return { 
+                    status: "success", 
+                    message: "Login successful", 
+                    userData 
+                };
             } else {
-                return { success: false, message: "User not found in Firestore." };
+                return { 
+                    status: "error", 
+                    message: "User not found in Firestore." 
+                };
             }
-        } 
-        catch (error) {
+        } catch (error) {
             console.error("Login failed:", error.code, error.message);
             let message;
             switch (error.code) {
@@ -125,10 +135,40 @@ import {getAuth,
                 default:
                     message = "Login failed. Please try again.";
             }
-            return { success: false, message };
+    
+            return { 
+                status: "error", 
+                message 
+            };
         }
-        
     }
+
+
+
+// Get list of all user emails (as IDs) and their statuses from UserData
+async getuserAccList() {
+    try {
+        const userCollection = collection(db, "csit314/AllUsers/UserData");
+        const querySnapshot = await getDocs(userCollection);
+
+        const allProfiles = [];
+        const allStatus = [];
+
+        querySnapshot.forEach((doc) => {
+            allProfiles.push(doc.id); // user email
+            allStatus.push(doc.data().userStatus || "Unknown");
+        });
+
+        return { allProfiles, allStatus };
+    } catch (error) {
+        console.error("Error fetching profiles:", error);
+        return { allProfiles: [], allStatus: [] };
+    }
+}
+
+
+
+
 
     
   }
