@@ -1,35 +1,43 @@
 import { userEntity } from "./userEntity.js";
 
-document.addEventListener("DOMContentLoaded", () => {
-    const user = new userEntity();
-    const loginForm = document.getElementById("loginForm");
+class LoginController {
+    constructor() {
+        this.user = new userEntity();
+        this.loginForm = document.getElementById("loginForm");
+        this.errorMsg = document.getElementById("error-msg");
 
-    if (!loginForm) {
-        console.error("loginForm not found in DOM");
-        return;
+        if (!this.loginForm) {
+            console.error("loginForm not found in DOM");
+            return;
+        }
+
+        this.init();
     }
 
-    loginForm.addEventListener("submit", async (e) => {
+    init() {
+        this.loginForm.addEventListener("submit", (e) => this.handleLogin(e));
+    }
+
+    async handleLogin(e) {
         e.preventDefault();
 
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value.trim();
         const selectedType = document.getElementById("userType").value;
-        const errorMsg = document.getElementById("error-msg");
-        errorMsg.innerText = "";
+
+        this.errorMsg.innerText = "";
 
         if (!email || !password || !selectedType) {
-            errorMsg.innerText = "Please fill in all fields.";
+            this.errorMsg.innerText = "Please fill in all fields.";
             return;
         }
 
         try {
-            const result = await user.loginToDatabase(email, password, selectedType);
+            const result = await this.user.loginToDatabase(email, password, selectedType);
 
             if (result.status === "success") {
                 const userData = result.userData;
 
-                // Redirect based on user type
                 switch (userData.userType) {
                     case "userAdmin":
                         window.location.href = "adminPage.html";
@@ -44,14 +52,19 @@ document.addEventListener("DOMContentLoaded", () => {
                         window.location.href = "homeownersPage.html";
                         break;
                     default:
-                        errorMsg.innerText = "Unknown user type.";
+                        this.errorMsg.innerText = "Unknown user type.";
                 }
             } else {
-                errorMsg.innerText = result.message || "Login failed.";
+                this.errorMsg.innerText = result.message || "Login failed.";
             }
         } catch (err) {
             console.error("Login error:", err.message);
-            errorMsg.innerText = "Login failed. Please check your credentials and try again.";
+            this.errorMsg.innerText = "Login failed. Please check your credentials and try again.";
         }
-    });
+    }
+}
+
+// Initialize the login controller once DOM is ready
+document.addEventListener("DOMContentLoaded", () => {
+    new LoginController();
 });
