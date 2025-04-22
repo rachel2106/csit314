@@ -77,6 +77,50 @@
             }
         }
     </script>
+    
+    <script type="module">
+        import Firebase from './firebaseAuth.js'; // Import Firebase class
+    
+        // Initialize Firebase
+        const firebase = new Firebase();
+    
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById("userRegisterForm");
+    
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault(); // Prevent form submission from refreshing page
+    
+                // Get values from form
+                const firstName = document.getElementById("firstName").value.trim();
+                const lastName = document.getElementById("lastName").value.trim();
+                const email = document.getElementById("email").value.trim();
+                const password = document.getElementById("createPassword").value.trim();
+    
+                // Get user type from radio buttons
+                const userTypeInput = document.querySelector('input[name="userType"]:checked');
+                const userType = userTypeInput ? userTypeInput.value : null;
+    
+                // Validate all fields are filled
+                if (!firstName || !lastName || !email || !password || !userType) {
+                    alert("Please fill out all fields.");
+                    return;
+                }
+    
+                // Create new user object directly here
+                const newUser = {
+                    firstName,
+                    lastName,
+                    userEmail: email,
+                    userPass: password,
+                    userType
+                };
+    
+                // Call Firebase register function
+                await firebase.registerUser(newUser); // Pass the object to Firebase class
+            });
+        });
+    </script>
+    
 
 </body>
 </html>
