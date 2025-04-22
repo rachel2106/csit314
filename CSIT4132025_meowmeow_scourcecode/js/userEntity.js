@@ -27,4 +27,15 @@ export class userEntity {
             throw new Error("Login failed.");
         }
     }
+
+    // Calling firebase's user account list
+    async getuserAccListFromDB() {
+        try {
+            const result = await this.Firebase.getProfileList();
+            return result;
+        } catch (error) {
+            console.error("Failed to retrieve profiles:", error);
+            return { allProfiles: [], allStatus: [] };
+        }
+    }
 }
