@@ -69,7 +69,6 @@ import {getAuth,
             });
 
             console.log("User successfully added to Firestore:", user.email);
-            alert("Registration successful!");
 
             //lead users back to login page
             window.location.href = "loginPage.html";
