@@ -70,6 +70,7 @@ import {getAuth,
 
             console.log("User successfully added to Firestore:", user.email);
 
+
             //lead users back to login page
             window.location.href = "loginPage.html";
 
@@ -145,24 +146,87 @@ import {getAuth,
 
 
 // Get list of all user emails (as IDs) and their statuses from UserData
-async getuserAccList() {
-    try {
-        const userCollection = collection(db, "csit314/AllUsers/UserData");
+    async getUserList() {
+      try {
+        const userCollection = collection(db, "csit314/AllUsers/UserData" );
         const querySnapshot = await getDocs(userCollection);
-
-        const allProfiles = [];
-        const allStatus = [];
-
-        querySnapshot.forEach((doc) => {
-            allProfiles.push(doc.id); // user email
-            allStatus.push(doc.data().userStatus || "Unknown");
+        const userList = [];
+  
+        querySnapshot.forEach(doc => {
+          const userData = doc.data();
+          userList.push({
+            userType: userData.userType,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            email: userData.email,
+            status: userData.userStatus
+          });
         });
-
-        return { allProfiles, allStatus };
-    } catch (error) {
-        console.error("Error fetching profiles:", error);
-        return { allProfiles: [], allStatus: [] };
+  
+        return userList;
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        return [];
+      }
     }
+
+    //getting all profiles from firestore
+    async getAllProfiles() {
+        try {
+            const collectionRef = collection(db, "csit314/AllUsers/UserData");
+            const querySnapshot = await getDocs(collectionRef);
+            const userTypesSet = new Set();
+    
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                if (data.userType) {
+                    userTypesSet.add(data.userType);
+                }
+            });
+    
+            // Convert Set to Array of objects
+            const userTypesList = Array.from(userTypesSet).map((type, index) => ({
+                id: index,
+                userType: type,
+                userStatus: "Active" // or some placeholder if needed
+            }));
+    
+            return userTypesList;
+        } catch (error) {
+            console.error("Error fetching unique user types:", error);
+            return [];
+        }
+    }
+
+    //search Profile
+    async searchProfile(searchType) {
+        try {
+            // Create a query to filter by userType
+            const qx = query(
+                collection(db, "csit314/AllUsers/UserData"),
+                where("userType", "==", searchType)
+            );
+    
+            // Execute the query and get the snapshot
+            const querySnapshot = await getDocs(qx);
+            
+            // Initialize an array to store user data
+            let userList = [];
+    
+            // Loop through the query results
+            querySnapshot.forEach((doc) => {
+                userList.push(doc.data());
+            });
+    
+
+            console.log("Found profiles:", userList);    // Return the user list (or you can return the list as a string or other format)
+            return userList;
+        } catch (error) {
+            console.error("Error searching profiles:", error);
+            return []; // Return an empty array if there's an error
+        }
+    }
+    
 }
 
 
@@ -170,4 +234,4 @@ async getuserAccList() {
 
 
     
-  }
+  
