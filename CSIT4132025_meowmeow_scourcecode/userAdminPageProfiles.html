@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>User Admin Dashboard</title>
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="useradmin-page">
+    <div class="userAdminHeaderBanner">
+        <a href="userAdminPage.html">
+            <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img" />
+        </a>
+        <a href="userAdminViewAccs.html" id="adminViewAccs">View Users Accounts</a>
+        <a href="userAdminPageProfiles.html" id="adminProfilePage">View Profiles</a>
+        <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
+    </div>
+
+    <main>
+        <div class="useradmin-viewAccs">
+            Welcome to User Admin page
+        </div> 
+
+        <div class="userAdmin-viewContainer" id="admin-viewContiner">
+            <div class="useradmin-viewContainerHeader">
+                <h2 class="viewUserAcc">View User Accounts:</h2>
+                
+            </div>
+
+            <div class="admin-viewtable" id="adminView">
+                <table id="admin-table">
+                    <thead id="admin-tableheader">
+                        <tr id="admin-rowheader">
+                            <th>Profile:</th>
+                            <th>Status:</th>
+                            <th>Options:</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Profile details container where details will be shown after clicking "Search Profile" -->
+        <div class="profile-details" id="profile-details-container">
+            <!-- Profile details will be displayed here -->
+        </div>
+    </main>
+
+    <!-- Logout button function -->
+    <script>
+        document.getElementById("logout").addEventListener("click", function () {
+            console.log("Logout link has been clicked");
+            window.location.href = "loginPage.html";
+        });
+    </script>
+
+    <script type="module">
+        import { userAdminAllProfilesController } from './js/userAdminAllProfilesController.js';
+
+        
+
+class AdminProfilePage {
+    async getAllProfiles() {
+        const controller = new userAdminAllProfilesController();
+        return await controller.getAllProfiles();
+    }
+
+    displayProfiles(profileList) {
+        const table = document.getElementById("data-table");
+        table.innerHTML = "";
+
+        profileList.forEach((profile) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${profile.userType || "N/A"}</td>
+                <td>${profile.userStatus || "Unknown"}</td>
+                <td>
+                    <button class="search-profile-btn" data-type="${profile.userType}">Search Profile</button>
+                    <button class="search-profile-btn" data-type="${profile.userType}">Delete Profile</button>
+                    <button class="search-profile-btn" data-type="${profile.userType}">Suspend Profile</button>
+                </td>
+            `;
+            table.appendChild(row);
+        });
+
+        this.addSearchProfileListeners();
+    }
+
+    addSearchProfileListeners() {
+        const searchButtons = document.querySelectorAll(".search-profile-btn");
+        searchButtons.forEach(button => {
+            button.addEventListener("click", async (event) => {
+                const userType = event.target.getAttribute("data-type");
+                await this.displayProfileDetails(userType);
+            });
+        });
+    }
+
+    async displayProfileDetails(userType) {
+        const controller = new userAdminAllProfilesController();
+        const users = await controller.searchProfile(userType); // Now searching users by userType
+        const container = document.getElementById("profile-details-container");
+
+        if (users.length > 0) {
+            container.innerHTML = `<h3>Users with profile type "${userType}":</h3>`;
+            users.forEach(user => {
+                container.innerHTML += `
+                    <div class="profile-card">
+                        <p><strong>Name:</strong> ${user.firstName} ${user.lastName}</p>
+                        <p><strong>Email:</strong> ${user.email}</p>
+                        <p><strong>Status:</strong> ${user.userStatus}</p>
+                        <hr/>
+                    </div>
+                `;
+            });
+        } else {
+            container.innerHTML = `<p style="color: red;">No users found with profile type "${userType}"</p>`;
+        }
+    }
+}
+
+window.addEventListener("DOMContentLoaded", async () => {
+    const adminPage = new AdminProfilePage();
+    const profiles = await adminPage.getAllProfiles();
+    adminPage.displayProfiles(profiles);
+});
+
+    </script>
+</body>
+</html>
