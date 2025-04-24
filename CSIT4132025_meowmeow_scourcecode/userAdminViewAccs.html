@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>User Admin Dashboard</title>
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="useradmin-page">
+    <div class="userAdminHeaderBanner">
+        <a href="userAdminPage.html">
+            <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img" />
+        </a>
+        <a href="userAdminViewAccs.html" id="adminViewAccs">View Users Accounts</a>
+        <a href="userAdminPageProfiles.html" id="adminProfilePage">View Profiles</a>
+        <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
+    </div>
+
+    <main>
+        <div class="useradmin-viewAccs">
+            Welcome to User Admin page
+        </div> 
+
+        <div class="userAdmin-viewContainer" id="admin-viewContiner">
+            <div class="useradmin-viewContainerHeader">
+                <h2 class="viewUserAcc">View User Accounts:</h2>
+                <input type="text" name="admin-search-userAcc" id="search-id" placeholder="Email" />
+                <button class="adminBtn" id="admin-search-button">Search</button>
+                <a href="userAdminCreateAcc.html" class="adminCreateBtn" id="admin-create-button">Create Account</a>
+            </div>
+
+            <div class="admin-viewtable" id="adminView">
+                <table id="admin-table">
+                    <thead id="admin-tableheader">
+                        <tr id="admin-rowheader">
+                            <th>UserType:</th>
+                            <th>First Name:</th>
+                            <th>Last Name:</th>
+                            <th>Email:</th>
+                            <th>Status (Active/Deleted/Suspended):</th>
+                            <th>Options:</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Logout button functionality -->
+    <script>
+        document.getElementById("logout").addEventListener("click", function () {
+            console.log("Logout link has been clicked");
+            window.location.href = "loginPage.html";
+        });
+    </script>
+
+    <!-- Load Controller and Render Users Grouped by Type -->
+    <script type="module">
+        import { userAdminViewAllAccController } from './js/userAdminViewAllAccController.js';
+
+        class AdminPage {
+            async getUserList() {
+                const controller = new userAdminViewAllAccController();
+                return await controller.getUserList();
+            }
+
+            displayUserList(userList) {
+                const table = document.getElementById("data-table");
+                table.innerHTML = ""; // Clear old data
+
+                // Sort by userType to group them together
+                userList.sort((a, b) => a.userType.localeCompare(b.userType));
+
+                let lastType = "";
+
+                userList.forEach((userData) => {
+                    // Group header row
+                    if (userData.userType !== lastType) {
+                        const groupRow = document.createElement("tr");
+                        groupRow.innerHTML = `
+                            <td colspan="6" style="font-weight: bold; background-color: #d8bba0;">
+                                ${userData.userType.toUpperCase()}
+                            </td>
+                        `;
+                        table.appendChild(groupRow);
+                        lastType = userData.userType;
+                    }
+
+                    // Normal user row
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${userData.userType}</td>
+                        <td>${userData.firstName}</td>
+                        <td>${userData.lastName}</td>
+                        <td><a href="userDetails.html?email=${userData.email}">${userData.email}</a></td>
+                        <td>${userData.status}</td>
+                        <td>
+                            <button class="update-account-icon" value="${userData.email}">Update</button>
+                            <button class="delete-account-icon" value="${userData.email}">Delete</button>
+                            <button class="suspend-account-icon" value="${userData.email}">Suspend</button>
+                        </td>
+                    `;
+                    table.appendChild(row);
+                });
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", async () => {
+            const admin = new AdminPage();
+            const users = await admin.getUserList();
+            admin.displayUserList(users);
+        });
+    </script>
+</body>
+</html>
