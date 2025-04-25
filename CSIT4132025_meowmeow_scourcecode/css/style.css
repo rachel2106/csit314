@@ -251,9 +251,18 @@ body.platformManager-page{
 .cleaners{
     text-align: center;
     margin-top: 10px;
-    font-size: 35px;
+    margin-bottom: 10px;
+    font-size: 20px;
     font-weight: 600;
 }
+
+.details-containerCleaner{
+    background-color: #FFFFFF;
+    margin-right: 250px;
+    margin-left: 250px;
+    height: 50%;
+}
+
 
 /*styling for homeowners page*/
 .homeownersHeaderBanner {
@@ -289,15 +298,16 @@ body.platformManager-page{
 .homeowners {
     text-align: center;
     margin-top: 10px;
-    font-size: 35px;
+    font-size: 20px;
     font-weight: 600;
 }
+
 
 /* styling for useradmin page */
 
 .userAdminHeaderBanner {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-evenly;
     align-items: center;
     color: white;
     padding: 15px 30px;
@@ -327,10 +337,326 @@ body.platformManager-page{
 
 .useradmin {
     text-align: center;
-    margin-top: 10px;
+    margin-top: 250px;
+    margin-bottom: 45px;
     font-size: 35px;
     font-weight: 600;
 }
+
+.useradminCreateUser{
+    text-align: center;
+    font-size: 35px;
+    font-weight: bold;
+}
+
+.useradmin-viewAccs {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 45px;
+    font-size: 35px;
+    font-weight: 600;
+}
+
+/*container styling for userAdmin page*/
+.userAdmin-viewContainer{
+    width: 80%;
+    margin: 0 auto;
+}
+
+.useradmin-viewContainerHeader{
+    display: flex;
+    justify-content:space-between;
+    width: 100%;
+}
+
+.admin-bar{
+    display: flex;
+    width: 80%;
+}
+
+.viewUserAcc{
+    margin-top: 40px;
+}
+
+input[name="admin-search-userAcc"] {
+    width: 50%;
+    height: 5px;
+    padding: 22px;
+    border: 1px solid #fff;
+    margin-left: 60px;
+}
+
+#search-id{
+    margin-top:25px;
+    width: 50%;
+    height: 46px;
+}
+
+/* styling for profile details (adminpage) */
+.profile-details{
+    width: 100%;
+    margin-left: 10%;
+    display: block;
+    max-width: 1492px;
+    margin-top: 85px;
+    padding-left: 15px;
+    padding-right: 15px;
+    font-size:17px;
+    
+}
+
+/*update user in userAdmin */
+/* Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4); /* Faded background */
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 300px; /* Could be more or less, depending on screen size */
+}
+
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+form input {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    max-width: 280px;
+}
+
+button.update-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #504b4e;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button.update-btn:hover {
+    background-color: #873D48;
+    text-decoration: underline;
+}
+
+/* styling for userAdmin button */
+.adminBtn {
+    width: 20%;
+  height: 10%;
+  margin-left: 5px;
+  background-color: #636e72;
+  padding: 15px;
+  margin-top: 24px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+
+}
+
+.adminBtn:hover {
+    background-color: #873D48;
+    color: #FFFFFF;
+}
+
+
+/* userAdmin table styling*/
+#admin-tableheader tr th #col-suspend{
+    width: 10%;
+}
+
+#admin-table{
+    width: 100%;
+    margin-top: 3%;
+    border-collapse: collapse;
+    border: 2px solid #433A3F;
+    
+}
+
+#admin-tableheader tr th {
+    background-color: #FFFFFF;
+    color: #433A3F;
+    border: 1px solid #686065;
+    padding: 8px;
+}
+
+.admin-table tr{
+    background-color: #C5AFA4;
+}
+
+.admin-table:nth-child(even){
+    background-color: #f2f2f2;
+}
+
+.admin-table th,
+.admin-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.admin-table th,
+.admin-table td {
+    text-align: center;
+}
+
+.viewUserAcc{
+    width: 50%;
+    text-align: left;
+}
+
+/* styling for the form for create user */
+/* Style for the user account creation form */
+.user-form {
+    max-width: 500px;
+    margin-left: 35%;
+    margin-top: 17px;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.user-form label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #333;
+}
+
+.user-form input,
+.user-form select {
+    max-width:500px ;
+    padding: 10px 12px;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.user-form button {
+    width: 100%;
+    padding: 12px;
+    background-color: #636e72;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.user-form button:hover {
+    background-color: #873D48;
+    text-decoration: underline;
+}
+
+
+
+/* styling for adminCreateAcc button */
+
+.adminCreateBtn{
+    width: 20%;
+  height: 20px;
+  margin-left: 5px;
+  background-color: #636e72;
+  padding: 15px;
+  margin-top: 24px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  text-decoration: none;
+  text-align: center;
+  color: black;
+  border: 1px solid black;
+}
+
+.adminCreateBtn:hover{
+    background-color: #873D48;
+    color: #FFFFFF;
+}
+
+/*styling for adminPageProfiles link */
+#adminProfilePage{
+    
+    color: black;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    margin-right: 25px;
+    font-size: 23px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+
+}
+
+#adminProfilePage:hover {
+    text-decoration: underline;
+    color: #873D48;
+}
+
+#adminViewAccs{
+    
+    color: black;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    margin-right: 25px;
+    font-size: 23px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+
+}
+
+#adminViewAccs:hover {
+    text-decoration: underline;
+    color: #873D48;
+}
+
+#back-Btn{
+    color: black;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    margin-right: 25px;
+    font-size: 20px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+#back-Btn{
+    text-decoration: underline;
+    color: #873D48;
+}
+
+
+
 
 /* styling for platform manager page */
 .platformManagerHeaderBanner {
@@ -354,13 +680,15 @@ body.platformManager-page{
     border-radius: 6px;
     text-decoration: none;
     margin-right: 25px;
-    font-size: 20px;
+    margin-bottom: 6px;
+    font-size: 23px;
     font-weight: 600;
     transition: background-color 0.3s ease;
 }
 
 .logoutBtn:hover {
     text-decoration: underline;
+    color: #873D48;
 }
 
 .platformManager {
@@ -369,12 +697,6 @@ body.platformManager-page{
     font-size: 35px;
     font-weight: 600;
 }
-
-
-
-
-
-
 
 
 
