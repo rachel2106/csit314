@@ -44,13 +44,35 @@ export class userEntity {
         }
     }
 
-
     // Fetch the user list from the FirebaseAuth class
     async getUserList() {
-        const firebaseObj = new Firebase();
-        const userList = await firebaseObj.getUserList();
-        return userList;
-      }
-};
+        try {
+            const userList = await firebase.getUserList(); // Using the existing instance of Firebase
+            return userList;
+        } catch (error) {
+            console.error("Error fetching user list:", error);
+            return []; // Return empty list in case of error
+        }
+    }
+
+    // Update user from admin
+    async updateUserDetails(updatedUser) {
+        try {
+            const response = await firebase.updateUserAcc(updatedUser);
+            return response; // Return the response directly
+        } catch (error) {
+            console.error("Error updating user:", error);
+            return { success: false, message: error.message || "Failed to update user." };
+        }
+    }
+
+
+    //creating new user in admin
+    async createUser(newUserObj) {
+        const firebase = new Firebase(); 
+        const result = await firebase.createUserByAdmin(newUserObj);
+        return result;
+}
+}
 
 export default userEntity;
