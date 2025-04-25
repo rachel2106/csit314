@@ -9,29 +9,33 @@
 <body class="useradmin-page">
     <div class="userAdminHeaderBanner">
         <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img">
+        <a href="userAdminViewAccs.html" id="adminViewAccs">View Users Accounts</a>
+        <a href="userAdminPageProfiles.html" id="adminProfilePage">View Profiles</a>
         <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
+        
     </div>
     
     <main>
         <div class="useradmin">
-            Welcome to User Admin page
+            Welcome to User Admin page<br><br>
+            Please use the navigation bar at the top.
         </div>
 
-        <div class="view-container" id="view-container">
-            <div class="">
+    
 
-            </div>
     </main>
+
+
+    <!--action for logout button-->
 <script>
     document.getElementById("logout").addEventListener("click", function logOut() {
         console.log("Logout link has been clicked");
-        windows.location.href = "loginPage.html";
+        window.location.href = "loginPage.html";
         });
     </script>
 
-    <script type="module" src="./js/loginController.js">
 
-    </script>
+
 
 
 
