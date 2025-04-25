@@ -23,6 +23,7 @@
             <label>Last Name: <input type="text" id="lastName" required></label><br>
             <label>Email: <input type="email" id="userEmail" required></label><br>
             <label>Password: <input type="password" id="userPass" required></label><br>
+            <div id="passwordValidationMessage" style="color: red; font-size: 0.9em; margin-top: 5px;"></div>
             <label>Account Type:
                 <select id="userType" required>
                     <option value="userAdmin">User Admin</option>
@@ -34,6 +35,32 @@
             <button type="submit">Create Account</button>
         </form>
     </main>
+
+    <script>
+        document.getElementById("userPass").addEventListener("input", validatePassword);
+        
+        function validatePassword() {
+            var password = document.getElementById("userPass").value;
+            var uppercaseRegex = /[A-Z]/;
+            var numberRegex = /[0-9]/;
+            var symbolRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+
+            var hasUppercase = uppercaseRegex.test(password);
+            var hasNumber = numberRegex.test(password);
+            var hasSymbol = symbolRegex.test(password);
+
+            var isValid = hasUppercase && hasNumber && hasSymbol;
+
+            if (!isValid) {
+                document.getElementById("userPass").setCustomValidity("Password must contain at least one uppercase letter, one number, and one symbol.");
+                document.getElementById("passwordValidationMessage").innerText = "Password must contain at least one uppercase letter, one number, and one symbol.";
+            } else {
+                document.getElementById("userPass").setCustomValidity("");
+                document.getElementById("passwordValidationMessage").innerText = "";
+            }
+        }
+    </script>
+
 
     <script type="module">
         import { adminCreateUserController } from "./js/userAdminCreateUserContoller.js";
