@@ -17,14 +17,12 @@
     </div>
 
     <main>
-        <div class="useradmin-viewAccs">
-            Welcome to User Admin page
-        </div> 
+        <div class="useradmin-viewAccs">Welcome to User Admin page</div>
 
         <div class="userAdmin-viewContainer" id="admin-viewContiner">
             <div class="useradmin-viewContainerHeader">
                 <h2 class="viewUserAcc">View User Accounts:</h2>
-                <input type="text" name="admin-search-userAcc" id="search-id" placeholder="Email" />
+                <input type="text" id="search-id" placeholder="Email" />
                 <button class="adminBtn" id="admin-search-button">Search</button>
                 <a href="userAdminCreateAcc.html" class="adminCreateBtn" id="admin-create-button">Create Account</a>
             </div>
@@ -47,15 +45,37 @@
         </div>
     </main>
 
+    <!-- Modal for updating user account -->
+    <div id="updateModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>Update User Account</h3>
+            <form id="update-form">
+                <label for="first-name">First Name:</label>
+                <input type="text" id="first-name" name="first-name" required />
+
+                <label for="last-name">Last Name:</label>
+                <input type="text" id="last-name" name="last-name" required />
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required />
+
+                <label for="password">Password (leave blank if no change):</label>
+                <input type="password" id="password" name="password" />
+
+                <button type="submit" class="update-btn">Update Account</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Logout button functionality -->
     <script>
         document.getElementById("logout").addEventListener("click", function () {
-            console.log("Logout link has been clicked");
             window.location.href = "loginPage.html";
         });
     </script>
 
-    <!-- Load Controller and Render Users Grouped by Type -->
+    <!-- Load Controller and Render Users -->
     <script type="module">
         import { userAdminViewAllAccController } from './js/userAdminViewAllAccController.js';
 
@@ -67,27 +87,22 @@
 
             displayUserList(userList) {
                 const table = document.getElementById("data-table");
-                table.innerHTML = ""; // Clear old data
-
-                // Sort by userType to group them together
+                table.innerHTML = "";
                 userList.sort((a, b) => a.userType.localeCompare(b.userType));
 
                 let lastType = "";
 
                 userList.forEach((userData) => {
-                    // Group header row
                     if (userData.userType !== lastType) {
                         const groupRow = document.createElement("tr");
                         groupRow.innerHTML = `
                             <td colspan="6" style="font-weight: bold; background-color: #d8bba0;">
                                 ${userData.userType.toUpperCase()}
-                            </td>
-                        `;
+                            </td>`;
                         table.appendChild(groupRow);
                         lastType = userData.userType;
                     }
 
-                    // Normal user row
                     const row = document.createElement("tr");
                     row.innerHTML = `
                         <td>${userData.userType}</td>
@@ -99,8 +114,7 @@
                             <button class="update-account-icon" value="${userData.email}">Update</button>
                             <button class="delete-account-icon" value="${userData.email}">Delete</button>
                             <button class="suspend-account-icon" value="${userData.email}">Suspend</button>
-                        </td>
-                    `;
+                        </td>`;
                     table.appendChild(row);
                 });
             }
@@ -111,6 +125,71 @@
             const users = await admin.getUserList();
             admin.displayUserList(users);
         });
+    </script>
+
+    <!-- Modal Logic & Update Form -->
+    <script type="module">
+        import { userAdminUpdateAccController } from "./js/userAdminUpdateAccController.js";
+        import { userAdminViewAllAccController } from './js/userAdminViewAllAccController.js';
+
+        const modal = document.getElementById("updateModal");
+        const closeModal = document.querySelector(".close-btn");
+        const updateForm = document.getElementById("update-form");
+
+        document.getElementById("data-table").addEventListener("click", async (e) => {
+            if (e.target.classList.contains("update-account-icon")) {
+                const userEmail = e.target.value;
+                modal.style.display = "block";
+
+                const userData = await fetchUserData(userEmail);
+                document.getElementById("first-name").value = userData.firstName;
+                document.getElementById("last-name").value = userData.lastName;
+                document.getElementById("email").value = userData.email;
+
+                updateForm.dataset.originalEmail = userEmail;
+            }
+        });
+
+        closeModal.addEventListener("click", () => {
+            modal.style.display = "none";
+        });
+
+        window.addEventListener("click", (e) => {
+            if (e.target === modal) {
+                modal.style.display = "none";
+            }
+        });
+
+        updateForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const originalEmail = updateForm.dataset.originalEmail;
+            const firstName = document.getElementById("first-name").value;
+            const lastName = document.getElementById("last-name").value;
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            const controller = new userAdminUpdateAccController();
+            try {
+                await controller.updateUserAccount({
+                    originalEmail,
+                    firstName,
+                    lastName,
+                    newEmail: email,
+                    password
+                });
+                alert("User account updated!");
+                modal.style.display = "none";
+                location.reload();
+            } catch (err) {
+                alert("Error updating user: " + err.message);
+            }
+        });
+
+        async function fetchUserData(userEmail) {
+            const controller = new userAdminViewAllAccController();
+            const userList = await controller.getUserList();
+            return userList.find(user => user.email === userEmail);
+        }
     </script>
 </body>
 </html>
