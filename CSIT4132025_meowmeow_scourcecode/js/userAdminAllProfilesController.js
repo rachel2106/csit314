@@ -1,14 +1,13 @@
-import { userEntity } from "./userEntity.js";
+import { profileEntity } from "./profileEntity.js";
 
-export class userAdminSearchUserController {
-    async searchUser(searchEmail) {
-        try {
-            let initAdminSUEntity = new userEntity();
-            return await initAdminSUEntity.searchUser(searchEmail); // Await the result
-        } catch (err) {
-            console.error("Error in userAdminSearchUserController searchUser:", err);
-            throw new Error("Error searching user: " + err.message);
-        }
+export class userAdminAllProfilesController {
+    async getAllProfiles() {
+        const entity = new profileEntity();
+        return await entity.getAllProfiles();
     }
 
+    async searchProfile(userType) {
+        const entity = new profileEntity();
+        return await entity.searchProfiles(userType); // pass userType!
+    }
 }
