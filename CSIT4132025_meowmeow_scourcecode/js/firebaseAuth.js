@@ -40,6 +40,11 @@ import {getAuth,
 
   export default class Firebase {
 
+    constructor() {
+        this.db = db;
+        this.auth = auth;
+    }
+
     // Registration Function
     async registerUser(newUser) {
         try {
@@ -226,12 +231,91 @@ import {getAuth,
             return []; // Return an empty array if there's an error
         }
     }
+
+        // Update user account by admin
+        async updateUserAcc(updatedUser) {
+            const { originalEmail, firstName, lastName, newEmail, password } = updatedUser;
     
-}
-
-
-
-
-
+            // 1. Update Firestore
+            try {
+                const userRef = doc(this.db, "csit314/AllUsers/UserData", originalEmail);  // Assuming users are stored by email
+                await updateDoc(userRef, {
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: newEmail,
+                });
+            } catch (error) {
+                console.error("Error updating Firestore user:", error);
+                throw new Error("Firestore update failed.");
+            }
     
-  
+            // 2. Update Firebase Authentication (if email or password is updated)
+            try {
+                const currentUser = this.auth.currentUser;
+    
+                if (currentUser) {
+                    if (newEmail && newEmail !== originalEmail) {
+                        await updateEmail(currentUser, newEmail);  // Update email
+                    }
+    
+                    if (password) {
+                        await updatePassword(currentUser, password);  // Update password
+                    }
+                }
+            } catch (error) {
+                console.error("Error updating Firebase Authentication user:", error);
+                throw new Error("Firebase Auth update failed.");
+            }
+    
+            return { success: true, message: 'User updated successfully.' };
+        }
+
+
+
+         // Create user account in Firebase Auth and Firestore
+         async createUserByAdmin(newUser) {
+            try {
+                //  Use lowercase userType values
+                const validTypes = ["userAdmin", "platformManager", "cleaners", "homeowners"];
+                const userTypeFormatted = newUser.userType.trim(); // Do not uppercase it
+        
+                if (!validTypes.includes(userTypeFormatted)) {
+                    return {
+                        status: "error",
+                        message: `Invalid userType provided: ${newUser.userType}`
+                    };
+                }
+        
+                //  Create user in Firebase Auth
+                const userCredential = await createUserWithEmailAndPassword(
+                    this.auth,
+                    newUser.userEmail,
+                    newUser.userPass
+                );
+                const user = userCredential.user;
+        
+                //  Store user in Firestore
+                const userDocRef = doc(this.db, "csit314/AllUsers/UserData", user.email);
+                await setDoc(userDocRef, {
+                    firstName: newUser.firstName,
+                    lastName: newUser.lastName,
+                    email: user.email,
+                    password: newUser.userPass,
+                    userType: userTypeFormatted,
+                    userStatus: "Active"
+                });
+        
+                return {
+                    status: "success",
+                    message: "User created successfully",
+                    userEmail: user.email
+                };
+            } catch (error) {
+                console.error("Firebase createUserByAdmin error:", error);
+                return {
+                    status: "error",
+                    message: error.message
+                };
+            }
+        }
+  }
