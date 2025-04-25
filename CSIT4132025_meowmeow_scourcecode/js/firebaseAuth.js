@@ -33,6 +33,7 @@ import {getAuth,
 
   const app = initializeApp(firebaseConfig);
 
+
   //Initialize cloud firestore and get a reference to the service
   const db = getFirestore(app);
 
@@ -275,7 +276,7 @@ import {getAuth,
          // Create user account in Firebase Auth and Firestore
          async createUserByAdmin(newUser) {
             try {
-                //  Use lowercase userType values
+                // Use lowercase userType values
                 const validTypes = ["userAdmin", "platformManager", "cleaners", "homeowners"];
                 const userTypeFormatted = newUser.userType.trim(); // Do not uppercase it
         
@@ -286,7 +287,7 @@ import {getAuth,
                     };
                 }
         
-                //  Create user in Firebase Auth
+                // Create user in Firebase Auth
                 const userCredential = await createUserWithEmailAndPassword(
                     this.auth,
                     newUser.userEmail,
@@ -294,7 +295,7 @@ import {getAuth,
                 );
                 const user = userCredential.user;
         
-                //  Store user in Firestore
+                // Store user in Firestore
                 const userDocRef = doc(this.db, "csit314/AllUsers/UserData", user.email);
                 await setDoc(userDocRef, {
                     firstName: newUser.firstName,
@@ -318,4 +319,33 @@ import {getAuth,
                 };
             }
         }
-  }
+
+
+        //searching for user based on email
+        // Using the Firebase instance for Firestore access
+        // Inside FirebaseClass or wherever you're calling searchUser
+        async searchUser(searchEmail) {
+            try {
+                const cleanedEmail = searchEmail.trim().toLowerCase();
+                console.log("Searching Firestore for:", cleanedEmail);
+    
+                const qx = query(collection(db, "csit314/AllUsers/UserData"), where("email", "==", cleanedEmail));
+                const querySnapshot = await getDocs(qx);
+    
+                console.log("Query Snapshot Size:", querySnapshot.size); // Debug log
+    
+                if (querySnapshot.empty) return null;
+    
+                return querySnapshot.docs.map(doc => doc.data()); // Return structured user data
+            } catch (err) {
+                console.error("Firestore error:", err);
+                throw new Error("Error searching Firestore: " + err.message);
+            }
+        }
+    
+    
+
+        
+        
+
+}
