@@ -19,7 +19,7 @@
     <main>
         <div class="useradmin-viewAccs">Welcome to User Admin page</div>
 
-        <div class="userAdmin-viewContainer" id="admin-viewContiner">
+        <div class="userAdmin-viewContainer" id="admin-viewContainer">
             <div class="useradmin-viewContainerHeader">
                 <h2 class="viewUserAcc">View User Accounts:</h2>
                 <input type="text" id="search-id" placeholder="Email" />
@@ -191,5 +191,62 @@
             return userList.find(user => user.email === userEmail);
         }
     </script>
+
+<script type="module">
+    import { userAdminSearchUserController } from './js/userAdminSearchUserController.js';
+
+    // Attach event listener to the Search button
+    document.getElementById("admin-search-button").addEventListener("click", async () => {
+        // Get the email entered in the input box
+        const searchEmail = document.getElementById("search-id").value.trim().toLowerCase();
+
+        // Check if the email input is empty
+        if (!searchEmail) {
+            alert("Please enter an email to search.");
+            return;
+        }
+
+        // Create an instance of the controller to perform the search
+        const searchController = new userAdminSearchUserController();
+
+        try {
+            // Get search result from Firestore
+            const userData = await searchController.searchUser(searchEmail);
+
+            // Clear previous search results
+            const table = document.getElementById("data-table");
+            table.innerHTML = "";
+
+            if (userData) {
+                // If user is found, display user data
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${userData.userType}</td>
+                    <td>${userData.firstName}</td>
+                    <td>${userData.lastName}</td>
+                    <td><a href="userDetails.html?email=${userData.email}">${userData.email}</a></td>
+                    <td>${userData.status}</td>
+                    <td>
+                        <button class="update-account-icon" value="${userData.email}">Update</button>
+                        <button class="delete-account-icon" value="${userData.email}">Delete</button>
+                        <button class="suspend-account-icon" value="${userData.email}">Suspend</button>
+                    </td>`;
+                table.appendChild(row);
+            } else {
+                // If no user is found, display "No user found" message
+                const noResultRow = document.createElement("tr");
+                noResultRow.innerHTML = `<td colspan="6" style="text-align: center;">No user found with that email.</td>`;
+                table.appendChild(noResultRow);
+            }
+        } catch (error) {
+            console.error("Error searching for user:", error);
+            alert("Error searching for user. Please try again.");
+        }
+    });
+</script>
+
+
+
+
 </body>
 </html>
