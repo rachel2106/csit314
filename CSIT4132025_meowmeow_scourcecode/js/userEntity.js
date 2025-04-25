@@ -1,9 +1,7 @@
-import Firebase from "./firebaseAuth.js";
+import Firebase from "./firebaseAuth.js"; // Import the Firebase instance
 
-// Create an instance of Firebase
-const firebase = new Firebase();
+const firebase = new Firebase(); // Use the existing Firebase instance initialized in firebaseAuth.js
 
-// Define the userEntity object
 export class userEntity {
     // Create a user in both Firebase Auth and Firestore
     async createToDB(newUser) {
@@ -66,13 +64,31 @@ export class userEntity {
         }
     }
 
-
-    //creating new user in admin
+    // Create new user in admin
     async createUser(newUserObj) {
-        const firebase = new Firebase(); 
         const result = await firebase.createUserByAdmin(newUserObj);
         return result;
-}
-}
+    }
 
-export default userEntity;
+
+            // Searching for user by email (Admin)
+            async searchUser(searchEmail) {
+                try {
+                    const userList = await firebase.searchUser(searchEmail); // Fetch from FirebaseAuth
+                    if (!userList || userList.length === 0) {
+                        console.warn("No user found with email:", searchEmail);
+                        return null; // Ensure it returns null if no user is found
+                    }
+        
+                    console.log("User found:", userList[0]); // Debugging log
+                    return userList[0]; // Return the first matched user
+                } catch (err) {
+                    console.error("Error in userEntity searchUser:", err);
+                    throw new Error("Error in userEntity searchUser: " + err.message);
+                }
+            }
+        
+        }
+        
+        export default userEntity;
+        
