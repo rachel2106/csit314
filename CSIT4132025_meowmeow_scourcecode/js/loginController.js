@@ -40,7 +40,7 @@ class LoginController {
 
                 switch (userData.userType) {
                     case "userAdmin":
-                        window.location.href = "adminPage.html";
+                        window.location.href = "userAdminPage.html";
                         break;
                     case "platformManager":
                         window.location.href = "platformManagerPage.html";
