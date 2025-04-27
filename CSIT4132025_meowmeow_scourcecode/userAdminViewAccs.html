@@ -95,7 +95,7 @@
                 userList.forEach((userData) => {
                     if (userData.userType !== lastType) {
                         const groupRow = document.createElement("tr");
-                        groupRow.innerHTML = `
+                        groupRow.innerHTML = ` 
                             <td colspan="6" style="font-weight: bold; background-color: #d8bba0;">
                                 ${userData.userType.toUpperCase()}
                             </td>`;
@@ -104,7 +104,7 @@
                     }
 
                     const row = document.createElement("tr");
-                    row.innerHTML = `
+                    row.innerHTML = ` 
                         <td>${userData.userType}</td>
                         <td>${userData.firstName}</td>
                         <td>${userData.lastName}</td>
@@ -113,7 +113,6 @@
                         <td>
                             <button class="update-account-icon" value="${userData.email}">Update</button>
                             <button class="delete-account-icon" value="${userData.email}">Delete</button>
-                            <button class="suspend-account-icon" value="${userData.email}">Suspend</button>
                         </td>`;
                     table.appendChild(row);
                 });
@@ -161,29 +160,30 @@
         });
 
         updateForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const originalEmail = updateForm.dataset.originalEmail;
-            const firstName = document.getElementById("first-name").value;
-            const lastName = document.getElementById("last-name").value;
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
+    e.preventDefault();
+    const originalEmail = updateForm.dataset.originalEmail;
+    const firstName = document.getElementById("first-name").value;
+    const lastName = document.getElementById("last-name").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
-            const controller = new userAdminUpdateAccController();
-            try {
-                await controller.updateUserAccount({
-                    originalEmail,
-                    firstName,
-                    lastName,
-                    newEmail: email,
-                    password
-                });
-                alert("User account updated!");
-                modal.style.display = "none";
-                location.reload();
-            } catch (err) {
-                alert("Error updating user: " + err.message);
-            }
+    const controller = new userAdminUpdateAccController();
+    try {
+        await controller.updateUserAccount({
+            originalEmail,
+            firstName,
+            lastName,
+            newEmail: email,
+            password
         });
+        alert("User account updated!");
+        modal.style.display = "none";
+        location.reload();
+    } catch (err) {
+        alert("Error updating user: " + err.message);
+    }
+});
+
 
         async function fetchUserData(userEmail) {
             const controller = new userAdminViewAllAccController();
@@ -230,7 +230,6 @@
                         <td>
                             <button class="update-account-icon" value="${user.email}">Update</button>
                             <button class="delete-account-icon" value="${user.email}">Delete</button>
-                            <button class="suspend-account-icon" value="${user.email}">Suspend</button>
                         </td>
                     </tr>`;
                     table.innerHTML = row;
@@ -255,37 +254,22 @@
 
         profileTable.addEventListener("click", async (event) => {
             if (event.target.classList.contains("delete-account-icon")) {
-                // 🛠️ FIX: get the 4th column (index 3) for email
-                const userEmail = event.target.closest("tr").querySelectorAll("td")[3].textContent.trim(); 
-
-                if (!userEmail) {
-                    console.error("User email is missing or invalid!");
-                    return;
-                }
+                const userEmail = event.target.value;
+                const controller = new AdminDeleteUserController();
 
                 const confirmDelete = confirm(`Are you sure you want to delete the account with email: ${userEmail}?`);
-                if (!confirmDelete) return;
-
-                const adminController = new AdminDeleteUserController();
-
-                try {
-                    // Call the deleteUser method and get the success message
-                    const message = await adminController.deleteUser(userEmail);
-
-                    // Display the success message in the alert
-                    alert("User has been successfully deleted!");
-
-                    // Remove the user row from the table
-                    event.target.closest("tr").remove();
-                    console.log(`User with email ${userEmail} successfully deleted.`);
-                } catch (error) {
-                    console.error("Error deleting user:", error);
-                    alert(`Failed to delete user: ${error.message}`);
+                if (confirmDelete) {
+                    try {
+                        await controller.deleteUser(userEmail);  // Delete user
+                        alert("User has been deleted.");
+                        location.reload();  // Refresh to update the table
+                    } catch (error) {
+                        alert("Error deleting user: " + error.message);
+                    }
                 }
             }
         });
     });
 </script>
-
 </body>
 </html>
