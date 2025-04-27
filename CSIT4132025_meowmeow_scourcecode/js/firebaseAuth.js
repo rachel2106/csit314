@@ -90,62 +90,30 @@ import {getAuth,
     //Login for users
     async loginUser(email, password, selectedUserType) {
         try {
-            // Sign in with Firebase Authentication
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
+            const userCollection = collection(db, "csit314/AllUsers/UserData");
+            const q = query(userCollection, where("email", "==", email));
+            const querySnapshot = await getDocs(q);
     
-            // Get user data from Firestore
-            const usersData = collection(db, "csit314/AllUsers/UserData");
-            const userDocRef = doc(usersData, user.email);
-            const userDocSnap = await getDoc(userDocRef);
-    
-            if (userDocSnap.exists()) {
-                const userData = userDocSnap.data();
-    
-                // Validate account type
-                if (userData.userType !== selectedUserType) {
-                    return { 
-                        status: "error", 
-                        message: `Incorrect account type. You registered as ${userData.userType}.`
-                    };
-                }
-    
-                // Return the user data upon successful login
-                return { 
-                    status: "success", 
-                    message: "Login successful", 
-                    userData 
-                };
-            } else {
-                return { 
-                    status: "error", 
-                    message: "User not found in Firestore." 
-                };
+            if (querySnapshot.empty) {
+                return { status: "error", message: "No user found with this email." };
             }
+    
+            const userData = querySnapshot.docs[0].data();
+    
+            // Compare the stored password
+            if (userData.password !== password) {
+                return { status: "error", message: "Incorrect password." };
+            }
+    
+            if (userData.userType !== selectedUserType) {
+                return { status: "error", message: `Incorrect account type. You registered as ${userData.userType}.` };
+            }
+    
+            // Manual "authentication" successful
+            return { status: "success", message: "Login successful", userData };
         } catch (error) {
-            console.error("Login failed:", error.code, error.message);
-            let message;
-            switch (error.code) {
-                case "auth/user-not-found":
-                    message = "No account found with this email.";
-                    break;
-                case "auth/wrong-password":
-                    message = "Incorrect password. Please try again.";
-                    break;
-                case "auth/invalid-email":
-                    message = "Invalid email format.";
-                    break;
-                case "auth/invalid-credential":
-                    message = "Invalid email or password.";
-                    break;
-                default:
-                    message = "Login failed. Please try again.";
-            }
-    
-            return { 
-                status: "error", 
-                message 
-            };
+            console.error("Login failed:", error.message);
+            return { status: "error", message: "Login failed. Please try again." };
         }
     }
 
@@ -236,39 +204,34 @@ import {getAuth,
         // Update user account by admin
         async updateUserAcc(updatedUser) {
             const { originalEmail, firstName, lastName, newEmail, password } = updatedUser;
-    
-            // 1. Update Firestore
+        
+            // Validate that the required fields are provided
+            if (!originalEmail || !firstName || !lastName || !newEmail || !password) {
+                console.error("Error: Missing required fields for user update.");
+                return { success: false, message: "Missing required fields." };
+            }
+        
             try {
-                const userRef = doc(this.db, "csit314/AllUsers/UserData", originalEmail);  // Assuming users are stored by email
+                console.log("Updating user data in Firestore:", updatedUser);
+        
+                // Reference to the Firestore document for the user
+                const userRef = doc(this.db, "csit314/AllUsers/UserData", originalEmail);
+                
+                // Update only Firestore data (not Firebase Authentication)
                 await updateDoc(userRef, {
                     firstName: firstName,
                     lastName: lastName,
                     email: newEmail,
+                    password: password, // You may want to hash the password if storing it in Firestore
                 });
+        
+                console.log("User data successfully updated in Firestore.");
+        
+                return { success: true, message: "User updated successfully in Firestore." };
             } catch (error) {
                 console.error("Error updating Firestore user:", error);
-                throw new Error("Firestore update failed.");
+                return { success: false, message: `Error updating Firestore user: ${error.message}` };
             }
-    
-            // 2. Update Firebase Authentication (if email or password is updated)
-            try {
-                const currentUser = this.auth.currentUser;
-    
-                if (currentUser) {
-                    if (newEmail && newEmail !== originalEmail) {
-                        await updateEmail(currentUser, newEmail);  // Update email
-                    }
-    
-                    if (password) {
-                        await updatePassword(currentUser, password);  // Update password
-                    }
-                }
-            } catch (error) {
-                console.error("Error updating Firebase Authentication user:", error);
-                throw new Error("Firebase Auth update failed.");
-            }
-    
-            return { success: true, message: 'User updated successfully.' };
         }
 
 
@@ -372,17 +335,17 @@ import {getAuth,
                 const usersCollectionRef = collection(this.db, 'csit314/AllUsers/UserData');
                 const q = query(usersCollectionRef, where('email', '==', userEmail));
                 const querySnapshot = await getDocs(q);
-    
+        
                 if (querySnapshot.empty) {
                     throw new Error("No user found with this email.");
                 }
-    
-                // Assuming email is unique
-                querySnapshot.forEach(async (docSnap) => {
+        
+                // Correct way: use for...of to await each deleteDoc
+                for (const docSnap of querySnapshot.docs) {
                     await deleteDoc(docSnap.ref);
                     console.log(`Deleted Firestore document for email: ${userEmail}`);
-                });
-    
+                }
+        
                 return { success: true };
             } catch (error) {
                 console.error("Error deleting Firestore user:", error);
@@ -390,8 +353,66 @@ import {getAuth,
             }
         }
         
-    }
-    
-      
 
+
+        // Update user account by admin (Firestore update)
+        async updateUserInFirestore(originalEmail, firstName, lastName, newEmail, password) {
+            const cleanedEmail = originalEmail.trim().toLowerCase();  
+            const userCollection = collection(db, "csit314/AllUsers/UserData"); 
+        
+            // Query Firestore by email instead of assuming it's the document ID
+            const q = query(userCollection, where("email", "==", cleanedEmail));
+            const querySnapshot = await getDocs(q);
+        
+            if (querySnapshot.empty) {
+                console.error("No user found with email:", cleanedEmail);
+                return { status: "error", message: "User not found in Firestore." };
+            } 
+        
+            // Get the first matching document
+            const userDoc = querySnapshot.docs[0];
+            console.log("User document found:", userDoc.data());
+        
+            // Get the document reference for updating
+            const userRef = userDoc.ref;
+        
+            try {
+                const updatedData = {
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: newEmail,
+                    password: password,
+                };
+        
+                await updateDoc(userRef, updatedData);
+                console.log("User updated successfully in Firestore");
+        
+                return { status: "success", message: "User updated successfully." };
+            } catch (error) {
+                console.error("Error updating Firestore user:", error);
+                return { status: "error", message: "Error updating user in Firestore." };
+            }
+        }
+
+        // inside Firebase class
+    async updateUserAuth(newEmail, newPassword) {
+    const user = this.auth.currentUser;
+    try {
+        if (newEmail) {
+            await updateEmail(user, newEmail);
+            console.log("Email updated successfully in Firebase Auth.");
+        }
+        if (newPassword) {
+            await updatePassword(user, newPassword);
+            console.log("Password updated successfully in Firebase Auth.");
+        }
+    } catch (error) {
+        console.error("Error updating Firebase Auth:", error);
+        throw error;
+    }
+}
+        
+    }
+    export {db, Firebase}
+      
 
