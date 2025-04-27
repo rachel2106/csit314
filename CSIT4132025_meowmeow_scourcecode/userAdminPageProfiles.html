@@ -18,12 +18,15 @@
 
     <main>
         <div class="useradmin-viewAccs">
-            Welcome to User Admin page
+            Welcome to User Admin Profile page
         </div> 
 
         <div class="userAdmin-viewContainer" id="admin-viewContiner">
             <div class="useradmin-viewContainerHeader">
-                <h2 class="viewUserAcc">View User Accounts:</h2>
+                <h2 class="viewUserAcc">View User Profiles:</h2>
+                <input type="text" id="search-id" placeholder="Email" />
+                <button class="adminBtn" id="admin-search-button">Search</button>
+                <a href="userAdminCreateAcc.html" class="adminCreateBtn" id="admin-create-button">Create Account</a>
                 
             </div>
 
@@ -56,11 +59,12 @@
     </script>
 
     <script type="module">
-        import { userAdminAllProfilesController } from './js/userAdminAllProfilesController.js';
 
-        
+        import {userAdminAllProfilesController} from "./js/userAdminAllProfilesController.js";
 
-class AdminProfilePage {
+
+    class AdminProfilePage {
+    //retrieve from firestore all profiles
     async getAllProfiles() {
         const controller = new userAdminAllProfilesController();
         return await controller.getAllProfiles();
@@ -120,6 +124,7 @@ class AdminProfilePage {
     }
 }
 
+
 window.addEventListener("DOMContentLoaded", async () => {
     const adminPage = new AdminProfilePage();
     const profiles = await adminPage.getAllProfiles();
@@ -127,5 +132,61 @@ window.addEventListener("DOMContentLoaded", async () => {
 });
 
     </script>
+
+<script type="module">
+
+    import { userAdminSearchProfileController } from "./js/userAdminSearchProfileController.js";
+    import { userAdminAllProfilesController } from "./js/userAdminAllProfilesController.js";
+
+document.addEventListener('DOMContentLoaded', () => {
+    const searchProfileBtn = document.getElementById('admin-search-button');
+    const resetProfileBtn = document.getElementById('admin-reset-button');
+    const searchProfileInput = document.getElementById('search-id');
+    const profileTable = document.getElementById('admin-table');
+
+    const controller = new userAdminSearchProfileController(); // Assume this is the controller you've set up
+
+    // Search Button Logic
+    searchProfileBtn.addEventListener('click', async () => {
+        const email = searchProfileInput.value.trim().toLowerCase();
+        profileTable.querySelector("tbody").innerHTML = ""; // Clear previous table rows
+
+        if (!email) {
+            profileTable.querySelector("tbody").innerHTML = `<tr><td colspan="5">Please enter an email to search profiles.</td></tr>`;
+            return;
+        }
+
+        profileTable.querySelector("tbody").innerHTML = `<tr><td colspan="5">Searching...</td></tr>`; // Show searching state
+
+        try {
+            const profiles = await controller.searchProfileByEmail(email); // Search function logic
+
+            if (profiles && profiles.length > 0) {
+                let rows = "";
+                profiles.forEach(profile => {
+                    rows += `
+                        <tr>
+                            <td>${profile?.email ?? "Unknown"}</td>
+                            <td>${profile?.profileName ?? "Unknown"}</td>
+                            <td>${profile?.status ?? "Unknown"}</td>
+                            <td>${profile?.createdDate ?? "No Date"}</td>
+                            <td>${profile?.lastUpdated ?? "No Update"}</td>
+                        </tr>`;
+                });
+                profileTable.querySelector("tbody").innerHTML = rows; // Populate table with profiles
+            } else {
+                profileTable.querySelector("tbody").innerHTML = `<tr><td colspan="5">No profiles found for that email.</td></tr>`;
+            }
+        } catch (error) {
+            console.error("Search error:", error);
+            profileTable.querySelector("tbody").innerHTML = `<tr><td colspan="5">An error occurred while searching profiles.</td></tr>`;
+        }
+    });
+
+    
+});
+</script>
+
+
 </body>
 </html>
