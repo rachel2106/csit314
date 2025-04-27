@@ -24,7 +24,6 @@
                 <h2 class="viewUserAcc">View User Accounts:</h2>
                 <input type="text" id="search-id" placeholder="Email" />
                 <button class="adminBtn" id="admin-search-button">Search</button>
-                <button class="adminBtn" id="admin-reset-button">Reset</button>
                 <a href="userAdminCreateAcc.html" class="adminCreateBtn" id="admin-create-button">Create Account</a>
             </div>
 
@@ -193,98 +192,100 @@
         }
     </script>
 
-    <script type="module">
+<script type="module">
+    import { userAdminSearchUserController } from "./js/userAdminSearchUserController.js";
+    import { userAdminViewAllAccController } from './js/userAdminViewAllAccController.js';
 
-import { userAdminSearchUserController } from "./js/userAdminSearchUserController.js";
-import { userAdminViewAllAccController } from './js/userAdminViewAllAccController.js';
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchBtn = document.getElementById('admin-search-button');
+        const resetBtn = document.getElementById('admin-reset-button');
+        const searchInput = document.getElementById('search-id');
+        const table = document.getElementById('data-table');
 
-document.addEventListener('DOMContentLoaded', () => {
-    const searchBtn = document.getElementById('admin-search-button');
-    const resetBtn = document.getElementById('admin-reset-button');
-    const searchInput = document.getElementById('search-id');
-    const table = document.getElementById('data-table');
+        const controller = new userAdminSearchUserController();
 
-    const controller = new userAdminSearchUserController();
+        // Search button
+        searchBtn.addEventListener('click', async () => {
+            const email = searchInput.value.trim().toLowerCase();
+            table.innerHTML = ""; // Clear previous table rows
 
-    searchBtn.addEventListener('click', async () => {
-        const email = searchInput.value.trim().toLowerCase();
-        table.innerHTML = ""; // Clear previous table rows
+            if (!email) {
+                table.innerHTML = `<tr><td colspan="6">Please enter an email to search.</td></tr>`;
+                return;
+            }
 
-        if (!email) {
-            table.innerHTML = `<tr><td colspan="6">Please enter an email to search.</td></tr>`;
-            return;
-        }
+            table.innerHTML = `<tr><td colspan="6">Searching...</td></tr>`; // Indicating a search is in progress
 
-        table.innerHTML = `<tr><td colspan="6">Searching...</td></tr>`;
-
-        try {
-            const user = await controller.searchUser(email);
-            console.log("User object:", user); // Debugging log
-
-            if (user) {
-                const row = `
-                    <tr><td colspan="6" style="font-weight: bold; background-color: #d8bba0;">
-                        ${user?.userType ? user.userType.toUpperCase() : "Unknown Type"}
-                    </td></tr>
+            try {
+                const user = await controller.searchUser(email);
+                if (user) {
+                    const row = `
+                    <tr><td colspan="6" style="font-weight: bold; background-color: #d8bba0;">${user.userType.toUpperCase()}</td></tr>
                     <tr>
-                        <td>${user.userType ?? "Unknown"}</td>
-                        <td>${user.firstName ?? "Unknown"}</td>
-                        <td>${user.lastName ?? "Unknown"}</td>
-                        <td><a href="userDetails.html?email=${user.email}">${user.email ?? "No Email"}</a></td>
-                        <td>${user.userStatus ?? "Unknown"}</td>
+                        <td>${user.userType}</td>
+                        <td>${user.firstName}</td>
+                        <td>${user.lastName}</td>
+                        <td><a href="userDetails.html?email=${user.email}">${user.email}</a></td>
+                        <td>${user.userStatus}</td>
                         <td>
                             <button class="update-account-icon" value="${user.email}">Update</button>
                             <button class="delete-account-icon" value="${user.email}">Delete</button>
                             <button class="suspend-account-icon" value="${user.email}">Suspend</button>
                         </td>
                     </tr>`;
-                table.innerHTML = row;
-            } else {
-                table.innerHTML = `<tr><td colspan="6">No user found with that email.</td></tr>`;
+                    table.innerHTML = row;
+                } else {
+                    table.innerHTML = `<tr><td colspan="6">No user found with that email.</td></tr>`;
+                }
+            } catch (error) {
+                console.error("Search error:", error);
+                table.innerHTML = `<tr><td colspan="6">An error occurred while searching.</td></tr>`;
             }
-        } catch (error) {
-            console.error("Search error:", error);
-            table.innerHTML = `<tr><td colspan="6">An error occurred while searching.</td></tr>`;
-        }
+        });
+        
     });
+</script>
 
-    resetBtn.addEventListener('click', async () => {
-        searchInput.value = "";
-        const viewController = new userAdminViewAllAccController();
-        const allUsers = await viewController.getUserList();
+<script type="module">
+    //admin delete user
+    import { AdminDeleteUserController } from "./js/userAdminDeleteUserController.js"; // Import the controller
 
-        table.innerHTML = "";
-        allUsers.sort((a, b) => a.userType.localeCompare(b.userType));
+    document.addEventListener("DOMContentLoaded", () => {
+        const profileTable = document.getElementById("admin-table");
 
-        let lastType = "";
-        allUsers.forEach(user => {
-            if (user.userType !== lastType) {
-                table.innerHTML += `<tr><td colspan="6" style="font-weight: bold; background-color: #d8bba0;">
-                    ${user.userType.toUpperCase()}</td></tr>`;
-                lastType = user.userType;
+        profileTable.addEventListener("click", async (event) => {
+            if (event.target.classList.contains("delete-account-icon")) {
+                // 🛠️ FIX: get the 4th column (index 3) for email
+                const userEmail = event.target.closest("tr").querySelectorAll("td")[3].textContent.trim(); 
+
+                if (!userEmail) {
+                    console.error("User email is missing or invalid!");
+                    return;
+                }
+
+                const confirmDelete = confirm(`Are you sure you want to delete the account with email: ${userEmail}?`);
+                if (!confirmDelete) return;
+
+                const adminController = new AdminDeleteUserController();
+
+                try {
+                    // Call the deleteUser method and get the success message
+                    const message = await adminController.deleteUser(userEmail);
+
+                    // Display the success message in the alert
+                    alert("User has been successfully deleted!");
+
+                    // Remove the user row from the table
+                    event.target.closest("tr").remove();
+                    console.log(`User with email ${userEmail} successfully deleted.`);
+                } catch (error) {
+                    console.error("Error deleting user:", error);
+                    alert(`Failed to delete user: ${error.message}`);
+                }
             }
-
-            table.innerHTML += `
-                <tr>
-                    <td>${user.userType}</td>
-                    <td>${user.firstName}</td>
-                    <td>${user.lastName}</td>
-                    <td><a href="userDetails.html?email=${user.email}">${user.email}</a></td>
-                    <td>${user.userStatus}</td>
-                    <td>
-                        <button class="update-account-icon" value="${user.email}">Update</button>
-                        <button class="delete-account-icon" value="${user.email}">Delete</button>
-                        <button class="suspend-account-icon" value="${user.email}">Suspend</button>
-                    </td>
-                </tr>`;
         });
     });
-});
-
-  </script>
-
-
-
+</script>
 
 </body>
 </html>
