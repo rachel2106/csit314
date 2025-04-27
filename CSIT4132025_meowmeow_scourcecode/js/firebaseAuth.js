@@ -322,8 +322,6 @@ import {getAuth,
 
 
         //searching for user based on email
-        // Using the Firebase instance for Firestore access
-        // Inside FirebaseClass or wherever you're calling searchUser
         async searchUser(searchEmail) {
             try {
                 const cleanedEmail = searchEmail.trim().toLowerCase();
@@ -343,9 +341,57 @@ import {getAuth,
             }
         }
     
+
+        //search by usertype for profile admin
+        async searchProfileByUserType(userType) {
+            try {
+                const cleanedUserType = userType.trim().toLowerCase();
+                const qx = query(
+                    collection(db, "CSIT314/AllUsers/UserData"), // Correct Firestore path
+                    where("userType", "==", cleanedUserType) // Search by userType
+                );
+        
+                const querySnapshot = await getDocs(qx);
+        
+                if (querySnapshot.empty) {
+                    console.warn("No profiles found for userType:", cleanedUserType);
+                    return [];
+                }
+        
+                return querySnapshot.docs.map(doc => doc.data()); // Return profile data
+            } catch (err) {
+                console.error("Firestore error:", err);
+                throw new Error("Error searching Firestore by userType: " + err.message);
+            }
+        }
+
+        //admin deleting user in admin page
+        async deleteUser(userEmail) {
+            try {
+                // Get user document based on email
+                const usersCollectionRef = collection(this.db, 'csit314/AllUsers/UserData');
+                const q = query(usersCollectionRef, where('email', '==', userEmail));
+                const querySnapshot = await getDocs(q);
     
-
+                if (querySnapshot.empty) {
+                    throw new Error("No user found with this email.");
+                }
+    
+                // Assuming email is unique
+                querySnapshot.forEach(async (docSnap) => {
+                    await deleteDoc(docSnap.ref);
+                    console.log(`Deleted Firestore document for email: ${userEmail}`);
+                });
+    
+                return { success: true };
+            } catch (error) {
+                console.error("Error deleting Firestore user:", error);
+                throw error;
+            }
+        }
         
-        
+    }
+    
+      
 
-}
+
