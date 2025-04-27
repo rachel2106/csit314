@@ -1,4 +1,4 @@
-import { userEntity } from "./userEntity.js";
+import { userEntity } from "./userEntity.js";  // Import the UserEntity class
 
 class LoginController {
     constructor() {
@@ -33,7 +33,7 @@ class LoginController {
         }
 
         try {
-            const result = await this.user.loginToDatabase(email, password, selectedType);
+            const result = await this.user.loginUser(email, password, selectedType);
 
             if (result.status === "success") {
                 const userData = result.userData;
