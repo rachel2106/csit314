@@ -88,6 +88,24 @@ export class userEntity {
                 }
             }
         
+
+
+            // Admin delete user
+            async deleteUser(userEmail) {
+                return firebase.deleteUser(userEmail)
+                    .then(result => {
+                        console.log(`User with email ${userEmail} has been successfully deleted.`);
+                        return result;
+                    })
+                    .catch(error => {
+                        console.error(`Failed to delete user with email ${userEmail}:`, error);
+                        throw error; // Pass error upwards
+                    });
+            }
+
+              
+
+        
         }
         
         export default userEntity;
