@@ -250,38 +250,58 @@ import {getAuth,
                     };
                 }
         
-                // Create user in Firebase Auth
-                const userCredential = await createUserWithEmailAndPassword(
-                    this.auth,
-                    newUser.userEmail,
-                    newUser.userPass
-                );
-                const user = userCredential.user;
+                // Check if user already exists in Firestore based on email
+                const userCollectionRef = collection(this.db, "csit314/AllUsers/UserData");
+                const q = query(userCollectionRef, where("email", "==", newUser.userEmail));
+                const querySnapshot = await getDocs(q);
         
-                // Store user in Firestore
-                const userDocRef = doc(this.db, "csit314/AllUsers/UserData", user.email);
-                await setDoc(userDocRef, {
-                    firstName: newUser.firstName,
-                    lastName: newUser.lastName,
-                    email: user.email,
-                    password: newUser.userPass,
-                    userType: userTypeFormatted,
-                    userStatus: "Active"
-                });
+                if (!querySnapshot.empty) {
+                    // If email exists, allow duplicate by creating a new unique document ID
+                    const timestamp = new Date().getTime(); // Create a unique timestamp
+                    const userDocRef = doc(this.db, "csit314/AllUsers/UserData", `user_${timestamp}`);
         
-                return {
-                    status: "success",
-                    message: "User created successfully",
-                    userEmail: user.email
-                };
+                    // Store the user in Firestore
+                    await setDoc(userDocRef, {
+                        firstName: newUser.firstName,
+                        lastName: newUser.lastName,
+                        email: newUser.userEmail, // Keep the email
+                        password: newUser.userPass, // Store password (consider hashing it)
+                        userType: userTypeFormatted,
+                        userStatus: "Active"
+                    });
+        
+                    return {
+                        status: "success",
+                        message: "User created successfully with duplicate email allowed.",
+                        userEmail: newUser.userEmail
+                    };
+                } else {
+                    // If email doesn't exist, create the user with email as the document ID
+                    const userDocRef = doc(this.db, "csit314/AllUsers/UserData", newUser.userEmail);
+                    await setDoc(userDocRef, {
+                        firstName: newUser.firstName,
+                        lastName: newUser.lastName,
+                        email: newUser.userEmail,
+                        password: newUser.userPass, // Store password (consider hashing it)
+                        userType: userTypeFormatted,
+                        userStatus: "Active"
+                    });
+        
+                    return {
+                        status: "success",
+                        message: "User created successfully",
+                        userEmail: newUser.userEmail
+                    };
+                }
             } catch (error) {
-                console.error("Firebase createUserByAdmin error:", error);
+                console.error("Error creating user in Firestore:", error);
                 return {
                     status: "error",
                     message: error.message
                 };
             }
         }
+        
 
 
         //searching for user based on email
