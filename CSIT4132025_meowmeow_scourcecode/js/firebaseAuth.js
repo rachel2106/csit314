@@ -425,34 +425,6 @@ import {getAuth,
     }
 }
 
-async deleteProfile(userType) {
-    try {
-        // Reference to the profiles collection
-        const profilesCollectionRef = collection(this.db, 'csit314/AllUsers/UserData');
-        
-        // Create a query to filter by userType
-        const q = query(profilesCollectionRef, where('userType', '==', userType));
-        
-        // Execute the query
-        const querySnapshot = await getDocs(q);
-
-        // Check if there are any profiles with the specified userType
-        if (querySnapshot.empty) {
-            throw new Error(`No profiles found for userType: ${userType}`);
-        }
-
-        // Loop through and delete all profiles that match the userType
-        for (const docSnap of querySnapshot.docs) {
-            await deleteDoc(docSnap.ref);
-            console.log(`Deleted profile with userType: ${userType}`);
-        }
-
-        return { success: true, message: `Profiles with userType ${userType} successfully deleted.` };
-    } catch (error) {
-        console.error("Error deleting profiles:", error.message);
-        return { success: false, message: `Error deleting profiles: ${error.message}` };
-    }
-}
 
 
 
@@ -504,22 +476,41 @@ async deleteProfile(userType) {
         }
 
         // inside Firebase class
-    async updateUserAuth(newEmail, newPassword) {
-    const user = this.auth.currentUser;
-    try {
-        if (newEmail) {
-            await updateEmail(user, newEmail);
-            console.log("Email updated successfully in Firebase Auth.");
+        async updateUserAcc(updatedUser) {
+            const { originalEmail, firstName, lastName, newEmail, password } = updatedUser;
+        
+            // Validate that the required fields are provided
+            if (!originalEmail || !firstName || !lastName || !newEmail || !password) {
+                console.error("Error: Missing required fields for user update.");
+                return { success: false, message: "Missing required fields." };
+            }
+        
+            try {
+                console.log("Updating user data in Firestore:", updatedUser);
+        
+                // Reference to the Firestore document for the user
+                const userRef = doc(this.db, "csit314/AllUsers/UserData", originalEmail);
+                
+                // Update only Firestore data (not Firebase Authentication)
+                await updateDoc(userRef, {
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: newEmail,
+                    password: password, // You may want to hash the password if storing it in Firestore
+                });
+        
+                console.log("User data successfully updated in Firestore.");
+        
+                // Refresh the page after the update
+                window.location.reload();
+        
+                return { success: true, message: "User updated successfully in Firestore." };
+            } catch (error) {
+                console.error("Error updating Firestore user:", error);
+                return { success: false, message: `Error updating Firestore user: ${error.message}` };
+            }
         }
-        if (newPassword) {
-            await updatePassword(user, newPassword);
-            console.log("Password updated successfully in Firebase Auth.");
-        }
-    } catch (error) {
-        console.error("Error updating Firebase Auth:", error);
-        throw error;
-    }
-}
+        
 
 
 
