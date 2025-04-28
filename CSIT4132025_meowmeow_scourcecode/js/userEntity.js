@@ -1,65 +1,72 @@
 import { db } from "./firebaseAuth.js";
 import Firebase from "./firebaseAuth.js";
-import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { collection, query, where, getDocs, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 
 
 const firebase = new Firebase(); // Use the existing Firebase instance initialized in firebaseAuth.js
 
 export class userEntity {
+
+    constructor(){
+        this.db = db;
+    }
+
     // Create a user in both Firebase Auth and Firestore
     async createToDB(newUser) {
         try {
-            // Call Firebase's registerUser method to handle Firestore user creation
-            await firebase.registerUser(newUser);
-            console.log("User created successfully in Firestore.");
+            // Use the email as the document ID
+            const userDocRef = doc(this.db, "csit314/AllUsers/UserData", newUser.userEmail); // db is already imported
+
+            // Create the document with the email as ID
+            await setDoc(userDocRef, {
+                firstName: newUser.firstName,
+                lastName: newUser.lastName,
+                email: newUser.userEmail,
+                password: newUser.userPass,
+                userType: newUser.userType,
+                userStatus: "Active",
+            });
+
+            console.log("User successfully added to Firestore.");
         } catch (error) {
-            console.error("Error creating user:", error);
-            throw new Error("Registration failed.");
+            console.error("Error during Firestore registration:", error);
+            throw new Error("Registration failed in Firestore.");
         }
     }
 
-    // Login user by checking Firestore (no Firebase Auth)
-    async loginUser(email, password, selectedUserType) {
-        try {
-            // Ensure the Firestore collection path is correct
-            const userCollection = collection(db, "csit314/AllUsers/UserData");
     
-            // Construct query to find the user with the matching email
-            const q = query(userCollection, where("email", "==", email));
-            console.log("Firestore Query:", q); // Debug log to check query
     
-            // Execute the query and get the results
-            const querySnapshot = await getDocs(q);
-            console.log("Query Snapshot Size:", querySnapshot.size); // Check if there are results
-    
-            // If no matching user, return error
-            if (querySnapshot.empty) {
-                return { status: "error", message: "No user found with this email." };
-            }
-    
-            // Extract the user data from the first document
-            const userData = querySnapshot.docs[0].data();
-            console.log("Found user data:", userData); // Debug log to check user data
-    
-            // Compare the stored password from Firestore with the provided password
-            if (userData.password !== password) {
-                return { status: "error", message: "Incorrect password." };
-            }
-    
-            // Check if the user type matches the selected user type
-            if (userData.userType !== selectedUserType) {
-                return { status: "error", message: `Incorrect account type. You registered as ${userData.userType}.` };
-            }
-    
-            // If everything is correct, return success
-            return { status: "success", message: "Login successful", userData };
-    
-        } catch (error) {
-            console.error("Login error:", error.message);
-            return { status: "error", message: "Login failed. Please try again." };
+
+   
+    // Login user by checking Firestore directly (no Firebase Auth)
+    async loginUser(email, password, userType) {
+    try {
+        console.log("Login attempt with userType:", userType);  // Debugging log
+        const usersCollection = collection(db, "csit314/AllUsers/UserData");
+        const q = query(usersCollection, where("email", "==", email), where("userType", "==", userType));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            return { status: "error", message: "No user found with this email and profile." };
         }
+
+        const userDoc = querySnapshot.docs[0];
+        const userData = userDoc.data();
+
+        // Check password
+        if (userData.password === password) {
+            return { status: "success", userData };
+        } else {
+            return { status: "error", message: "Incorrect password." };
+        }
+    } catch (err) {
+        console.error("Error during login:", err.message);
+        throw new Error("Login failed.");
     }
+}
+
+
        
 
     // Fetch the user list from Firestore (if needed for admin purposes)
