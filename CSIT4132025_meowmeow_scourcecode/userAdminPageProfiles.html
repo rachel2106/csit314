@@ -24,10 +24,7 @@
         <div class="userAdmin-viewContainer" id="admin-viewContiner">
             <div class="useradmin-viewContainerHeader">
                 <h2 class="viewUserAcc">View User Profiles:</h2>
-                <input type="text" id="search-id" placeholder="Email" />
-                <button class="adminBtn" id="admin-search-button">Search</button>
-                <a href="userAdminCreateAcc.html" class="adminCreateBtn" id="admin-create-button">Create Account</a>
-                
+                <a href="userAdminCreateProfile.html" class="adminCreateProfileBtn" id="admin-create-profile">Create Profile</a>
             </div>
 
             <div class="admin-viewtable" id="adminView">
@@ -59,38 +56,69 @@
     </script>
 
     <script type="module">
+        import { userAdminAllProfilesController } from "./js/userAdminAllProfilesController.js";
+        import { profileEntity } from "./js/profileEntity.js";
 
-        import {userAdminAllProfilesController} from "./js/userAdminAllProfilesController.js";
+        class AdminProfilePage {
+            constructor(){
+            this.controller = new userAdminAllProfilesController();
+            }
 
+            // Helper function to extract a number from lastName
+                extractNumberFromLastName(lastName) {
+                    const match = lastName.match(/\d+/);
+                    return match ? parseInt(match[0], 10) : 0;  // Default to 0 if no number found
+            }
 
-    class AdminProfilePage {
-    //retrieve from firestore all profiles
-    async getAllProfiles() {
-        const controller = new userAdminAllProfilesController();
-        return await controller.getAllProfiles();
-    }
+            // Retrieve all profiles from Firestore
+            async getAllProfiles() {
+                const controller = new userAdminAllProfilesController();
+                return await controller.getAllProfiles();
+            }
 
+       
+    // Display all profiles in the table
+    // Display all profiles in the table
     displayProfiles(profileList) {
         const table = document.getElementById("data-table");
         table.innerHTML = "";
 
+        const displayedUserTypes = new Set();
+
+        // 👉 Sort by firstName alphabetically, then by lastName numerically
+        profileList.sort((a, b) => {
+            // First compare by firstName alphabetically
+            const firstNameCompare = a.firstName.localeCompare(b.firstName);
+            if (firstNameCompare !== 0) return firstNameCompare;
+
+            // If firstName is the same, compare numerically by lastName
+            const numA = this.extractNumberFromLastName(a.lastName);
+            const numB = this.extractNumberFromLastName(b.lastName);
+            return numA - numB;
+        });
+
         profileList.forEach((profile) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${profile.userType || "N/A"}</td>
-                <td>${profile.userStatus || "Unknown"}</td>
-                <td>
-                    <button class="search-profile-btn" data-type="${profile.userType}">Search Profile</button>
-                    <button class="search-profile-btn" data-type="${profile.userType}">Delete Profile</button>
-                    <button class="search-profile-btn" data-type="${profile.userType}">Suspend Profile</button>
-                </td>
-            `;
-            table.appendChild(row);
+            if (profile.userType && !displayedUserTypes.has(profile.userType)) {
+                displayedUserTypes.add(profile.userType);
+
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${profile.userType.charAt(0).toUpperCase() + profile.userType.slice(1)}</td>
+                    <td>${profile.userStatus || "Active"}</td>
+                    <td>
+                        <button class="search-profile-btn" data-type="${profile.userType}">Search Profile</button>
+                        <button class="delete-profile-btn" data-type="${profile.userType}">Delete Profile</button>
+                    </td>
+                `;
+                table.appendChild(row);
+            }
         });
 
         this.addSearchProfileListeners();
+        this.addDeleteProfileListeners();
     }
 
+    // Search Profile Event Listeners
     addSearchProfileListeners() {
         const searchButtons = document.querySelectorAll(".search-profile-btn");
         searchButtons.forEach(button => {
@@ -101,13 +129,24 @@
         });
     }
 
+    // Display profile details by userType
     async displayProfileDetails(userType) {
-        const controller = new userAdminAllProfilesController();
-        const users = await controller.searchProfile(userType); // Now searching users by userType
+        const users = await this.controller.searchProfile(userType);
         const container = document.getElementById("profile-details-container");
 
         if (users.length > 0) {
             container.innerHTML = `<h3>Users with profile type "${userType}":</h3>`;
+
+            // 👉 Sort inside profile details too (first by firstName and then by lastName numerically)
+            users.sort((a, b) => {
+                const firstNameCompare = a.firstName.localeCompare(b.firstName);
+                if (firstNameCompare !== 0) return firstNameCompare;
+
+                const numA = this.extractNumberFromLastName(a.lastName);
+                const numB = this.extractNumberFromLastName(b.lastName);
+                return numA - numB;
+            });
+
             users.forEach(user => {
                 container.innerHTML += `
                     <div class="profile-card">
@@ -122,71 +161,55 @@
             container.innerHTML = `<p style="color: red;">No users found with profile type "${userType}"</p>`;
         }
     }
+
+    // Delete profiles by userType
+    async deleteProfile(userType) {
+        try {
+            const profileEntityInstance = new profileEntity();
+            const message = await profileEntityInstance.deleteProfileByUserType(userType);
+            alert(message);
+
+            // Remove rows after deletion
+            const rows = document.querySelectorAll("#admin-table tbody tr");
+            rows.forEach(row => {
+                const rowUserType = row.cells[0].textContent.trim().toLowerCase();
+                if (rowUserType === userType.toLowerCase()) {
+                    row.remove();
+                }
+            });
+
+        } catch (error) {
+            alert(`Error deleting profiles with userType "${userType}": ${error.message}`);
+        }
+    }
+
+    // Add Delete button listeners
+    addDeleteProfileListeners() {
+        const deleteButtons = document.querySelectorAll(".delete-profile-btn");
+        deleteButtons.forEach(button => {
+            button.addEventListener("click", async (event) => {
+                const userType = event.target.dataset.type;
+                if (!userType) {
+                    console.error("User type is missing!");
+                    alert("User type is missing. Unable to proceed.");
+                    return;
+                }
+
+                const confirmed = confirm(`Are you sure you want to delete all profiles with the userType "${userType}"?`);
+                if (confirmed) {
+                    await this.deleteProfile(userType);
+                }
+            });
+        });
+    }
 }
 
-
+// Run after DOM is fully loaded
 window.addEventListener("DOMContentLoaded", async () => {
     const adminPage = new AdminProfilePage();
     const profiles = await adminPage.getAllProfiles();
     adminPage.displayProfiles(profiles);
 });
-
     </script>
-
-<script type="module">
-
-    import { userAdminSearchProfileController } from "./js/userAdminSearchProfileController.js";
-    import { userAdminAllProfilesController } from "./js/userAdminAllProfilesController.js";
-
-document.addEventListener('DOMContentLoaded', () => {
-    const searchProfileBtn = document.getElementById('admin-search-button');
-    const resetProfileBtn = document.getElementById('admin-reset-button');
-    const searchProfileInput = document.getElementById('search-id');
-    const profileTable = document.getElementById('admin-table');
-
-    const controller = new userAdminSearchProfileController(); // Assume this is the controller you've set up
-
-    // Search Button Logic
-    searchProfileBtn.addEventListener('click', async () => {
-        const email = searchProfileInput.value.trim().toLowerCase();
-        profileTable.querySelector("tbody").innerHTML = ""; // Clear previous table rows
-
-        if (!email) {
-            profileTable.querySelector("tbody").innerHTML = `<tr><td colspan="5">Please enter an email to search profiles.</td></tr>`;
-            return;
-        }
-
-        profileTable.querySelector("tbody").innerHTML = `<tr><td colspan="5">Searching...</td></tr>`; // Show searching state
-
-        try {
-            const profiles = await controller.searchProfileByEmail(email); // Search function logic
-
-            if (profiles && profiles.length > 0) {
-                let rows = "";
-                profiles.forEach(profile => {
-                    rows += `
-                        <tr>
-                            <td>${profile?.email ?? "Unknown"}</td>
-                            <td>${profile?.profileName ?? "Unknown"}</td>
-                            <td>${profile?.status ?? "Unknown"}</td>
-                            <td>${profile?.createdDate ?? "No Date"}</td>
-                            <td>${profile?.lastUpdated ?? "No Update"}</td>
-                        </tr>`;
-                });
-                profileTable.querySelector("tbody").innerHTML = rows; // Populate table with profiles
-            } else {
-                profileTable.querySelector("tbody").innerHTML = `<tr><td colspan="5">No profiles found for that email.</td></tr>`;
-            }
-        } catch (error) {
-            console.error("Search error:", error);
-            profileTable.querySelector("tbody").innerHTML = `<tr><td colspan="5">An error occurred while searching profiles.</td></tr>`;
-        }
-    });
-
-    
-});
-</script>
-
-
 </body>
 </html>
