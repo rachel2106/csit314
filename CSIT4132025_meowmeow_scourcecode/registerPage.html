@@ -1,92 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
-    <div class="auth-container">
-        <h1>Register New Account</h1>
-        <form id="userRegisterForm">
-            <div class="form-group">
-                <label>User Type</label>
-                <div class="radio-group" style="display: flex; gap: 20px; margin-top: 5px;">
-                    <label style="display: flex; align-items: center; gap: 5px;">
-                        <input type="radio" name="userType" value="cleaners" required>
-                        Cleaners
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 5px;">
-                        <input type="radio" name="userType" value="homeowners" required>
-                        Homeowners
-                    </label>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="name">First Name:</label>
-                <i class="fas fa-user input-icon"></i>
-                <input type="text" id="firstName" required>
-            </div>
-            <div class="form-group">
-                <label for="name">Last Name:</label>
-                <i class="fas fa-user input-icon"></i>
-                <input type="text" id="lastName" required>
-            </div>
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <i class="fas fa-envelope input-icon"></i>
-                <input type="email" id="email" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <i class="fas fa-lock input-icon"></i>
-                <input type="password" id="createPassword" required>
-                <div id="passwordValidationMessage" style="color: red; font-size: 0.9em; margin-top: 5px;"></div>
-                
-            </div>
-            <button type="submit" class="btn">Register</button>
-            <div class="auth-link">
-                <span>Already have an account?</span>
-                <a href="loginPage.html">Login</a>
-            </div>
-        </form>
-    </div>
+  <div class="auth-container">
+    <h1>Register New Account</h1>
+    <form id="userRegisterForm">
+      
+      <!-- Updated Profile Selection -->
+      <div class="form-group">
+        <label for="userType">Select Profile:</label>
+        <select id="userType" required>
+          <option value="" disabled selected>Loading profiles...</option>
+        </select>
+      </div>
 
-    <script>
-        document.getElementById("createPassword").addEventListener("input", validatePassword);
-        
-        function validatePassword() {
-            var password = document.getElementById("createPassword").value;
-            var uppercaseRegex = /[A-Z]/;
-            var numberRegex = /[0-9]/;
-            var symbolRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+      <!-- First Name -->
+      <div class="form-group">
+        <label for="firstName">First Name:</label>
+        <i class="fas fa-user input-icon"></i>
+        <input type="text" id="firstName" required>
+      </div>
 
-            var hasUppercase = uppercaseRegex.test(password);
-            var hasNumber = numberRegex.test(password);
-            var hasSymbol = symbolRegex.test(password);
+      <!-- Last Name -->
+      <div class="form-group">
+        <label for="lastName">Last Name:</label>
+        <i class="fas fa-user input-icon"></i>
+        <input type="text" id="lastName" required>
+      </div>
 
-            var isValid = hasUppercase && hasNumber && hasSymbol;
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <i class="fas fa-envelope input-icon"></i>
+        <input type="email" id="email" required>
+      </div>
 
-            if (!isValid) {
-                document.getElementById("createPassword").setCustomValidity("Password must contain at least one uppercase letter, one number, and one symbol.");
-                document.getElementById("passwordValidationMessage").innerText = "Password must contain at least one uppercase letter, one number, and one symbol.";
-            } else {
-                document.getElementById("createPassword").setCustomValidity("");
-                document.getElementById("passwordValidationMessage").innerText = "";
-            }
-        }
-    </script>
+      <!-- Password -->
+      <div class="form-group">
+        <label for="createPassword">Password:</label>
+        <i class="fas fa-lock input-icon"></i>
+        <input type="password" id="createPassword" required>
+        <div id="passwordValidationMessage" style="color: red; font-size: 0.9em; margin-top: 5px;"></div>
+      </div>
 
-    <!-- The script to handle registration logic will be here -->
-    <script type="module">
-        import { RegistrationController } from "./js/registrationController.js";
+      <!-- Register Button -->
+      <button type="submit" class="btn">Register</button>
 
-        document.addEventListener("DOMContentLoaded", () => {
-            // Initialize the RegistrationController
-            const registrationController = new RegistrationController('userRegisterForm');
-        });
-    </script>
+      <!-- Link to Login -->
+      <div class="auth-link">
+        <span>Already have an account?</span>
+        <a href="loginPage.html">Login</a>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Password Validation Script -->
+  <script>
+    document.getElementById("createPassword").addEventListener("input", validatePassword);
+
+    function validatePassword() {
+      var password = document.getElementById("createPassword").value;
+      var uppercaseRegex = /[A-Z]/;
+      var numberRegex = /[0-9]/;
+      var symbolRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+
+      var hasUppercase = uppercaseRegex.test(password);
+      var hasNumber = numberRegex.test(password);
+      var hasSymbol = symbolRegex.test(password);
+
+      var isValid = hasUppercase && hasNumber && hasSymbol;
+
+      if (!isValid) {
+        document.getElementById("createPassword").setCustomValidity("Password must contain at least one uppercase letter, one number, and one symbol.");
+        document.getElementById("passwordValidationMessage").innerText = "Password must contain at least one uppercase letter, one number, and one symbol.";
+      } else {
+        document.getElementById("createPassword").setCustomValidity("");
+        document.getElementById("passwordValidationMessage").innerText = "";
+      }
+    }
+  </script>
+
+  <!-- Main Registration Script -->
+  <script type="module">
+    import { RegistrationController } from "./js/registrationController.js";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const registrationController = new RegistrationController('userRegisterForm');
+    });
+  </script>
 </body>
 </html>
