@@ -145,9 +145,59 @@
 
     <!-- Modal Logic & Update Form -->
     <script type="module">
-        import { userAdminUpdateAccController } from "./js/userAdminUpdateAccController.js";
-        import { userAdminViewAllAccController } from './js/userAdminViewAllAccController.js';
+    import { userAdminViewAllAccController } from './js/userAdminViewAllAccController.js';
+    import { userAdminUpdateAccController } from './js/userAdminUpdateAccController.js';
 
+    class AdminPage {
+        async getUserList() {
+            const controller = new userAdminViewAllAccController();
+            return await controller.getUserList();
+        }
+
+        displayUserList(userList) {
+            const table = document.getElementById("data-table");
+            table.innerHTML = "";
+
+            userList.sort((a, b) => {
+                const typeCompare = a.userType.localeCompare(b.userType);
+                if (typeCompare !== 0) return typeCompare;
+                const numA = parseInt(a.lastName.match(/\d+/)?.[0] || 0);
+                const numB = parseInt(b.lastName.match(/\d+/)?.[0] || 0);
+                return numA - numB;
+            });
+
+            let lastType = "";
+
+            userList.forEach((userData) => {
+                if (userData.userType !== lastType) {
+                    const groupRow = document.createElement("tr");
+                    groupRow.innerHTML = `<td colspan="6" style="font-weight: bold; background-color: #d8bba0;">${userData.userType.toUpperCase()}</td>`;
+                    table.appendChild(groupRow);
+                    lastType = userData.userType;
+                }
+
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${userData.userType}</td>
+                    <td>${userData.firstName}</td>
+                    <td>${userData.lastName}</td>
+                    <td><a href="userDetails.html?email=${userData.email}">${userData.email}</a></td>
+                    <td>${userData.status}</td>
+                    <td>
+                        <button class="update-account-icon" value="${userData.email}">Update</button>
+                        <button class="delete-account-icon" value="${userData.email}">Delete</button>
+                    </td>`;
+                table.appendChild(row);
+            });
+        }
+    }
+
+    window.addEventListener("DOMContentLoaded", async () => {
+        const admin = new AdminPage();
+        const users = await admin.getUserList();
+        admin.displayUserList(users);
+
+        // --- Modal Setup ---
         const modal = document.getElementById("updateModal");
         const closeModal = document.querySelector(".close-btn");
         const updateForm = document.getElementById("update-form");
@@ -177,37 +227,40 @@
         });
 
         updateForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const originalEmail = updateForm.dataset.originalEmail;
-    const firstName = document.getElementById("first-name").value;
-    const lastName = document.getElementById("last-name").value;
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+            e.preventDefault();
+            const originalEmail = updateForm.dataset.originalEmail;
+            const firstName = document.getElementById("first-name").value;
+            const lastName = document.getElementById("last-name").value;
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
 
-    const controller = new userAdminUpdateAccController();
-    try {
-        await controller.updateUserAccount({
-            originalEmail,
-            firstName,
-            lastName,
-            newEmail: email,
-            password
+            const controller = new userAdminUpdateAccController();
+            try {
+                await controller.updateUserAccount({
+                    originalEmail,
+                    firstName,
+                    lastName,
+                    newEmail: email,
+                    password
+                });
+                alert("User account updated!");
+                modal.style.display = "none";
+
+                // 🔥 Refresh the user list using same admin instance!
+                const users = await admin.getUserList();
+                admin.displayUserList(users);
+            } catch (err) {
+                alert("Error updating user: " + err.message);
+            }
         });
-        alert("User account updated!");
-        modal.style.display = "none";
-        location.reload();
-    } catch (err) {
-        alert("Error updating user: " + err.message);
-    }
-});
-
 
         async function fetchUserData(userEmail) {
             const controller = new userAdminViewAllAccController();
             const userList = await controller.getUserList();
             return userList.find(user => user.email === userEmail);
         }
-    </script>
+    });
+</script>
 
 <script type="module">
     import { userAdminSearchUserController } from "./js/userAdminSearchUserController.js";
