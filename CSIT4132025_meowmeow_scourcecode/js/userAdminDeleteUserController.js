@@ -2,7 +2,7 @@
   import { userEntity } from "./userEntity.js"; // Import the userEntity class
 
 export class AdminDeleteUserController {
-     //Deletes a user by delegating to the userEntity class
+    
     async deleteUser(userEmail) {
         try {
             // Initialize the userEntity instance
