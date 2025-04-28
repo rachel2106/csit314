@@ -56,14 +56,14 @@ import {getAuth,
                 newUser.userPass
             );
             const user = userCredential.user;
-
+    
             // Log the Firebase user
             console.log("User successfully created in Firebase Auth:", user.email);
-
+    
             // Now, add the user to Firestore (excluding password)
             const usersData = collection(db, "csit314/AllUsers/UserData");
             const userDocRef = doc(usersData, user.email); // Use user email as the document ID
-
+    
             // Save user data to Firestore
             await setDoc(userDocRef, {
                 firstName: newUser.firstName,
@@ -73,13 +73,12 @@ import {getAuth,
                 userType: newUser.userType,
                 userStatus: "Active",
             });
-
+    
             console.log("User successfully added to Firestore:", user.email);
-
-
-            //lead users back to login page
+    
+            // Lead users back to login page
             window.location.href = "loginPage.html";
-
+    
         } catch (error) {
             console.error("Error during registration:", error);
             alert("Registration failed. Please try again.");
@@ -88,32 +87,30 @@ import {getAuth,
 
 
     //Login for users
-    async loginUser(email, password, selectedUserType) {
+    async loginUser(email, password, userType) {
         try {
-            const userCollection = collection(db, "csit314/AllUsers/UserData");
-            const q = query(userCollection, where("email", "==", email));
+            const usersCollection = collection(db, "csit314/AllUsers/UserData");
+            const q = query(usersCollection, where("email", "==", email), where("userType", "==", userType));
             const querySnapshot = await getDocs(q);
     
             if (querySnapshot.empty) {
-                return { status: "error", message: "No user found with this email." };
+                return { status: "error", message: "No user found with this email and profile." };
             }
     
-            const userData = querySnapshot.docs[0].data();
+            const userDoc = querySnapshot.docs[0];
+            const userData = userDoc.data();
     
-            // Compare the stored password
-            if (userData.password !== password) {
+            console.log("Fetched User Data:", userData); // Debugging output for user data
+    
+            // Simple password check (plain-text example, consider hashing passwords in production)
+            if (userData.password === password) {
+                return { status: "success", userData };
+            } else {
                 return { status: "error", message: "Incorrect password." };
             }
-    
-            if (userData.userType !== selectedUserType) {
-                return { status: "error", message: `Incorrect account type. You registered as ${userData.userType}.` };
-            }
-    
-            // Manual "authentication" successful
-            return { status: "success", message: "Login successful", userData };
-        } catch (error) {
-            console.error("Login failed:", error.message);
-            return { status: "error", message: "Login failed. Please try again." };
+        } catch (err) {
+            console.error("Error during login:", err.message);
+            throw new Error("Login failed.");
         }
     }
 
@@ -372,7 +369,99 @@ import {getAuth,
                 throw error;
             }
         }
+
+
         
+        // Create new profile in Firestore
+        async createNewProfile(newUser) {
+            try {
+        // Define valid user types
+        const validTypes = ["userAdmin", "platformManager", "cleaners", "homeowners"];
+        const userTypeFormatted = newUser.userType.trim().toLowerCase(); // Ensure lowercase type
+
+        // Check if the userType is valid
+        if (!validTypes.includes(userTypeFormatted)) {
+            return {
+                status: "error",
+                message: `Invalid userType provided: ${newUser.userType}`
+            };
+        }
+
+        // Check if user already exists in Firestore based on email
+        const userCollectionRef = collection(this.db, "csit314/AllUsers/UserData");
+        const q = query(userCollectionRef, where("email", "==", newUser.userEmail));
+        const querySnapshot = await getDocs(q);
+
+        // If user already exists, return an error
+        if (!querySnapshot.empty) {
+            return {
+                status: "error",
+                message: "A user with this email already exists."
+            };
+        }
+
+        // If email doesn't exist, create the user profile in Firestore
+        const userDocRef = doc(userCollectionRef, newUser.userEmail);
+        await setDoc(userDocRef, {
+            firstName: newUser.firstName,
+            lastName: newUser.lastName,
+            email: newUser.userEmail,
+            password: newUser.userPass, // Consider hashing passwords in production
+            userType: userTypeFormatted,
+            userStatus: "Active"
+        });
+
+        return {
+            status: "success",
+            message: "Profile created successfully",
+            userEmail: newUser.userEmail
+        };
+    } catch (error) {
+        console.error("Error creating new profile in Firestore:", error);
+        return {
+            status: "error",
+            message: error.message
+        };
+    }
+}
+
+async deleteProfile(userType) {
+    try {
+        // Reference to the profiles collection
+        const profilesCollectionRef = collection(this.db, 'csit314/AllUsers/UserData');
+        
+        // Create a query to filter by userType
+        const q = query(profilesCollectionRef, where('userType', '==', userType));
+        
+        // Execute the query
+        const querySnapshot = await getDocs(q);
+
+        // Check if there are any profiles with the specified userType
+        if (querySnapshot.empty) {
+            throw new Error(`No profiles found for userType: ${userType}`);
+        }
+
+        // Loop through and delete all profiles that match the userType
+        for (const docSnap of querySnapshot.docs) {
+            await deleteDoc(docSnap.ref);
+            console.log(`Deleted profile with userType: ${userType}`);
+        }
+
+        return { success: true, message: `Profiles with userType ${userType} successfully deleted.` };
+    } catch (error) {
+        console.error("Error deleting profiles:", error.message);
+        return { success: false, message: `Error deleting profiles: ${error.message}` };
+    }
+}
+
+
+
+
+
+
+
+
+
 
 
         // Update user account by admin (Firestore update)
