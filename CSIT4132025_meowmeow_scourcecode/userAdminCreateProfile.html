@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Admin Create Account</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="useradmin-page">
+    <div class="userAdminHeaderBanner">
+        <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img">
+        <a href="userAdminViewAccs.html" id="adminViewAccs">Back</a>
+        <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
+    </div>
+
+    <main>
+        <div class="useradminCreateUser">
+            Welcome to your Create User Account Page
+        </div>
+
+        <form id="createUserForm" class="user-form">
+            <label>First Name: <input type="text" id="firstName" required></label><br>
+            <label>Last Name: <input type="text" id="lastName" required></label><br>
+            <label>Email: <input type="email" id="userEmail" required></label><br>
+            <label>Password: <input type="password" id="userPass" required></label><br>
+                <div id="passwordValidationMessage" style="color: red; font-size: 0.9em; margin-top: 5px;"></div>
+            <label>Account Type:
+                <select id="userType" required>
+                    <option value="userAdmin">User Admin</option>
+                    <option value="platformManager">Platform Manager</option>
+                    <option value="cleaners">Cleaner</option>
+                    <option value="homeowners">Homeowner</option>
+                </select>
+            </label><br><br>
+            <button type="submit">Create Account</button>
+        </form>
+    </main>
+
+    <script>
+        document.getElementById("userPass").addEventListener("input", validatePassword);
+        
+        function validatePassword() {
+            var password = document.getElementById("userPass").value;
+            var uppercaseRegex = /[A-Z]/;
+            var numberRegex = /[0-9]/;
+            var symbolRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+
+            var hasUppercase = uppercaseRegex.test(password);
+            var hasNumber = numberRegex.test(password);
+            var hasSymbol = symbolRegex.test(password);
+
+            var isValid = hasUppercase && hasNumber && hasSymbol;
+
+            if (!isValid) {
+                document.getElementById("userPass").setCustomValidity("Password must contain at least one uppercase letter, one number, and one symbol.");
+                document.getElementById("passwordValidationMessage").innerText = "Password must contain at least one uppercase letter, one number, and one symbol.";
+            } else {
+                document.getElementById("userPass").setCustomValidity("");
+                document.getElementById("passwordValidationMessage").innerText = "";
+            }
+        }
+    </script>
+
+
+<script type="module">
+    import { adminCreateUserController } from "./js/userAdminCreateUserContoller.js";
+    import { userAdminAllProfilesController } from "./js/userAdminAllProfilesController.js";
+
+    const form = document.getElementById('createUserForm');
+    const userTypeSelect = document.getElementById('userType');
+
+    // Load available user types from Firestore
+    async function loadUserTypes() {
+        const controller = new userAdminAllProfilesController();
+        const profiles = await controller.getAllProfiles();
+
+        console.log("Loaded profiles:", profiles);
+
+        userTypeSelect.innerHTML = `<option value="" disabled selected>Select user type</option>`; // Reset first
+
+        const uniqueUserTypes = new Set();
+
+        profiles.forEach(profile => {
+            if (profile.userType) {
+                uniqueUserTypes.add(profile.userType.trim());
+            }
+        });
+
+        uniqueUserTypes.forEach(userType => {
+            const option = document.createElement('option');
+            option.value = userType;
+            option.textContent = userType.charAt(0).toUpperCase() + userType.slice(1);
+            userTypeSelect.appendChild(option);
+        });
+    }
+
+    // Run loadUserTypes when page loads
+    document.addEventListener('DOMContentLoaded', loadUserTypes);
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const newUserObj = {
+            firstName: document.getElementById("firstName").value,
+            lastName: document.getElementById("lastName").value,
+            userEmail: document.getElementById("userEmail").value,
+            userPass: document.getElementById("userPass").value,
+            userType: document.getElementById("userType").value,
+        };
+
+        const controller = new adminCreateUserController();
+        const result = await controller.createUserAcc(newUserObj);
+
+        if (result.status === "success") {
+            alert("User created successfully!");
+            console.log("User created successfully:", newUserObj);  // Log the user details to the console
+            window.location.href = "userAdminViewAccs.html";
+        } else {
+            alert("Failed to create user: " + result.message);
+        }
+    });
+</script>
+
+</body>
+</html>
