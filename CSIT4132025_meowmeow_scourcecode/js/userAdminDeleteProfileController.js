@@ -1,4 +1,3 @@
-
 // userAdminDeleteProfileController.js
 
 import { db } from './firebaseAuth.js';  // Make sure you import your Firestore configuration
