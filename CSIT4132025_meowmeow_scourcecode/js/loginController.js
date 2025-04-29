@@ -22,31 +22,31 @@ class LoginController {
 
     // Load available user types dynamically from Firestore
     async loadUserTypes() {
-        const controller = new userAdminAllProfilesController();
-        const profiles = await controller.getAllProfiles();
-        
-        console.log("Loaded profiles:", profiles);
+    const controller = new userAdminAllProfilesController();
+    const profiles = await controller.getAllProfiles();
     
-        const select = document.getElementById('userType');
-        select.innerHTML = `<option value="" disabled selected>Select user type</option>`;
-    
-        // 👉 Create a Set to store unique user types
-        const uniqueUserTypes = new Set();
-    
-        profiles.forEach(profile => {
-            if (profile.userType) {
-                uniqueUserTypes.add(profile.userType.trim()); // add unique userType
-            }
-        });
-    
-        // Now add only unique options to the dropdown
-        uniqueUserTypes.forEach(userType => {
-            const option = document.createElement('option');
-            option.value = userType;
-            option.textContent = userType.charAt(0).toUpperCase() + userType.slice(1);
-            select.appendChild(option);
-        });
-    }
+    console.log("Loaded profiles:", profiles);
+
+    const select = document.getElementById('userType');
+    select.innerHTML = `<option value="" disabled selected>Select user type</option>`;
+
+    // 👉 Create a Set to store unique user types
+    const uniqueUserTypes = new Set();
+
+    profiles.forEach(profile => {
+        if (profile.userType) {
+            uniqueUserTypes.add(profile.userType.trim()); // add unique userType
+        }
+    });
+
+    // Now add only unique options to the dropdown
+    uniqueUserTypes.forEach(userType => {
+        const option = document.createElement('option');
+        option.value = userType;
+        option.textContent = userType.charAt(0).toUpperCase() + userType.slice(1);
+        select.appendChild(option);
+    });
+}
 
     async handleLogin(e) {
         e.preventDefault();
