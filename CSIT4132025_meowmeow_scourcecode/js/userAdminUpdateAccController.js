@@ -1,5 +1,6 @@
 import Firebase from './firebaseAuth.js'; // Import the Firebase class
 
+
 export class userAdminUpdateAccController {
     async updateUserAccount({ originalEmail, firstName, lastName, newEmail, password }) {
         // Validate input fields
