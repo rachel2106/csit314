@@ -3,33 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platform Manager Dashboard</title>
+    <title>Platform Manager - Service Categories</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="platformManager-page">
     <div class="platformManagerHeaderBanner">
         <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img">
+        <h2>Platform Manager</h2>
         <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
     </div>
     
     <main>
-        <div class="platformManager">
-            Welcome to platform manager's page
+        <div class="categoryList-header">
+            <h2>Cleaning Service Categories</h2>
+            <a href="pmCreateServiceCategory.html" class="platformCreateBtn">Create New Category</a>
         </div>
 
-        <div class="view-container" id="view-container">
-            <div class="">
-
-            </div>
+        <div id="viewServiceCategoryList" class="categorylist-viewtable">
+            <table id="pm-table">
+                <thead id="pm-tableheader">
+                    <tr id="pm-rowheader">
+                        <th>Cleaning Service Category:</th>
+                        <th>Description</th>
+                        <th>Created</th>
+                        <th class="actions-column">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="data-table"></tbody>
+            </table>
+        </div>
     </main>
-<script>
-    document.getElementById("logout").addEventListener("click", function logOut() {
-        console.log("Logout link has been clicked");
-        windows.location.href = "loginPage.html";
+
+    <script type="module">
+        import { pmViewServicesController } from './js/pmViewServicesController.js';
+
+        class PlatformManagerPage {
+            async getCategoryList() {
+                const controller = new pmViewServicesController();
+                return await controller.getCategoryList();
+            }
+
+            displayCategoriesList(categoryList) {
+                const container = document.getElementById("data-table");
+                container.innerHTML = "";
+
+                if (!categoryList || categoryList.length === 0) {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `<td colspan="4">No categories found.</td>`;
+                    container.appendChild(row);
+                    return;
+                }
+
+                categoryList.forEach((categoryData) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${categoryData.serviceCategory}</td>
+                        <td>${categoryData.description}</td>
+                        
+                        <td>${categoryData.createdAt ? new Date(categoryData.createdAt.seconds * 1000).toLocaleString() : "Unknown"}</td>
+
+                        <td>
+                            <button class="edit-btn" data-id="${categoryData.serviceCategory}">Edit</button>
+                            <button class="delete-btn" data-id="${categoryData.serviceCategory}">Delete</button>
+                        </td>
+                    `;
+                    container.appendChild(row);
+                });
+            }
+        }
+
+        // Load categories on page load
+        window.addEventListener("DOMContentLoaded", async () => {
+            const page = new PlatformManagerPage();
+            const categories = await page.getCategoryList();
+            page.displayCategoriesList(categories);
+
+            // Fix logout redirection
+            document.getElementById("logout").addEventListener("click", () => {
+                window.location.href = "loginPage.html";
+            });
         });
     </script>
-
-
-
 </body>
 </html>

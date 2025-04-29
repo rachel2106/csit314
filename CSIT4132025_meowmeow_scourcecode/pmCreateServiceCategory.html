@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Cleaning Service Category</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="platformManager-page">
+    <div class="platformManagerHeaderBanner">
+        <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img">
+        <a href="platformManagerPage.html" class="backBtn">Back to Categories List</a>
+        <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
+    </div>
+    
+    <main>
+        <div class="platformManager">
+            <h2>Create a New Cleaning Service Category</h2>
+        </div>
+
+        <!-- Create Cleaning Service Category Form -->
+        <div class="form-container">
+            <form id="createCategoryForm">
+                <label for="categoryName">Category Name:</label>
+                <input type="text" id="categoryName" required><br>
+
+                <label for="categoryDescription">Description:</label>
+                <textarea id="categoryDescription" rows="4" required></textarea><br>
+
+                <button type="button" id="createCategoryButton">Create Category</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById("createCategoryButton").addEventListener("click", async function () {
+            const categoryName = document.getElementById("categoryName").value.trim();
+            const categoryDescription = document.getElementById("categoryDescription").value.trim();
+
+            if (!categoryName || !categoryDescription) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            await createServiceCategory(categoryName, categoryDescription);
+            window.location.href = "platformManagerPage.html";
+        });
+
+        // Optional: handle logout
+        document.getElementById("logout").addEventListener("click", () => {
+            window.location.href = "loginPage.html";
+        });
+    </script>
+
+    <script type="module">
+        import { pmCreateServicesController } from './pmCreateServicesController.js';
+        
+            
+        
+
+        const controller = new pmCreateServicesController();
+
+        async function createServiceCategory(name, description) {
+            const category = {
+                name: name,
+                description: description,
+                createdAt: new Date()
+            };
+
+            await controller.createServiceCategory(category);
+        }
+    </script>
+
+</body>
+</html>

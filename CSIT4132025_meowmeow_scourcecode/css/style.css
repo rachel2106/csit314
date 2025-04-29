@@ -684,10 +684,11 @@ button.update-btn:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: white;
+    color: black;
     padding: 15px 30px;
     position: relative;
     z-index: 10;
+    font-size: 30px;
 }
 
 .platformManagerHeaderBanner .logo-img {
@@ -712,12 +713,102 @@ button.update-btn:hover {
     color: #873D48;
 }
 
-.platformManager {
+.categoryList-header {
     text-align: center;
     margin-top: 10px;
-    font-size: 35px;
+    font-size: 25px;
     font-weight: 600;
 }
+
+.platformCreateBtn{
+    width: 20%;
+  height: 20px;
+  margin-left: 5px;
+  background-color: #636e72;
+  padding: 15px;
+  margin-top: 24px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  text-decoration: none;
+  text-align: center;
+  color: black;
+  border: 1px solid black;
+}
+
+.platformCreateBtn:hover{
+    background-color: #873D48;
+    color: #FFFFFF;
+}
+
+/* platform manager table styling*/
+/* #pm-tableheader tr th #col-suspend{
+    width: 10%;
+} */
+
+#pm-table{
+    width: 75%;
+    margin: auto;
+    margin-top: 3%;
+    border-collapse: collapse;
+    border: 2px solid #433A3F;
+    
+}
+
+#pm-tableheader tr th {
+    background-color: #bcd8fa;
+    color: #433A3F;
+    border: 1px solid #686065;
+    padding: 8px;
+}
+
+
+.pm-table tr td{
+    border: 1px solid #686065; 
+}
+
+
+#pm-table th:nth-child(1),  /* Cleaning Service Category */
+#pm-table td:nth-child(1) {
+    width: 20%; /* wider */
+}
+
+#pm-table th:nth-child(2),  /* Description */
+#pm-table td:nth-child(2) {
+    width: 45%; /* shorter */
+}
+
+#pm-table th:nth-child(3),  /* Created At */
+#pm-table td:nth-child(3) {
+    width: 15%; /* shorter */
+}
+
+#pm-table .actions-column, /* Action */
+#pm-table td:nth-child(4) {
+    width: 20%;
+}
+
+#pm-table td button {
+    /* margin: 0 5px; */
+    display: inline-block;
+    background-color: #878a8d;
+    color: black;
+    font-size: 15px;
+    border: none;
+    padding: 7px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+#pm-table th,
+#pm-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+
 
 
 

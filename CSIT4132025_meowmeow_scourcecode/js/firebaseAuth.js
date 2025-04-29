@@ -515,6 +515,88 @@ import {getAuth,
 
 
 
+    // Platform Manager Functions
+    // Create a new service category (used by Platform Manager)
+    async createServiceCategory(categoryData) {
+        try {
+            const { name, description } = categoryData;
+
+            // Validate name
+            if (!name || typeof name !== "string" || name.trim() === "") {
+                return {
+                    status: "error",
+                    message: "Invalid or missing category name"
+                };
+            }
+
+            const categoryCollectionRef = collection(this.db, "csit314/AllServiceCategories/CleaningServiceData");
+
+            // Optional: Check if category already exists
+            const q = query(categoryCollectionRef, where("name", "==", name.trim()));
+            const existing = await getDocs(q);
+            if (!existing.empty) {
+                return {
+                    status: "error",
+                    message: "Category with this name already exists"
+                };
+            }
+
+            const timestamp = new Date().getTime(); // Unique ID
+            const categoryDocRef = doc(this.db, "csit314/AllServiceCategories/CleaningServiceData", `${categoryData.name}_${timestamp}`);
+
+            await setDoc(categoryDocRef, {
+                name: name.trim(),
+                description: description?.trim() || "",
+                createdAt: new Date().toISOString()
+            });
+
+            return {
+                status: "success",
+                message: "Service category created successfully",
+                categoryId: categoryDocRef.id
+            };
+        } catch (error) {
+            console.error("Error creating service category:", error);
+            return {
+                status: "error",
+                message: error.message
+            };
+        }
+    }
+
+    // View all service categories
+    async getCategoryList() {
+        try {
+            const categoryCollection = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
+            const snapshot = await getDocs(categoryCollection);
+            const categoryList = [];
+
+            snapshot.forEach(doc => {
+                const serviceData = doc.data();
+                categoryList.push({
+                    serviceCategory: serviceData.serviceCategory,
+                    description: serviceData.description,
+                    // createdAt: serviceData.createdAt
+                    createdAt: serviceData.createdAt?.toDate?.() || null
+
+                });
+            });
+
+
+            return categoryList;
+        } catch (error) {
+            console.error("Error fetching service categories:", error);
+            return [];
+            // return {
+            //     status: "error",
+            //     message: error.message
+            // };
+        }
+    }
+
+
+
+
 
         
     }
