@@ -17,7 +17,8 @@ import {getAuth,
     updateDoc,
     deleteDoc,
     query,
-    where
+    where,
+    serverTimestamp
  } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js'
 
 
@@ -519,20 +520,20 @@ import {getAuth,
     // Create a new service category (used by Platform Manager)
     async createServiceCategory(categoryData) {
         try {
-            const { name, description } = categoryData;
+            const { serviceCategory, description } = categoryData;
 
             // Validate name
-            if (!name || typeof name !== "string" || name.trim() === "") {
+            if (!serviceCategory || typeof serviceCategory !== "string" || serviceCategory.trim() === "") {
                 return {
                     status: "error",
                     message: "Invalid or missing category name"
                 };
             }
 
-            const categoryCollectionRef = collection(this.db, "csit314/AllServiceCategories/CleaningServiceData");
+            const categoryCollectionRef = collection(this.db, "csit314/AllServiceCategory/CleaningServiceData");
 
             // Optional: Check if category already exists
-            const q = query(categoryCollectionRef, where("name", "==", name.trim()));
+            const q = query(categoryCollectionRef, where("name", "==", serviceCategory.trim()));
             const existing = await getDocs(q);
             if (!existing.empty) {
                 return {
@@ -542,12 +543,12 @@ import {getAuth,
             }
 
             const timestamp = new Date().getTime(); // Unique ID
-            const categoryDocRef = doc(this.db, "csit314/AllServiceCategories/CleaningServiceData", `${categoryData.name}_${timestamp}`);
+            const categoryDocRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", `${categoryData.serviceCategory}_${timestamp}`);
 
             await setDoc(categoryDocRef, {
-                name: name.trim(),
+                serviceCategory: serviceCategory.trim(),
                 description: description?.trim() || "",
-                createdAt: new Date().toISOString()
+                createdAt: serverTimestamp()
             });
 
             return {
@@ -576,7 +577,6 @@ import {getAuth,
                 categoryList.push({
                     serviceCategory: serviceData.serviceCategory,
                     description: serviceData.description,
-                    // createdAt: serviceData.createdAt
                     createdAt: serviceData.createdAt?.toDate?.() || null
 
                 });

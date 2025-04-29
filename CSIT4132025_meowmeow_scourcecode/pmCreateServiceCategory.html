@@ -13,13 +13,13 @@
         <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
     </div>
     
-    <main>
-        <div class="platformManager">
+    <main id="createService-main">
+        <div class="platformManager-create">
             <h2>Create a New Cleaning Service Category</h2>
         </div>
 
         <!-- Create Cleaning Service Category Form -->
-        <div class="form-container">
+        <div class="pmcreate-form">
             <form id="createCategoryForm">
                 <label for="categoryName">Category Name:</label>
                 <input type="text" id="categoryName" required><br>
@@ -32,7 +32,7 @@
         </div>
     </main>
 
-    <script>
+    <!-- <script>
         document.getElementById("createCategoryButton").addEventListener("click", async function () {
             const categoryName = document.getElementById("categoryName").value.trim();
             const categoryDescription = document.getElementById("categoryDescription").value.trim();
@@ -50,26 +50,46 @@
         document.getElementById("logout").addEventListener("click", () => {
             window.location.href = "loginPage.html";
         });
-    </script>
+    </script> -->
 
     <script type="module">
-        import { pmCreateServicesController } from './pmCreateServicesController.js';
-        
-            
-        
+        import { pmCreateServicesController } from './js/pmCreateServicesController.js';
 
         const controller = new pmCreateServicesController();
 
-        async function createServiceCategory(name, description) {
+        async function createServiceCategory(serviceCategory, categoryDescription) {
             const category = {
-                name: name,
-                description: description,
-                createdAt: new Date()
+                serviceCategory: serviceCategory,
+                description: categoryDescription
             };
 
-            await controller.createServiceCategory(category);
+            const result = await controller.createServiceCategory(category);
+
+            if (result.status === "success") {
+                alert("Category created successfully.");
+                window.location.href = "platformManagerPage.html";
+            } else {
+                alert("Error: " + result.message);
+            }
         }
+
+        document.getElementById("createCategoryButton").addEventListener("click", async function () {
+            const categoryName = document.getElementById("categoryName").value.trim();
+            const categoryDescription = document.getElementById("categoryDescription").value.trim();
+
+            if (!categoryName || !categoryDescription) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            await createServiceCategory(categoryName, categoryDescription);
+        });
+
+        document.getElementById("logout").addEventListener("click", () => {
+            window.location.href = "loginPage.html";
+        });
     </script>
+
 
 </body>
 </html>

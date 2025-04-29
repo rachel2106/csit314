@@ -36,17 +36,19 @@
 
     <script type="module">
         import { pmViewServicesController } from './js/pmViewServicesController.js';
-
+    
         class PlatformManagerPage {
             async getCategoryList() {
                 const controller = new pmViewServicesController();
                 return await controller.getCategoryList();
             }
-
+    
             displayCategoriesList(categoryList) {
+                // console.log("DEBUG: categoryList =", categoryList);
                 const container = document.getElementById("data-table");
-                container.innerHTML = "";
+                container.innerHTML = ""; // Clear any existing content
 
+                // If there is no data existed in the database
                 if (!categoryList || categoryList.length === 0) {
                     const row = document.createElement("tr");
                     row.innerHTML = `<td colspan="4">No categories found.</td>`;
@@ -54,14 +56,28 @@
                     return;
                 }
 
+                // when data exist in the database
                 categoryList.forEach((categoryData) => {
+                    // console.log("FULL categoryData object:", categoryData);
+
+                    let createdAtDisplay = "Unknown";
+                    const raw = categoryData.createdAt;
+                    // console.log("Raw createdAt:", raw);
+
+                    if (raw) {
+                        const parsedDate = new Date(raw);
+                        if (!isNaN(parsedDate.getTime())) {
+                            createdAtDisplay = parsedDate.toLocaleString();
+                        }
+                    } else {
+                        createdAtDisplay = "No date available"; // Fallback if `createdAt` is null
+                    }
+
                     const row = document.createElement("tr");
                     row.innerHTML = `
                         <td>${categoryData.serviceCategory}</td>
                         <td>${categoryData.description}</td>
-                        
-                        <td>${categoryData.createdAt ? new Date(categoryData.createdAt.seconds * 1000).toLocaleString() : "Unknown"}</td>
-
+                        <td>${createdAtDisplay}</td>
                         <td>
                             <button class="edit-btn" data-id="${categoryData.serviceCategory}">Edit</button>
                             <button class="delete-btn" data-id="${categoryData.serviceCategory}">Delete</button>
@@ -70,19 +86,22 @@
                     container.appendChild(row);
                 });
             }
-        }
 
+        }
+    
         // Load categories on page load
         window.addEventListener("DOMContentLoaded", async () => {
-            const page = new PlatformManagerPage();
-            const categories = await page.getCategoryList();
-            page.displayCategoriesList(categories);
+        const page = new PlatformManagerPage();
+        const categories = await page.getCategoryList(); // Wait for categories to load
+        page.displayCategoriesList(categories);
 
-            // Fix logout redirection
-            document.getElementById("logout").addEventListener("click", () => {
-                window.location.href = "loginPage.html";
-            });
+        // Fix logout redirection
+        document.getElementById("logout").addEventListener("click", () => {
+            window.location.href = "loginPage.html";
         });
+    });
+
     </script>
+    
 </body>
 </html>

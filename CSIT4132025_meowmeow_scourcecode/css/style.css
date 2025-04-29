@@ -742,10 +742,6 @@ button.update-btn:hover {
 }
 
 /* platform manager table styling*/
-/* #pm-tableheader tr th #col-suspend{
-    width: 10%;
-} */
-
 #pm-table{
     width: 75%;
     margin: auto;
@@ -808,6 +804,83 @@ button.update-btn:hover {
     text-align: center;
 }
 
+/* styling for platform manager CREATE service category page */
+
+#createService-main {
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    justify-content: center; /* Vertically center */
+    align-items: center; /* Horizontally center */
+    padding: 20px;
+}
+
+
+#createService-main h2 {
+    margin-bottom: 20px;
+    font-size: 35px;
+    color: #000000;
+}
+
+
+#createService-main .pmcreate-form {
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+    font-size: 20px;
+}
+
+#createService-main .pmcreate-form input,
+#createService-main .pmcreate-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#createService-main .pmcreate-form button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#createService-main .pmcreate-form button:hover {
+    background-color: #45a049;
+}
+
+
+/* Button styling */
+#createCategoryButton {
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#createCategoryButton:hover {
+    background-color: #0056b3;
+}
+
+
+
+/* Form Title
+.pmcreate-form h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+} */
 
 
 
