@@ -34,10 +34,60 @@
         </div>
     </main>
 
+    <!-- Modal for updating service category -->
+    <!-- Update Modal -->
+    <div id="updateModal" class="modal" style="display:none;">
+        <div class="modal-content">
+        <span class="close-btn" id="closeModalBtn-update">&times;</span>
+        <h3>Update Service Category</h3>
+        <form id="update-form">
+            <label for="edit-service-category">Service Category:</label>
+            <input type="text" id="edit-service-category" required />
+
+            <label for="edit-description">Description:</label>
+            <input type="text" id="edit-description" required />
+
+            <label for="edit-createdAt">Created At:</label>
+            <input type="text" id="edit-createdAt" required />
+
+            <!-- <button class="close-btn" id="closeModalBtn">Cancel</button> -->
+            <button type="submit" class="update-btn">Apply</button>
+        </form>
+        </div>
+    </div>
+
+     <!-- Delete Modal -->
+     <div id="deleteModal" class="modal" style="display:none;">
+        <div class="modal-content">
+        <span class="close-btn" id="closeModalBtn-delete">&times;</span>
+        <h3>Delete?</h3>
+        <form id="delete-form">
+            <label for="delete-service-category">Are you sure you want to delete this category:</label>
+            <span id="to-delete-category"></span>
+            <!-- <input type="text" id="edit-service-category" required /> -->
+
+            <button type="submit" class="delete-btn">Delete</button>
+        </form>
+        </div>
+    </div>
+
+    <!-- Logout button functionality -->
+    <script>
+        document.getElementById("logout").addEventListener("click", function () {
+            window.location.href = "loginPage.html";
+        });
+    </script>
+
+
+    <!-- View Service Category List -->
     <script type="module">
         import { pmViewServicesController } from './js/pmViewServicesController.js';
-    
+        import { pmUpdateServicesController } from './js/pmUpdateServicesController.js';
+        import { pmDeleteServicesController } from './js/pmDeleteServicesController.js';
+
+
         class PlatformManagerPage {
+
             async getCategoryList() {
                 const controller = new pmViewServicesController();
                 return await controller.getCategoryList();
@@ -70,7 +120,7 @@
                             createdAtDisplay = parsedDate.toLocaleString();
                         }
                     } else {
-                        createdAtDisplay = "No date available"; // Fallback if `createdAt` is null
+                        createdAtDisplay = "No date available"; // Fallback if createdAt is null
                     }
 
                     const row = document.createElement("tr");
@@ -79,28 +129,139 @@
                         <td>${categoryData.description}</td>
                         <td>${createdAtDisplay}</td>
                         <td>
-                            <button class="edit-btn" data-id="${categoryData.serviceCategory}">Edit</button>
-                            <button class="delete-btn" data-id="${categoryData.serviceCategory}">Delete</button>
+                            <button class="edit-btn" data-id="${categoryData.id}">Edit</button>
+                            <button class="delete-btn" data-id="${categoryData.id}">Delete</button>
                         </td>
                     `;
                     container.appendChild(row);
                 });
             }
-
         }
     
         // Load categories on page load
         window.addEventListener("DOMContentLoaded", async () => {
-        const page = new PlatformManagerPage();
-        const categories = await page.getCategoryList(); // Wait for categories to load
-        page.displayCategoriesList(categories);
+            const page = new PlatformManagerPage();
+            //Displays the list from the firebase
+            const categories = await page.getCategoryList(); // Wait for categories to load
+            page.displayCategoriesList(categories);
 
-        // Fix logout redirection
-        document.getElementById("logout").addEventListener("click", () => {
-            window.location.href = "loginPage.html";
+            // Modal Setup
+            const updateModal = document.getElementById("updateModal");
+            const closeUpdate = document.getElementById("closeModalBtn-update");
+            const updateForm = document.getElementById("update-form");
+
+            const deleteModal = document.getElementById("deleteModal");
+            const closeDelete = document.getElementById("closeModalBtn-delete");
+            const deleteForm = document.getElementById("delete-form");
+
+
+
+            // when (x) is clicked closes the update modal
+            closeUpdate.addEventListener("click", () => updateModal.style.display = "none");
+            closeDelete.addEventListener("click", () => deleteModal.style.display = "none");
+            
+            //when outside of the modal is clicked the closes the update modal
+            // window.addEventListener("click", (e) => {
+            //     if (e.target === updateModal) updateModal.style.display = "none";
+            // });
+
+            // 🔥 New: Edit Button Click Handler
+            document.getElementById("data-table").addEventListener("click", async (e) => {
+                if (e.target.classList.contains("edit-btn")) {
+                    const categoryId = e.target.dataset.id;
+                    const categories = await page.getCategoryList();
+                    const selected = categories.find(cat => cat.id === categoryId);
+
+                    if (selected) {
+                        document.getElementById("edit-service-category").value = selected.serviceCategory;
+                        document.getElementById("edit-description").value = selected.description;
+                        document.getElementById("edit-createdAt").value = selected.createdAt;
+
+                        
+                        updateForm.dataset.categoryId = selected.id;
+
+                        updateModal.style.display = "block"; //opens the modal
+                    }
+                }else if (e.target.classList.contains("delete-btn")) {
+                    const categoryId = e.target.dataset.id;
+                    const categories = await page.getCategoryList();
+                    const selected = categories.find(cat => cat.id === categoryId);
+
+                    if (selected){
+                        const spanElement = document.getElementById("to-delete-category")
+                        const service_delete = document.createTextNode(selected.serviceCategory);
+                        spanElement.appendChild(service_delete);
+
+                        deleteForm.dataset.categoryDelete = selected.serviceCategory;
+                        // updateForm.dataset.originalCategory = selected.serviceCategory;
+
+                        deleteModal.style.display = "block"; //opens the modal
+
+                    }
+                }
+            });
+
+            //Update form opened
+            updateForm.addEventListener("submit", async(e) =>{
+                e.preventDefault();
+
+                const categoryId = updateForm.dataset.categoryId;
+                const updateCategory = document.getElementById("edit-service-category").value;
+                const updateDescription = document.getElementById("edit-description").value;
+                
+                const controller = new pmUpdateServicesController();
+                try{
+                    await controller.updateServiceCategory({
+                        categoryId,
+                        serviceCategory: updateCategory,
+                        description: updateDescription
+                    });
+
+
+                    alert("Category updated!");
+                    updateModal.style.display = "none"; 
+
+                    //Refreshed the table
+                    const updatedList = await page.getCategoryList();
+                    page.displayCategoriesList(updatedList);
+
+                }catch (err) {
+                    console.log("Failed to update: " + err.message);
+                    // alert("Failed to update: " + err.message);
+                }
+
+            });
+
+            //Delete form opened
+            deleteForm.addEventListener("submit", async(e) =>{
+                e.preventDefault();
+
+                const categoryDelete = deleteForm.dataset.categoryDelete;
+                // const updateCategory = document.getElementById("edit-service-category").value;
+                // const updateDescription = document.getElementById("edit-description").value;
+                
+                const controller = new pmDeleteServicesController();
+                try{
+                    await controller.deleteServiceCategory(categoryDelete);
+
+
+                    alert("Category deleted!");
+                    deleteModal.style.display = "none"; 
+
+                    //Refreshed the table
+                    const deletedList = await page.getCategoryList();
+                    page.displayCategoriesList(deletedList);
+
+                }catch (err) {
+                    console.log("Failed to update: " + err.message);
+                    // alert("Failed to update: " + err.message);
+                }
+
+            });
+
+
+
         });
-    });
-
     </script>
     
 </body>

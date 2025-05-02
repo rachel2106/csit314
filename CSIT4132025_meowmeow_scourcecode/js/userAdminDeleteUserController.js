@@ -1,5 +1,5 @@
 
-  import { userEntity } from "./userEntity.js"; // Import the userEntity class
+import { userEntity } from "./userEntity.js"; // Import the userEntity class
 
 export class AdminDeleteUserController {
     

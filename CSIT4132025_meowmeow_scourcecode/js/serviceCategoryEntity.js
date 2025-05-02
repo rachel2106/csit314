@@ -32,27 +32,27 @@ export class serviceCategoryEntity {
         }
     }
 
-    // // Update a service category
-    // async updateCategory(updatedCategoryObj) {
-    //     try {
-    //         const response = await firebase.updateServiceCategory(updatedCategoryObj);
-    //         return response;
-    //     } catch (error) {
-    //         console.error("Error updating category:", error);
-    //         return { status: "error", message: error.message };
-    //     }
-    // }
+    // Update a service category
+    async updateServiceCategory(updatedCategoryObj) {
+        try {
+            const updatedCategoryList = await firebase.updateServiceCategory(updatedCategoryObj);
+            return updatedCategoryList;
+        } catch (error) {
+            console.error("Error updating category:", error);
+            return { status: "error", message: error.message };
+        }
+    }
 
-    // // Delete a service category
-    // async deleteCategory(categoryId) {
-    //     try {
-    //         const response = await firebase.deleteServiceCategory(categoryId);
-    //         return response;
-    //     } catch (error) {
-    //         console.error("Error deleting category:", error);
-    //         return { status: "error", message: error.message };
-    //     }
-    // }
+    // Delete a service category
+    async deleteServiceCategory(deleteCategory) {
+        try {
+            const deleted = await firebase.deleteServiceCategory(deleteCategory);
+            return deleted;
+        } catch (error) {
+            console.error("Error deleting category:", error);
+            return { status: "error", message: error.message };
+        }
+    }
 
     // // Optional: Search for category by name
     // async searchCategory(name) {

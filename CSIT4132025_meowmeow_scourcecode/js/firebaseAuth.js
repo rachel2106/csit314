@@ -533,7 +533,7 @@ import {getAuth,
             const categoryCollectionRef = collection(this.db, "csit314/AllServiceCategory/CleaningServiceData");
 
             // Optional: Check if category already exists
-            const q = query(categoryCollectionRef, where("name", "==", serviceCategory.trim()));
+            const q = query(categoryCollectionRef, where("serviceCategory", "==", serviceCategory.trim()));
             const existing = await getDocs(q);
             if (!existing.empty) {
                 return {
@@ -542,9 +542,9 @@ import {getAuth,
                 };
             }
 
-            const timestamp = new Date().getTime(); // Unique ID
-            const categoryDocRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", `${categoryData.serviceCategory}_${timestamp}`);
+            const categoryDocRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", `${categoryData.serviceCategory}`);
 
+            // const categoryDocRef = 
             await setDoc(categoryDocRef, {
                 serviceCategory: serviceCategory.trim(),
                 description: description?.trim() || "",
@@ -575,6 +575,7 @@ import {getAuth,
             snapshot.forEach(doc => {
                 const serviceData = doc.data();
                 categoryList.push({
+                    id: doc.id,
                     serviceCategory: serviceData.serviceCategory,
                     description: serviceData.description,
                     createdAt: serviceData.createdAt?.toDate?.() || null
@@ -593,7 +594,73 @@ import {getAuth,
             // };
         }
     }
+    
+   
+    
 
+    async updateServiceCategory(updatedCategoryData){ 
+        const {categoryId, serviceCategory, description } = updatedCategoryData;
+
+        // Validate required category
+        console.log("originalCategory:", categoryId);
+        console.log("serviceCategory:", serviceCategory);
+        console.log("description:", description);
+
+        if (!categoryId || !serviceCategory || !description) {
+            console.error("Error: Missing required fields for user update.");
+            return {success: false, message: "Missing required fields!"};
+
+        }
+
+        try{
+            console.log("Updating service data in Firestore:", updatedCategoryData);
+
+            // Reference to the Firestore document for the user
+            const categoryRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", categoryId);
+
+            // Update only Firestore data (not Firebase Authentication)
+           
+            await updateDoc(categoryRef, {
+                serviceCategory: serviceCategory.trim(),
+                description: description.trim()
+            });
+
+
+
+            // Refresh the page after the update
+            window.location.reload(); 
+
+            return { success: true, message: "Service category updated"};
+        } catch (error) {
+            console.error("Error updating service category:", error);
+            return { success: false, message: `Error updating category:${error.message}` };
+        }
+    }
+
+    async deleteServiceCategory(deleteCategoryData){
+        try {
+            // Get user document based on email
+            const servicesCollectionRef = collection(this.db, "csit314/AllServiceCategory/CleaningServiceData");
+            const q = query(servicesCollectionRef, where('serviceCategory', '==', deleteCategoryData));
+            const querySnapshot = await getDocs(q);
+    
+            if (querySnapshot.empty) {
+                throw new Error("No user found with this email.");
+            }
+    
+            // Correct way: use for...of to await each deleteDoc
+            for (const docSnap of querySnapshot.docs) {
+                await deleteDoc(docSnap.ref);
+                console.log(`Deleted Firestore document for email: ${deleteCategoryData}`);
+            }
+    
+            return { success: true };
+        } catch (error) {
+            console.error("Error deleting Firestore user:", error);
+            throw error;
+        }
+
+    }
 
 
 
