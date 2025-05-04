@@ -55,26 +55,16 @@ export class serviceCategoryEntity {
     }
 
     // // Optional: Search for category by name
-    // async searchCategory(name) {
-    //     try {
-    //         const categoryCollection = collection(this.db, "csit314/ServiceCategories");
-    //         const q = query(categoryCollection, where("name", "==", name.trim()));
-    //         const snapshot = await getDocs(q);
-
-    //         const categories = snapshot.docs.map(doc => ({
-    //             id: doc.id,
-    //             ...doc.data()
-    //         }));
-
-    //         return {
-    //             status: "success",
-    //             data: categories
-    //         };
-    //     } catch (error) {
-    //         console.error("Error searching for category:", error);
-    //         return { status: "error", message: error.message };
-    //     }
-    // }
+    async searchServiceCategory(searchCategory) {
+        try {
+            const searched = await firebase.searchServiceCategory(searchCategory);
+            return searched;
+        } catch (error) {
+            console.error("Error searching for category:", error);
+            return { status: "error", message: error.message };
+        }
+    }
+    
 }
 
 export default serviceCategoryEntity;

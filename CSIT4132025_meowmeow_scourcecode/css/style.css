@@ -721,22 +721,22 @@ button.update-btn:hover {
 }
 
 .platformCreateBtn{
-    width: 20%;
-  height: 20px;
+  width: 20%;
+  height: 50px;
   margin-left: 5px;
   background-color: #636e72;
-  padding: 15px;
+  padding: 20px;
   margin-top: 24px;
   cursor: pointer;
   font-weight: bold;
-  font-size: 16px;
+  font-size: 18px;
   text-decoration: none;
   text-align: center;
   color: black;
   border: 1px solid black;
 }
 
-.platformCreateBtn:hover{
+.platformCreateBtn:hover {
     background-color: #873D48;
     color: #FFFFFF;
 }
@@ -872,6 +872,45 @@ button.update-btn:hover {
 #createCategoryButton:hover {
     background-color: #0056b3;
 }
+
+
+/* Search Service Category */
+
+#search-categoryName{
+    width: 20%;
+    height: 40px;
+    margin-left: 50px;
+    font-size: 18px;
+
+}
+#reset-instruction{
+    font-weight: normal;
+    font-size: 18px;
+    margin-top: 0%;
+    margin-left: 15%;
+    /* text-align: right; */
+}
+#pm-search-button{
+    width: 10%;
+    height: 50px;
+    /* margin-left: 20%; */
+    background-color: #636e72;
+    margin-top: 24px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 20px;
+    text-decoration: none;
+    text-align: center;
+    color: black;
+    border: 1px solid black;
+
+}
+
+#pm-search-button:hover {
+    background-color: #873D48;
+    color: #FFFFFF;
+}
+
 
 
 

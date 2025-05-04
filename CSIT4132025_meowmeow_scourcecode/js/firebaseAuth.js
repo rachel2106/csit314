@@ -530,10 +530,10 @@ import {getAuth,
                 };
             }
 
-            const categoryCollectionRef = collection(this.db, "csit314/AllServiceCategory/CleaningServiceData");
+            const categoryRef = collection(this.db, "csit314/AllServiceCategory/CleaningServiceData");
 
             // Optional: Check if category already exists
-            const q = query(categoryCollectionRef, where("serviceCategory", "==", serviceCategory.trim()));
+            const q = query(categoryRef, where("serviceCategory", "==", serviceCategory.trim()));
             const existing = await getDocs(q);
             if (!existing.empty) {
                 return {
@@ -543,12 +543,17 @@ import {getAuth,
             }
 
             const categoryDocRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", `${categoryData.serviceCategory}`);
+            const normalizedNaming = serviceCategory.toLowerCase().replace(/\s+/g, '');
 
             // const categoryDocRef = 
             await setDoc(categoryDocRef, {
                 serviceCategory: serviceCategory.trim(),
+                normalizedCategory: normalizedNaming.trim(),
                 description: description?.trim() || "",
-                createdAt: serverTimestamp()
+                createdAt: serverTimestamp(),
+                numOfServices: 0, //number of sevices created in each category
+                numCleaner: 0, //number of cleaner having each of category
+                numHomeowner: 0 //number of homeowner uses the service in that category
             });
 
             return {
@@ -640,8 +645,8 @@ import {getAuth,
     async deleteServiceCategory(deleteCategoryData){
         try {
             // Get user document based on email
-            const servicesCollectionRef = collection(this.db, "csit314/AllServiceCategory/CleaningServiceData");
-            const q = query(servicesCollectionRef, where('serviceCategory', '==', deleteCategoryData));
+            const categoryRef = collection(this.db, "csit314/AllServiceCategory/CleaningServiceData");
+            const q = query(categoryRef, where('serviceCategory', '==', deleteCategoryData));
             const querySnapshot = await getDocs(q);
     
             if (querySnapshot.empty) {
@@ -651,15 +656,42 @@ import {getAuth,
             // Correct way: use for...of to await each deleteDoc
             for (const docSnap of querySnapshot.docs) {
                 await deleteDoc(docSnap.ref);
-                console.log(`Deleted Firestore document for email: ${deleteCategoryData}`);
+                // console.log(`Deleted Firestore document for service category: ${deleteCategoryData}`);
             }
     
             return { success: true };
         } catch (error) {
-            console.error("Error deleting Firestore user:", error);
+            console.error("Error deleting Firestore service category:", error);
             throw error;
         }
 
+    }
+
+    async searchServiceCategory(searchCategoryData){
+        try{
+            const categoryRef = collection(this.db, "csit314/AllServiceCategory/CleaningServiceData");
+            const searchData = searchCategoryData.toLowerCase().replace(/\s+/g, '');
+            const q = query(categoryRef, where("normalizedCategory", "==", searchData.trim()));
+            const snapshot = await getDocs(q);
+            const categoryList = [];
+
+            snapshot.docs.map(doc => {
+                const serviceData = doc.data();
+                categoryList.push({
+                    id: doc.id,
+                    serviceCategory: serviceData.serviceCategory,
+                    description: serviceData.description,
+                    createdAt: serviceData.createdAt?.toDate?.() || null
+
+                });
+            });
+
+
+            return categoryList;
+        }catch (error){
+            console.error("Error deleting Firestore user:", error);
+            throw error;
+        }
     }
 
 

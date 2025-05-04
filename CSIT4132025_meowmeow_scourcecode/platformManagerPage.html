@@ -17,6 +17,9 @@
         <div class="categoryList-header">
             <h2>Cleaning Service Categories</h2>
             <a href="pmCreateServiceCategory.html" class="platformCreateBtn">Create New Category</a>
+            <input type="text" id="search-categoryName" placeholder="Service Category" />
+            <button class="pmBtn" id="pm-search-button">Search</button>
+            <p id="reset-instruction">clear out the input and click search to reset</p>
         </div>
 
         <div id="viewServiceCategoryList" class="categorylist-viewtable">
@@ -48,7 +51,7 @@
             <input type="text" id="edit-description" required />
 
             <label for="edit-createdAt">Created At:</label>
-            <input type="text" id="edit-createdAt" required />
+            <input type="text" id="edit-createdAt" readonly />
 
             <!-- <button class="close-btn" id="closeModalBtn">Cancel</button> -->
             <button type="submit" class="update-btn">Apply</button>
@@ -84,6 +87,7 @@
         import { pmViewServicesController } from './js/pmViewServicesController.js';
         import { pmUpdateServicesController } from './js/pmUpdateServicesController.js';
         import { pmDeleteServicesController } from './js/pmDeleteServicesController.js';
+        import { pmSearchServicesController } from './js/pmSearchServicesController.js';
 
 
         class PlatformManagerPage {
@@ -141,6 +145,7 @@
         // Load categories on page load
         window.addEventListener("DOMContentLoaded", async () => {
             const page = new PlatformManagerPage();
+
             //Displays the list from the firebase
             const categories = await page.getCategoryList(); // Wait for categories to load
             page.displayCategoriesList(categories);
@@ -154,6 +159,9 @@
             const closeDelete = document.getElementById("closeModalBtn-delete");
             const deleteForm = document.getElementById("delete-form");
 
+            const searchBtn = document.getElementById('pm-search-button');
+            const searchInput = document.getElementById('search-categoryName');
+            // const resetBtn = document.getElementById('pm-reset-button');
 
 
             // when (x) is clicked closes the update modal
@@ -165,7 +173,8 @@
             //     if (e.target === updateModal) updateModal.style.display = "none";
             // });
 
-            // 🔥 New: Edit Button Click Handler
+
+            // Edit & Delete Button Click Handler
             document.getElementById("data-table").addEventListener("click", async (e) => {
                 if (e.target.classList.contains("edit-btn")) {
                     const categoryId = e.target.dataset.id;
@@ -209,9 +218,9 @@
                 const updateCategory = document.getElementById("edit-service-category").value;
                 const updateDescription = document.getElementById("edit-description").value;
                 
-                const controller = new pmUpdateServicesController();
+                const updateController = new pmUpdateServicesController();
                 try{
-                    await controller.updateServiceCategory({
+                    await updateController.updateServiceCategory({
                         categoryId,
                         serviceCategory: updateCategory,
                         description: updateDescription
@@ -240,9 +249,9 @@
                 // const updateCategory = document.getElementById("edit-service-category").value;
                 // const updateDescription = document.getElementById("edit-description").value;
                 
-                const controller = new pmDeleteServicesController();
+                const deleteController = new pmDeleteServicesController();
                 try{
-                    await controller.deleteServiceCategory(categoryDelete);
+                    await deleteController.deleteServiceCategory(categoryDelete);
 
 
                     alert("Category deleted!");
@@ -257,6 +266,33 @@
                     // alert("Failed to update: " + err.message);
                 }
 
+            });
+
+            //Search Button
+            searchBtn.addEventListener("click", async () =>{
+                const searchCategory = searchInput.value.trim().toLowerCase();
+                
+                if(!searchCategory){
+                    // alert("Please enter a category name to search");
+                    page.displayCategoriesList(categories);
+                    return;
+                }
+
+                const searchController = new pmSearchServicesController();
+
+                try{
+                    const searchList = await searchController.searchServiceCategory(searchCategory);
+
+                    if(searchList.length > 0){
+                        page.displayCategoriesList(searchList);
+                    } else{
+                        const container = document.getElementById("data-table");
+                        container.innerHTML = `<tr><td colspan="4">No matching categories found.</td></tr>`;
+                    }
+                } catch (err){
+                    console.error ("Search error:", err);
+                    alert("An error occured while searching");
+                }
             });
 
 

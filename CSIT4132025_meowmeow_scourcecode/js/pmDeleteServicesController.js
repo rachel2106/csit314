@@ -3,12 +3,12 @@ import { serviceCategoryEntity } from './serviceCategoryEntity.js';
 export class pmDeleteServicesController {
     
     async deleteServiceCategory(deleteCategory) {
-            console.log("Inside updateCategory with data:", deleteCategory);
+            console.log("Inside deleteCategory with data:", deleteCategory);
             const serviceEntity = new serviceCategoryEntity();  // Creating an instance of userEntity
     
             const deletedCategoryList = await serviceEntity.deleteServiceCategory(deleteCategory); 
             
-            console.log("Category updated successfully");
+            console.log("Category deleted successfully");
             // console.log(controller); // Check what's inside
     
             // console.log(this);
