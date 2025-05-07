@@ -56,22 +56,83 @@
         import { pmCreateServicesController } from './js/pmCreateServicesController.js';
 
         const controller = new pmCreateServicesController();
+        let currentUserEmail = localStorage.getItem("loggedInUserEmail");
 
-        async function createServiceCategory(serviceCategory, categoryDescription) {
-            const category = {
-                serviceCategory: serviceCategory,
-                description: categoryDescription
-            };
 
-            const result = await controller.createServiceCategory(category);
+        // async function createServiceCategory(serviceCategory, categoryDescription) {
+        //     const category = {
+        //         serviceCategory: serviceCategory,
+        //         description: categoryDescription
+        //     };
 
-            if (result.status === "success") {
-                alert("Category created successfully.");
-                window.location.href = "platformManagerPage.html";
-            } else {
-                alert("Error: " + result.message);
+        //     const result = await controller.createServiceCategory(category);
+        //     currentUserEmail = await controller.getCurrentUserEmail();
+
+        //     if (result.status === "success") {
+        //         alert("Category created successfully.");
+        //         window.location.href = "platformManagerPage.html";
+        //     } else {
+        //         console.error("Creation failed:", result);
+        //         alert("Error: " + result.message);
+        //     }
+        // }
+
+        async function createServiceCategory(serviceCategory, categoryDescription, currentUserEmail) {
+            try {
+                // currentUserEmail = await controller.getCurrentUserEmail();
+
+                if (!currentUserEmail) {
+                    alert("You must be logged in.");
+                    window.location.href = "loginPage.html";
+                    return;
+                }
+
+                // const category = {
+                //     serviceCategory: serviceCategory,
+                //     description: categoryDescription,
+                //     createdBy: currentUserEmail // Pass the logged-in user's email
+                // };
+                const category = {
+                    serviceCategory,
+                    description: categoryDescription,
+                    currentUserEmail
+                };
+
+                alert (currentUserEmail);
+
+                const result = await controller.createServiceCategory(category);
+
+                if (result.status === "success") {
+                    alert("Category created successfully.");
+                    window.location.href = "platformManagerPage.html";
+                } else {
+                    console.error("Creation failed:", result);
+                    alert("Error: " + result.message);
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("An error occurred while checking the user status.");
             }
         }
+        
+        // document.getElementById("createCategoryButton").addEventListener("click", async function () {
+            
+        //     const categoryName = document.getElementById("categoryName").value.trim();
+        //     const categoryDescription = document.getElementById("categoryDescription").value.trim();
+
+        //     if (!currentUserEmail) {
+        //         alert("You must be logged in.");
+        //         window.location.href = "loginPage.html";
+        //         return;
+        //     }
+
+        //     if (!categoryName || !categoryDescription) {
+        //         alert("Please fill in all fields.");
+        //         return;
+        //     }
+
+        //     await createServiceCategory(categoryName, categoryDescription, currentUserEmail);
+        // });
 
         document.getElementById("createCategoryButton").addEventListener("click", async function () {
             const categoryName = document.getElementById("categoryName").value.trim();
@@ -82,10 +143,14 @@
                 return;
             }
 
-            await createServiceCategory(categoryName, categoryDescription);
+            // Proceed to check user and create the category
+            // await createServiceCategory(categoryName, categoryDescription);
+            await createServiceCategory(categoryName, categoryDescription, currentUserEmail);
+
         });
 
         document.getElementById("logout").addEventListener("click", () => {
+            localStorage.removeItem("loggedInUserEmail");
             window.location.href = "loginPage.html";
         });
     </script>

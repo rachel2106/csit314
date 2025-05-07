@@ -67,18 +67,23 @@ class LoginController {
 
             if (result.status === "success") {
                 const userData = result.userData;
+                alert ("Login "+ result.status +" Welcome " + userData.lastName)
 
                 switch (userData.userType) {
                     case "userAdmin":
                         window.location.href = "userAdminPage.html";
                         break;
                     case "platformManager":
+                        localStorage.setItem("loggedInUserEmail", userData.email); // or sessionStorage
                         window.location.href = "platformManagerPage.html";
+
                         break;
                     case "cleaners":
+                        localStorage.setItem("loggedInUserEmail", userData.email); // or sessionStorage
                         window.location.href = "cleanerPage.html";
                         break;
                     case "homeowners":
+                        localStorage.setItem("loggedInUserEmail", userData.email); // or sessionStorage
                         window.location.href = "homeownersPage.html";
                         break;
                     default:

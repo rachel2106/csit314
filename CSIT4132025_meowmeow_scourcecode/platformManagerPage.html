@@ -28,7 +28,8 @@
                     <tr id="pm-rowheader">
                         <th>Cleaning Service Category:</th>
                         <th>Description</th>
-                        <th>Created</th>
+                        <th>Created At</th>
+                        <th>Created By</th>
                         <th class="actions-column">Actions</th>
                     </tr>
                 </thead>
@@ -77,6 +78,7 @@
     <!-- Logout button functionality -->
     <script>
         document.getElementById("logout").addEventListener("click", function () {
+            localStorage.removeItem("loggedInUserEmail");
             window.location.href = "loginPage.html";
         });
     </script>
@@ -132,6 +134,7 @@
                         <td>${categoryData.serviceCategory}</td>
                         <td>${categoryData.description}</td>
                         <td>${createdAtDisplay}</td>
+                        <td>${categoryData.createdBy}</td>
                         <td>
                             <button class="edit-btn" data-id="${categoryData.id}">Edit</button>
                             <button class="delete-btn" data-id="${categoryData.id}">Delete</button>

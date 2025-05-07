@@ -520,7 +520,7 @@ import {getAuth,
     // Create a new service category (used by Platform Manager)
     async createServiceCategory(categoryData) {
         try {
-            const { serviceCategory, description } = categoryData;
+            const { serviceCategory, description, currentUserEmail  } = categoryData;
 
             // Validate name
             if (!serviceCategory || typeof serviceCategory !== "string" || serviceCategory.trim() === "") {
@@ -551,6 +551,7 @@ import {getAuth,
                 normalizedCategory: normalizedNaming.trim(),
                 description: description?.trim() || "",
                 createdAt: serverTimestamp(),
+                createdBy: currentUserEmail,
                 numOfServices: 0, //number of sevices created in each category
                 numCleaner: 0, //number of cleaner having each of category
                 numHomeowner: 0 //number of homeowner uses the service in that category
@@ -583,7 +584,8 @@ import {getAuth,
                     id: doc.id,
                     serviceCategory: serviceData.serviceCategory,
                     description: serviceData.description,
-                    createdAt: serviceData.createdAt?.toDate?.() || null
+                    createdAt: serviceData.createdAt?.toDate?.() || null,
+                    createdBy: serviceData.createdBy
 
                 });
             });

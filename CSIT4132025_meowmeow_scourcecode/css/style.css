@@ -766,23 +766,29 @@ button.update-btn:hover {
 
 #pm-table th:nth-child(1),  /* Cleaning Service Category */
 #pm-table td:nth-child(1) {
-    width: 20%; /* wider */
+    width: 22%; /* wider */
 }
 
 #pm-table th:nth-child(2),  /* Description */
 #pm-table td:nth-child(2) {
-    width: 45%; /* shorter */
+    width: 38%; /* shorter */
 }
 
 #pm-table th:nth-child(3),  /* Created At */
 #pm-table td:nth-child(3) {
-    width: 15%; /* shorter */
+    width: 10%; /* shorter */
+}
+
+#pm-table th:nth-child(4),  /* Created At */
+#pm-table td:nth-child(4) {
+    width: 10%; /* shorter */
 }
 
 #pm-table .actions-column, /* Action */
-#pm-table td:nth-child(4) {
+#pm-table td:nth-child(5) {
     width: 20%;
 }
+
 
 #pm-table td button {
     /* margin: 0 5px; */
