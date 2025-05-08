@@ -79,44 +79,53 @@
        
     // Display all profiles in the table
     // Display all profiles in the table
-    displayProfiles(profileList) {
-        const table = document.getElementById("data-table");
-        table.innerHTML = "";
+    // Display all profiles in the table
+displayProfiles(profileList) {
+    const table = document.getElementById("data-table");
+    table.innerHTML = "";
 
-        const displayedUserTypes = new Set();
+    const displayedUserTypes = new Set();
 
-        // 👉 Sort by firstName alphabetically, then by lastName numerically
-        profileList.sort((a, b) => {
-            // First compare by firstName alphabetically
-            const firstNameCompare = a.firstName.localeCompare(b.firstName);
-            if (firstNameCompare !== 0) return firstNameCompare;
+    // 👉 Sort by firstName alphabetically, then by lastName numerically
+    profileList.sort((a, b) => {
+        const nameA = (a.firstName || "").toLowerCase();
+        const nameB = (b.firstName || "").toLowerCase();
+        const firstNameCompare = nameA.localeCompare(nameB);
+        if (firstNameCompare !== 0) return firstNameCompare;
 
-            // If firstName is the same, compare numerically by lastName
-            const numA = this.extractNumberFromLastName(a.lastName);
-            const numB = this.extractNumberFromLastName(b.lastName);
-            return numA - numB;
-        });
+        const numA = this.extractNumberFromLastName(a.lastName || "");
+        const numB = this.extractNumberFromLastName(b.lastName || "");
+        return numA - numB;
+    });
 
-        profileList.forEach((profile) => {
-            if (profile.userType && !displayedUserTypes.has(profile.userType)) {
-                displayedUserTypes.add(profile.userType);
+    // Optional debug logging
+    profileList.forEach(profile => {
+        if (!profile.firstName || !profile.lastName) {
+            console.warn("Profile missing name fields:", profile);
+        }
+    });
 
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${profile.userType.charAt(0).toUpperCase() + profile.userType.slice(1)}</td>
-                    <td>${profile.userStatus || "Active"}</td>
-                    <td>
-                        <button class="search-profile-btn" data-type="${profile.userType}">Search Profile</button>
-                        <button class="delete-profile-btn" data-type="${profile.userType}">Delete Profile</button>
-                    </td>
-                `;
-                table.appendChild(row);
-            }
-        });
+    profileList.forEach((profile) => {
+        if (profile.userType && !displayedUserTypes.has(profile.userType)) {
+            displayedUserTypes.add(profile.userType);
 
-        this.addSearchProfileListeners();
-        this.addDeleteProfileListeners();
-    }
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${profile.userType.charAt(0).toUpperCase() + profile.userType.slice(1)}</td>
+                <td>${profile.userStatus || "Active"}</td>
+                <td>
+                    <button class="search-profile-btn" data-type="${profile.userType}">Search Profile</button>
+                    <button class="delete-profile-btn" data-type="${profile.userType}">Delete Profile</button>
+                </td>
+            `;
+            table.appendChild(row);
+        }
+    });
+
+    this.addSearchProfileListeners();
+    this.addDeleteProfileListeners();
+}
+
 
     // Search Profile Event Listeners
     addSearchProfileListeners() {
