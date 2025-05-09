@@ -73,46 +73,49 @@
       async getAllProfiles() {
         try {
           console.log("Fetching all profiles...");
-          const profiles = await this.controller.getAllProfiles();
+          const profiles = await this.controller.getAllProfiles(); //calls the method from the controller class
           console.log("Profiles fetched:", profiles);
           return profiles;
         } catch (error) {
           console.error("Error loading profiles:", error);
           document.getElementById('update-error-message').textContent = "Error loading profiles. Please try again later.";
-          return [];
+          return []; //on cuccess, returns the fetched profile array
+          //failure, returns an empty array
         }
       }
 
       //displaying of profiles on the page
       displayProfiles(profileList) {
-        const table = document.getElementById("data-table");
-        table.innerHTML = "";
+        const table = document.getElementById("data-table"); //clears any exsiting content, and ready to repopulate it with new data
+        table.innerHTML = ""; 
 
-        const displayedUserTypes = new Set();
+        const displayedUserTypes = new Set(); //keeps track of which userType have already been displayed, and only show once 
         console.log("Displaying profiles...");
 
         profileList.sort((a, b) => {
-          const nameA = (a.firstName || "").toLowerCase();
+          const nameA = (a.firstName || "").toLowerCase(); //primary sort, by alphabetical (case0sensitive)
           const nameB = (b.firstName || "").toLowerCase();
           const firstNameCompare = nameA.localeCompare(nameB);
           if (firstNameCompare !== 0) return firstNameCompare;
 
-          const numA = this.extractNumberFromLastName(a.lastName || "");
+          const numA = this.extractNumberFromLastName(a.lastName || ""); //to get numbers from last name("User12") and sort by those no.s
           const numB = this.extractNumberFromLastName(b.lastName || "");
           return numA - numB;
   });
 
+  //each profile it checks if userType exists and whether anot it has been displayed 
   for (const profile of profileList) {
     if (profile.userType && !displayedUserTypes.has(profile.userType)) {
-      displayedUserTypes.add(profile.userType);
+      displayedUserTypes.add(profile.userType); //if both is true, proceeds to add a new row for the userType
 
       // Check if description is missing, and set a default description based on userType
       let profileDescription = profile.description || this.getDefaultDescription(profile.userType);
 
+      //creates a tr element and fills in: 
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${profile.userType.charAt(0).toUpperCase() + profile.userType.slice(1)}</td>
-        <td>${profile.userStatus || "Active"}</td>
+        <td>${profile.userStatus || "Active"}</td> 
         <td>${profileDescription}</td>
         <td>
           <button class="search-profile-btn" data-type="${profile.userType}">Search Profile</button>
@@ -124,9 +127,10 @@
     }
   }
 
-  this.addSearchProfileListeners();
+  //hooks the appropriate hook handlers  for the buttons. 
+  this.addSearchProfileListeners(); //filtering by userType
   this.addDeleteProfileListeners();
-  this.addUpdateDescriptionListeners();
+  this.addUpdateDescriptionListeners(); //opening a modal to edit a description
 }
 
       // Method to return default description based on userType
@@ -149,11 +153,11 @@
       //search function to search for all the profiles
       addSearchProfileListeners() {
         console.log("Adding search profile listeners...");
-        document.querySelectorAll(".search-profile-btn").forEach(button => {
+        document.querySelectorAll(".search-profile-btn").forEach(button => { //selects all button with the class then iterates through each attach listener
           button.addEventListener("click", async (event) => {
-            const userType = event.target.getAttribute("data-type");
+            const userType = event.target.getAttribute("data-type"); //grabs data-type attribute from the clicked button which indicates which userType the button refers to
             console.log(`Searching profile for userType: ${userType}`);
-            await this.displayProfileDetails(userType);
+            await this.displayProfileDetails(userType); //calls an internal method and passes the userTtpe.
           });
         });
       }
@@ -163,12 +167,13 @@
       async displayProfileDetails(userType) {
         try {
           console.log(`Fetching details for profile type "${userType}"...`);
-          const users = await this.controller.searchProfile(userType);
-          const container = document.getElementById("profile-details-container");
+          const users = await this.controller.searchProfile(userType); //return an array of user objects that match the given userType
+          const container = document.getElementById("profile-details-container"); //inject user detail cards
 
           if (users.length > 0) {
             container.innerHTML = `<h3>Users with profile type "${userType}":</h3>`;
 
+            //sorts users alphabetically by firstName then if its the same, compare numeric values extracted from lastName
             users.sort((a, b) => {
               const firstNameCompare = a.firstName.localeCompare(b.firstName);
               if (firstNameCompare !== 0) return firstNameCompare;
@@ -178,6 +183,7 @@
               return numA - numB;
             });
 
+            //loops through the sorted users and dynamically build HTML cards for each profile
             users.forEach(user => {
               container.innerHTML += `
                 <div class="profile-card">
@@ -239,11 +245,14 @@
       //updating description for profile types
       addUpdateDescriptionListeners() {
         console.log("Adding update description listeners...");
-        document.querySelectorAll(".update-desc-btn").forEach(button => {
+        document.querySelectorAll(".update-desc-btn").forEach(button => { //selects all buttons with the class, which are then generated dynamically in the table
           button.addEventListener("click", (event) => {
             const profileName = event.target.getAttribute("data-type");
             const currentDescription = event.target.getAttribute("data-desc");
             console.log(`Opening update description modal for ${profileName} with description "${currentDescription}".`);
+
+            //calls a function to show the modal with fields pre-filled for editing
+            //a modal form that accepts the values and let the user update the description
             openUpdateModal(profileName, currentDescription);
           });
         });
@@ -251,8 +260,11 @@
     }
 
     // Modal logic 
+    //stores the userType currently being updated
+    //to keep track which profiles the new description is for
     let currentProfileToUpdate = null;
 
+    //sets the current profile being edited
     window.openUpdateModal = function(profileName, currentDescription) {
       console.log(`Opening update modal for profile: ${profileName}`);
       currentProfileToUpdate = profileName;
@@ -268,8 +280,9 @@
       document.getElementById("updateDescriptionModal").style.display = "none";
     };
 
+    //triggers when user clicks "save"
     document.getElementById("saveDescriptionBtn").addEventListener("click", async () => {
-      const newDesc = document.getElementById("newDescriptionInput").value.trim();
+      const newDesc = document.getElementById("newDescriptionInput").value.trim(); //grabs user input and trims whitespace
       const errorContainer = document.getElementById("update-error-message");
       errorContainer.textContent = "";
 
@@ -279,6 +292,8 @@
         try {
           await updateUserTypeDescription(currentProfileToUpdate, newDesc);
 
+          //finds the relevant row in the HTML table by matching the profile name (userType)
+          //updates the description cell in-place
           const rows = document.querySelectorAll("#admin-table tbody tr");
           rows.forEach(row => {
             if (row.cells[0].textContent.trim().toLowerCase() === currentProfileToUpdate.toLowerCase()) {
