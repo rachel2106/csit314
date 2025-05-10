@@ -59,24 +59,6 @@
         let currentUserEmail = localStorage.getItem("loggedInUserEmail");
 
 
-        // async function createServiceCategory(serviceCategory, categoryDescription) {
-        //     const category = {
-        //         serviceCategory: serviceCategory,
-        //         description: categoryDescription
-        //     };
-
-        //     const result = await controller.createServiceCategory(category);
-        //     currentUserEmail = await controller.getCurrentUserEmail();
-
-        //     if (result.status === "success") {
-        //         alert("Category created successfully.");
-        //         window.location.href = "platformManagerPage.html";
-        //     } else {
-        //         console.error("Creation failed:", result);
-        //         alert("Error: " + result.message);
-        //     }
-        // }
-
         async function createServiceCategory(serviceCategory, categoryDescription, currentUserEmail) {
             try {
                 // currentUserEmail = await controller.getCurrentUserEmail();
@@ -102,7 +84,7 @@
 
                 const result = await controller.createServiceCategory(category);
 
-                if (result.status === "success") {
+                if (result === "success") {
                     alert("Category created successfully.");
                     window.location.href = "platformManagerPage.html";
                 } else {

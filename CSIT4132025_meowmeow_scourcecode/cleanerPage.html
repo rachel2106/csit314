@@ -9,26 +9,127 @@
 <body class="cleaner-page">
     <div class="cleanerHeaderBanner">
         <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img">
+        <h2>Cleaner</h2>
         <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
     </div>
     
     <main>
-        <div class="cleaners">
-            Welcome to your cleaner's page
+        <div class="serviceListing-header">
+            <h2>Cleaning Service Listing</h2>
+            <a href="cleanerLisingHistory.html" class="cleanerHistory-btn">Listing History</a>
+            <a href="cleanerCreateListing.html" class="cleanerCreate-btn">Create Listing</a>
+            <input type="text" id="search-listingName" placeholder="Service Listing" />
+            <button class="cleanerBtn" id="cleaner-search-button">Search</button>
+            <p id="reset-instruction">clear out the input and click search to reset</p>
         </div>
 
-        <div class="view-container" id="view-container">
-            <div class="">
+        <div id="viewServiceListingList" class="listinglist-viewtable">
+            <table id="cleaner-table">
+                <thead id="cleaner-tableheader">
+                    <tr id="cleaner-rowheader">
+                        <th>Cleaning Service Listing:</th>
+                        <th>View Count</th>
+                        <th>Shortlisted Count</th>
+                        <th class="actions-column">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="data-table"></tbody>
+            </table>
+        </div>
 
-            </div>
     </main>
-<script>
-    document.getElementById("logout").addEventListener("click", function logOut() {
-        console.log("Logout link has been clicked");
-        windows.location.href = "loginPage.html";
+
+    <script>
+        document.getElementById("logout").addEventListener("click", function () {
+            localStorage.removeItem("loggedInUserEmail");
+            window.location.href = "loginPage.html";
         });
     </script>
 
+     <!-- View Service Category List -->
+     <script type="module">
+        import { cleanerViewServicesController } from './js/cleanerViewListingController.js';
+        // import { pmUpdateServicesController } from './js/pmUpdateServicesController.js';
+        // import { pmDeleteServicesController } from './js/pmDeleteServicesController.js';
+        // import { pmSearchServicesController } from './js/pmSearchServicesController.js';
+
+
+        class CleanerPage {
+
+            async getListingList(cleanerEmail) {
+                const controller = new cleanerViewServicesController();
+                return await controller.getListingList(cleanerEmail);
+            }
+    j
+            displayListingList(listingList) {
+                // console.log("DEBUG: listingList =", listingList);
+                const container = document.getElementById("data-table");
+                container.innerHTML = ""; // Clear any existing content
+
+                // If there is no data existed in the database
+                if (!listingList || listingList.length === 0) {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `<td colspan="4">No listing found.</td>`;
+                    container.appendChild(row);
+                    return;
+                }
+
+                // when data exist in the database
+                listingList.forEach((listingData) => {
+                    // console.log("FULL listingData object:", listingData);
+
+                    // let createdAtDisplay = "Unknown";
+                    // const raw = listingData.createdAt;
+                    // console.log("Raw createdAt:", raw);
+
+                    // if (raw) {
+                    //     const parsedDate = new Date(raw);
+                    //     if (!isNaN(parsedDate.getTime())) {
+                    //         createdAtDisplay = parsedDate.toLocaleString();
+                    //     }
+                    // } else {
+                    //     createdAtDisplay = "No date available"; // Fallback if createdAt is null
+                    // }
+
+                    const row = document.createElement("tr");
+                    
+                    row.innerHTML = `
+                        <td>${listingData.listingName}</td>
+                        <td>${listingData.viewCount}</td>
+                        <td>${listingData.viewShortlisted}</td>
+                        <td>
+                            <button class="edit-btn" data-id="${listingData.id}">Edit</button>
+                            <button class="delete-btn" data-id="${listingData.id}">Delete</button>
+                        </td>
+                    `;
+                    container.appendChild(row);
+                });
+            }
+        }
+    
+        // Load listing on page load
+        window.addEventListener("DOMContentLoaded", async () => {
+            const page = new CleanerPage();
+
+            // Get the logged-in cleaner's email
+            const loggedInUserEmail = localStorage.getItem("loggedInUserEmail");
+
+            if (!loggedInUserEmail) {
+                window.location.href = "loginPage.html"; // Redirect if not logged in
+                return;
+            }
+
+            //Displays the list from the firebase
+            const listing = await page.getListingList(loggedInUserEmail); // Wait for listing to load
+            page.displayListingList(listing);
+
+            
+
+
+
+        });
+
+    </script>
 
 
 </body>

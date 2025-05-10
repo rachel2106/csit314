@@ -556,12 +556,11 @@ import {getAuth,
                 numCleaner: 0, //number of cleaner having each of category
                 numHomeowner: 0 //number of homeowner uses the service in that category
             });
+            const status = "success";
 
-            return {
-                status: "success",
-                message: "Service category created successfully",
-                categoryId: categoryDocRef.id
-            };
+            return status;
+                // message: "Service category created successfully",
+                // categoryId: categoryDocRef.i;
         } catch (error) {
             console.error("Error creating service category:", error);
             return {
@@ -696,6 +695,165 @@ import {getAuth,
         }
     }
 
+
+    // Cleaner Functions
+    // Create a new service listing (used by Cleaner)
+    async createServiceListing(listingData) {
+        try {
+            const { serviceListing, serviceCategory, fee, details, currentUserEmail  } = listingData;
+
+            // Validate name
+            if (!serviceListing || !serviceCategory || !fee || !details || !currentUserEmail) {
+                console.error("Missing required fields:", listingData);
+                return {
+                    status: "error",
+                    message: "Missing required fields"
+                };
+            }
+
+            const categoryDocRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", serviceCategory);
+
+            // Optional: Check if category already exists
+            const catSnap = await getDoc(categoryDocRef);
+            if (!catSnap.exists()) {
+                console.error(`Category "${serviceCategory}" does not exist.`);
+                return {
+                    status: "error",
+                    message: "Category does not exist"
+                };
+            }
+
+            // const categoryRef = collection(this.db, "csit314/AllServiceCategory/CleaningServiceData");
+
+            const listingId = serviceListing.toLowerCase().replace(/\s+/g, "_");
+
+            const listingRef = collection(categoryDocRef, "serviceListings")
+            const listingDocRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", serviceCategory, "serviceListings", listingId);
+            const normalizedNaming = serviceCategory.toLowerCase().replace(/\s+/g, '');
+
+            // const categoryDocRef = 
+            await setDoc(listingDocRef , {
+                listingName: serviceListing.trim(),
+                fee: fee.trim(),
+                details: details.trim(),
+                createdBy: currentUserEmail,
+                category: normalizedNaming,
+                viewCount: 0,
+                viewShortlisted: 0,
+
+            });
+            const status = "success";
+
+            return status;
+                // message: "Service category created successfully",
+                // categoryId: categoryDocRef.i;
+        } catch (error) {
+            console.error("Error creating service category:", error);
+            return {
+                status: "error",
+                message: error.message
+            };
+        }
+    }
+
+    // View all service categories
+    async getListingList(cleanerEmail) {
+        try {
+            const categoriesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
+            const categorySnapshots = await getDocs(categoriesRef);
+    
+            const cleanerListings = [];
+    
+            for (const categoryDoc of categorySnapshots.docs) {
+                const categoryId = categoryDoc.id;
+    
+                const listingsRef = collection(
+                    db,
+                    `csit314/AllServiceCategory/CleaningServiceData/${categoryId}/serviceListings` // 🔁 Fixed here
+                );
+                const listingSnapshots = await getDocs(listingsRef);
+    
+                listingSnapshots.forEach(listingDoc => {
+                    const data = listingDoc.data();
+                    if (data.createdBy === cleanerEmail) {
+                        cleanerListings.push({
+                            id: listingDoc.id,
+                            category: categoryId,
+                            ...data
+                        });
+                    }
+                });
+            }
+    
+            return cleanerListings;
+    
+        } catch (error) {
+            console.error("Error fetching listings by cleaner email:", error);
+            return [];
+        }
+    }
+    
+    
+    // async getListingList(cleanerEmail) {
+
+    //     try {
+    //         const categoriesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
+    //         const categorySnapshots = await getDocs(categoriesRef);
+    
+    //         const cleanerListings = [];
+    
+    //         for (const categoryDoc of categorySnapshots.docs) {
+    //             const categoryId = categoryDoc.id;
+    
+    //             const listingsRef = collection(
+    //                 db,
+    //                 `csit314/AllServiceCategory/CleaningServiceData/${categoryId}/Listings`
+    //             );
+    //             const listingSnapshots = await getDocs(listingsRef);
+    
+    //             listingSnapshots.forEach(listingDoc => {
+    //                 const data = listingDoc.data();
+    //                 if (data.createdBy === cleanerEmail) {
+    //                     cleanerListings.push({
+    //                         id: listingDoc.id,
+    //                         category: categoryId,
+    //                         ...data
+    //                     });
+    //                 }
+    //             });
+    //         } return cleanerListings;
+    //     } catch (error) {
+    //         console.error("Error fetching listings by cleaner email:", error);
+    //         return [];
+    //     }
+    //     // try {
+    //     //     const listingCollection = collection(db, "csit314/AllServiceCategory/CleaningServiceData/serviceListings");
+    //     //     const snapshot = await getDocs(listingCollection);
+    //     //     const categoryList = [];
+
+    //     //     snapshot.forEach(doc => {
+    //     //         const serviceData = doc.data();
+    //     //         categoryList.push({
+    //     //             id: doc.id,
+    //     //             serviceCategory: serviceData.serviceCategory,
+    //     //             description: serviceData.description,
+    //     //             createdAt: serviceData.createdAt?.toDate?.() || null,
+    //     //             createdBy: serviceData.createdBy
+
+    //     //         });
+    //     //     });
+
+
+    //     //     return categoryList;
+    //     // } catch (error) {
+    //     //     console.error("Error fetching service categories:", error);
+    //     //     return [];
+    //     //     // return {
+    //     //     //     status: "error",
+    //     //     //     message: error.message
+    //     //     // };
+    //     // }
+    // }
 
 
 
