@@ -38,6 +38,37 @@
         </div>
 
     </main>
+    <!-- Modal for updating service category -->
+    <!-- Update Modal -->
+    <div id="updateModal" class="modal" style="display:none;">
+        <div class="modal-content">
+        <span class="close-btn" id="closeModalBtn-update">&times;</span>
+        <h3>Update Service Listing</h3>
+        <form id="update-form">
+            <label for="edit-service-listing">Service Listing:</label>
+            <input type="text" id="edit-service-listing" required />
+
+            <label for="edit-service-listingcategory">Service Category:</label>
+            <input type="text" id="edit-service-listingcategory" readonly />
+
+            <label for="edit-service-frequency">Service frequency:</label>
+            <input type="text" id="edit-service-frequency" required />
+            
+            <label for="edit-service-fee">Service fee:</label>
+            <input type="text" id="edit-service-fee" required />
+
+            <label for="edit-details">Details:</label>
+            <input type="text" id="edit-details" required />
+
+            <!-- <label for="edit-createdBy">Created By:</label>
+            <input type="text" id="edit-createdBy" readonly /> -->
+
+            <!-- <button class="close-btn" id="closeModalBtn">Cancel</button> -->
+            <button type="submit" class="update-btn">Apply</button>
+        </form>
+        </div>
+    </div>
+
 
     <script>
         document.getElementById("logout").addEventListener("click", function () {
@@ -49,7 +80,7 @@
      <!-- View Service Category List -->
      <script type="module">
         import { cleanerViewServicesController } from './js/cleanerViewListingController.js';
-        // import { pmUpdateServicesController } from './js/pmUpdateServicesController.js';
+        import { cleanerUpdateServicesController } from './js/cleanerUpdateListingController.js';
         // import { pmDeleteServicesController } from './js/pmDeleteServicesController.js';
         // import { pmSearchServicesController } from './js/pmSearchServicesController.js';
 
@@ -76,21 +107,6 @@
 
                 // when data exist in the database
                 listingList.forEach((listingData) => {
-                    // console.log("FULL listingData object:", listingData);
-
-                    // let createdAtDisplay = "Unknown";
-                    // const raw = listingData.createdAt;
-                    // console.log("Raw createdAt:", raw);
-
-                    // if (raw) {
-                    //     const parsedDate = new Date(raw);
-                    //     if (!isNaN(parsedDate.getTime())) {
-                    //         createdAtDisplay = parsedDate.toLocaleString();
-                    //     }
-                    // } else {
-                    //     createdAtDisplay = "No date available"; // Fallback if createdAt is null
-                    // }
-
                     const row = document.createElement("tr");
                     
                     row.innerHTML = `
@@ -122,6 +138,94 @@
             //Displays the list from the firebase
             const listing = await page.getListingList(loggedInUserEmail); // Wait for listing to load
             page.displayListingList(listing);
+
+
+            const updateModal = document.getElementById("updateModal");
+            const closeUpdate = document.getElementById("closeModalBtn-update");
+            const updateForm = document.getElementById("update-form");
+
+            // when (x) is clicked closes the update modal
+            closeUpdate.addEventListener("click", () => updateModal.style.display = "none");
+
+            document.getElementById("data-table").addEventListener("click", async (e) => {
+                if (e.target.classList.contains("edit-btn")) {
+                    const listingId = e.target.dataset.id;
+                    const listings = await page.getListingList(loggedInUserEmail);
+                    const selected = listings.find(cat => cat.id === listingId);
+
+                    if (selected) {
+                        document.getElementById("edit-service-listing").value = selected.listingName;
+                        document.getElementById("edit-service-listingcategory").value = selected.category;
+                        document.getElementById("edit-service-frequency").value = selected.listingFrequency;
+                        document.getElementById("edit-service-fee").value = selected.fee;
+                        document.getElementById("edit-details").value = selected.details;
+                        
+
+                        updateForm.dataset.listingId = selected.id;
+
+                        // updateForm.dataset.categoryId = selected.id;
+
+                        updateModal.style.display = "block"; //opens the modal
+                    }
+                }
+                // else if (e.target.classList.contains("delete-btn")) {
+                //     const categoryId = e.target.dataset.id;
+                //     const categories = await page.getCategoryList();
+                //     const selected = categories.find(cat => cat.id === categoryId);
+
+                //     if (selected){
+                //         const spanElement = document.getElementById("to-delete-category")
+                //         const service_delete = document.createTextNode(selected.serviceCategory);
+                //         spanElement.appendChild(service_delete);
+
+                //         deleteForm.dataset.categoryDelete = selected.serviceCategory;
+                //         // updateForm.dataset.originalCategory = selected.serviceCategory;
+
+                //         deleteModal.style.display = "block"; //opens the modal
+
+                //     }
+                // }
+            });
+
+            updateForm.addEventListener("submit", async(e) =>{
+                e.preventDefault();
+
+                const listingId = updateForm.dataset.listingId;
+                const updateListing = document.getElementById("edit-service-listing").value;
+                const updateFrequency = document.getElementById("edit-service-frequency").value;
+                const updateFee = document.getElementById("edit-service-fee").value;
+                const updateDetails = document.getElementById("edit-details").value;
+                const updateCategory = document.getElementById("edit-service-listingcategory").value; 
+
+                const updateController = new cleanerUpdateServicesController();
+                try{
+                    await updateController.updateServiceListing({
+                        listingId,
+                        serviceCategory: updateCategory,
+                        listingName: updateListing,
+                        listingFrequency: updateFrequency,
+                        fee: updateFee,
+                        details: updateDetails
+                    });
+
+
+                    alert("Listing updated!");
+                    updateModal.style.display = "none"; 
+                    // const cleanerEmail = localStorage.getItem("loggedInUserEmail");
+
+
+                    //Refreshed the table
+                    // const updatedList = await page.getListingList(cleanerEmail);
+                    const updatedList = await page.getListingList(loggedInUserEmail);
+
+                    page.displayListingList(updatedList);
+
+                }catch (err) {
+                    console.log("Failed to update: " + err.message);
+                    // alert("Failed to update: " + err.message);
+                }
+
+            });
 
             
 

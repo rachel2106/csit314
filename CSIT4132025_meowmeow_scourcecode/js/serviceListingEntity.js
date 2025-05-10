@@ -31,6 +31,17 @@ export class serviceListingEntity {
         }
     }
 
+    // Update a service category
+    async updateServiceListing(updatedListingObj) {
+        try {
+            const updatedListingList = await firebase.updateServiceListing(updatedListingObj);
+            return updatedListingList;
+        } catch (error) {
+            console.error("Error updating category:", error);
+            return { status: "error", message: error.message };
+        }
+    }
+
 }
 
 export default serviceListingEntity;

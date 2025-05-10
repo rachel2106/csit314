@@ -731,7 +731,7 @@ import {getAuth,
 
             const listingRef = collection(categoryDocRef, "serviceListings")
             const listingDocRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", serviceCategory, "serviceListings", listingId);
-            const normalizedNaming = serviceCategory.toLowerCase().replace(/\s+/g, '');
+            // const normalizedNaming = serviceCategory.toLowerCase().replace(/\s+/g, '');
 
             // const categoryDocRef = 
             await setDoc(listingDocRef , {
@@ -739,7 +739,7 @@ import {getAuth,
                 fee: parseFloat(fee),
                 details: details.trim(),
                 createdBy: currentUserEmail,
-                category: normalizedNaming,
+                category: serviceCategory.trim(),
                 listingFrequency: frequency.trim(),
                 viewCount: 0,
                 viewShortlisted: 0,
@@ -795,68 +795,51 @@ import {getAuth,
             return [];
         }
     }
-    
-    
-    // async getListingList(cleanerEmail) {
 
-    //     try {
-    //         const categoriesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
-    //         const categorySnapshots = await getDocs(categoriesRef);
-    
-    //         const cleanerListings = [];
-    
-    //         for (const categoryDoc of categorySnapshots.docs) {
-    //             const categoryId = categoryDoc.id;
-    
-    //             const listingsRef = collection(
-    //                 db,
-    //                 `csit314/AllServiceCategory/CleaningServiceData/${categoryId}/Listings`
-    //             );
-    //             const listingSnapshots = await getDocs(listingsRef);
-    
-    //             listingSnapshots.forEach(listingDoc => {
-    //                 const data = listingDoc.data();
-    //                 if (data.createdBy === cleanerEmail) {
-    //                     cleanerListings.push({
-    //                         id: listingDoc.id,
-    //                         category: categoryId,
-    //                         ...data
-    //                     });
-    //                 }
-    //             });
-    //         } return cleanerListings;
-    //     } catch (error) {
-    //         console.error("Error fetching listings by cleaner email:", error);
-    //         return [];
-    //     }
-    //     // try {
-    //     //     const listingCollection = collection(db, "csit314/AllServiceCategory/CleaningServiceData/serviceListings");
-    //     //     const snapshot = await getDocs(listingCollection);
-    //     //     const categoryList = [];
+    async updateServiceListing(updatedListingData){ 
+        const {listingId, serviceCategory, listingName, listingFrequency, fee,  details } = updatedListingData;
 
-    //     //     snapshot.forEach(doc => {
-    //     //         const serviceData = doc.data();
-    //     //         categoryList.push({
-    //     //             id: doc.id,
-    //     //             serviceCategory: serviceData.serviceCategory,
-    //     //             description: serviceData.description,
-    //     //             createdAt: serviceData.createdAt?.toDate?.() || null,
-    //     //             createdBy: serviceData.createdBy
+        // Validate required category
+        console.log("originalListing:", listingId);
+        console.log("serviceListing:", listingName);
+        console.log("frequency:", listingFrequency);
+        console.log("fee:", fee);
+        console.log("details:", details);
 
-    //     //         });
-    //     //     });
+        if (!listingId || !serviceCategory || !listingName || !listingFrequency || !fee || !details) {
+            console.error("Error: Missing required fields for user update.");
+            return {success: false, message: "Missing required fields!"};
+
+        }
+
+        try{
+            console.log("Updating service data in Firestore:", updatedListingData);
+
+            // Reference to the Firestore document for the user
+            const categoryRef = doc(this.db, `csit314/AllServiceCategory/CleaningServiceData/${serviceCategory}/serviceListings`, listingId);
+
+            // Update only Firestore data (not Firebase Authentication)
+           
+            await updateDoc(categoryRef, {
+                listingName: listingName.trim(),
+                fee: parseFloat(fee),
+                details: details.trim(),
+                listingFrequency: listingFrequency.trim()
+            });
 
 
-    //     //     return categoryList;
-    //     // } catch (error) {
-    //     //     console.error("Error fetching service categories:", error);
-    //     //     return [];
-    //     //     // return {
-    //     //     //     status: "error",
-    //     //     //     message: error.message
-    //     //     // };
-    //     // }
-    // }
+
+            // Refresh the page after the update
+            window.location.reload(); 
+
+            return { success: true, message: "Service category updated"};
+        } catch (error) {
+            console.error("Error updating service category:", error);
+            return { success: false, message: `Error updating category:${error.message}` };
+        }
+    }
+    
+    
 
 
 
