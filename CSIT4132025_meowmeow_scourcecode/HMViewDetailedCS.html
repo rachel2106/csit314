@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Admin Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="homeowners-page">
+    <div class="homeownersHeaderBanner">
+       <a href="homeownersPage.html">
+        <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img">
+        </a>
+                <a href="HMViewDetailedCS.html">Detailed Cleaning Services</a>
+                <a href="HMViewShortlistedCS.html">Shortlisted Cleaning Services</a>
+                <a href="HMViewBKHistory.html">Booking History</a>
+        
+        <a href="HMFavourites.html">Favourites</a>
+        <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
+        
+    </div>
+    
+    <main>
+        <div class="view-detailedCS">
+            <div class="detailedCS">
+
+            </div>
+        </div>
+
+    
+
+    </main>
+
+
+    <!--action for logout button-->
+<script>
+    document.getElementById("logout").addEventListener("click", function logOut() {
+        console.log("Logout link has been clicked");
+        window.location.href = "loginPage.html";
+        });
+    </script>
