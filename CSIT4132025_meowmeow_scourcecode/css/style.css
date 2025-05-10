@@ -1106,7 +1106,8 @@ button.update-btn:hover {
     text-align: center;
 }
 
-/* styling for platform manager CREATE service category page */
+/* styling for cleaner CREATE service category page */
+
 
 #createListing-main {
     display: flex;
@@ -1124,7 +1125,7 @@ button.update-btn:hover {
 }
 
 
-#createListing-main .cleanercreate-form {
+#createListing-main .cleaner-create-form {
     background-color: white;
     padding: 30px;
     border-radius: 8px;
@@ -1134,8 +1135,8 @@ button.update-btn:hover {
     font-size: 20px;
 }
 
-#createListing-main .cleanercreate-form input,
-#createListing-main .cleanercreate-form textarea {
+#createListing-main .cleaner-create-form input,
+#createListing-main .cleaner-create-form textarea {
     width: 100%;
     padding: 10px;
     margin-bottom: 20px;
@@ -1144,7 +1145,7 @@ button.update-btn:hover {
     box-sizing: border-box;
 }
 
-#createListing-main .cleanercreate-form button {
+#createListing-main .cleaner-create-form button {
     padding: 10px 20px;
     border: none;
     background-color: #4CAF50;
@@ -1153,7 +1154,7 @@ button.update-btn:hover {
     cursor: pointer;
 }
 
-#createService-main .cleanercreate-form button:hover {
+#createListing-main .cleaner-create-form button:hover {
     background-color: #45a049;
 }
 
@@ -1174,6 +1175,7 @@ button.update-btn:hover {
 #createListingButton:hover {
     background-color: #0056b3;
 }
+
 
 /* Dropdown Button */
 .dropbtn {
@@ -1228,6 +1230,10 @@ button.update-btn:hover {
     margin-bottom: 20px;
     color: #333;
 } */
+
+/* cleaner create page */
+
+
 
 
 

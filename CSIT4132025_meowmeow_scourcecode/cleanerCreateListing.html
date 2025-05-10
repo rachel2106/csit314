@@ -29,14 +29,13 @@
                     <option value="" disabled selected>Select a category</option>
                 </select>
 
-
-                <!-- <input type="text" id="listingName" required><br> -->
-
+                <label for="listingFrequency">Service Frequency:</label>
+                <input type="text" id="listingFrequency" required><br>
 
                 <label for="listingFee">Fee:</label>
                 <input type="number" id="listingFee" required><br>
 
-                <label for="categoryDescription">Details:</label>
+                <label for="listingDetails">Details:</label>
                 <textarea id="listingDetails" rows="4" required></textarea><br>
 
                 <button type="button" id="createListingButton">Create Listing</button>
@@ -49,7 +48,7 @@
 
         const controller = new cleanerCreateListingController();
         const getCategoryController = new pmViewServicesController()
-        let currentUserEmail = localStorage.getItem("loggedInUserEmail");
+        
 
         async function populateCategoryDropdown(){
             const dropdown = document.getElementById("listingCategory");
@@ -71,7 +70,7 @@
         
 
 
-        async function createServiceListing(serviceListing, serviceCategory, listingFee, listingDetails,  currentUserEmail) {
+        async function createServiceListing(serviceListing, serviceCategory, frequency, listingFee, listingDetails,  currentUserEmail) {
             try {
                 // currentUserEmail = await controller.getCurrentUserEmail();
 
@@ -84,22 +83,33 @@
                 const listing = {
                     serviceListing,
                     serviceCategory,
+                    frequency,
                     fee: listingFee,
                     details: listingDetails,
                     currentUserEmail
                 };
+                // console.log("This is frequency" + frequency)
 
                 alert (currentUserEmail);
 
                 const result = await controller.createServiceListing(listing);
 
-                if (result.status === "success") {
+                // if (result === "success") {
+                //     alert("Category created successfully.");
+                //     window.location.href = "cleanerPage.html";
+                // } else {
+                //     console.error("Creation failed:", result);
+                //     alert("Error: " + result.message);
+                // }
+
+                if (result === "success") {
                     alert("Category created successfully.");
                     window.location.href = "cleanerPage.html";
                 } else {
                     console.error("Creation failed:", result);
-                    alert("Error: " + result.message);
+                    alert("Error: " + (result.message || "Unknown error"));
                 }
+
             } catch (error) {
                 console.error("Error:", error);
                 alert("An error occurred while checking the user status.");
@@ -110,17 +120,21 @@
         document.getElementById("createListingButton").addEventListener("click", async function () {
             const listingName = document.getElementById("listingName").value.trim();
             const listingCategory = document.getElementById("listingCategory").value.trim();
+            const frequency = document.getElementById("listingFrequency").value.trim();
+
             const listingFee = document.getElementById("listingFee").value.trim();
             const listingDetails = document.getElementById("listingDetails").value.trim();
+            const currentUserEmail = localStorage.getItem("loggedInUserEmail");
 
-            if (!listingName || !listingCategory || !listingFee || !listingDetails ) {
+
+            if (!listingName || !listingCategory || !frequency|| !listingFee || !listingDetails ) {
                 alert("Please fill in all fields.");
                 return;
             }
 
             // Proceed to check user and create the category
-            // await createServiceCategory(categoryName, categoryDescription);
-            await createServiceListing(listingName, listingCategory, listingFee, listingDetails,  currentUserEmail);
+            
+            await createServiceListing(listingName, listingCategory, frequency, listingFee, listingDetails, currentUserEmail);
 
         });
 

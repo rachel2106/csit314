@@ -700,15 +700,17 @@ import {getAuth,
     // Create a new service listing (used by Cleaner)
     async createServiceListing(listingData) {
         try {
-            const { serviceListing, serviceCategory, fee, details, currentUserEmail  } = listingData;
+            const { serviceListing, serviceCategory, frequency, fee, details, currentUserEmail  } = listingData;
+            console.log("This is frequency" + listingFrequency)
+
 
             // Validate name
-            if (!serviceListing || !serviceCategory || !fee || !details || !currentUserEmail) {
+            if (!serviceListing || !serviceCategory || !frequency || !fee || !details || !currentUserEmail) {
                 console.error("Missing required fields:", listingData);
                 return {
                     status: "error",
-                    message: "Missing required fields"
-                };
+                    message: "Missing required fields" + serviceListing + serviceCategory + listingFrequency +fee + details + currentUserEmail
+                 };
             }
 
             const categoryDocRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", serviceCategory);
@@ -734,15 +736,16 @@ import {getAuth,
             // const categoryDocRef = 
             await setDoc(listingDocRef , {
                 listingName: serviceListing.trim(),
-                fee: fee.trim(),
+                fee: parseFloat(fee),
                 details: details.trim(),
                 createdBy: currentUserEmail,
                 category: normalizedNaming,
+                listingFrequency: frequency.trim(),
                 viewCount: 0,
                 viewShortlisted: 0,
 
             });
-            const status = "success";
+            let status = "success";
 
             return status;
                 // message: "Service category created successfully",
