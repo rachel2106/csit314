@@ -28,6 +28,7 @@
                 <thead id="cleaner-tableheader">
                     <tr id="cleaner-rowheader">
                         <th>Cleaning Service Listing:</th>
+                        <th>Cleaning Service Category:</th>
                         <th>View Count</th>
                         <th>Shortlisted Count</th>
                         <th class="actions-column">Actions</th>
@@ -52,19 +53,40 @@
             <input type="text" id="edit-service-listingcategory" readonly />
 
             <label for="edit-service-frequency">Service frequency:</label>
-            <input type="text" id="edit-service-frequency" required />
+            <select id="edit-service-frequency" required>
+                <option value="">-- Select Frequency --</option>
+                <option value="once">Once</option>
+                <option value="daily">Daily</option>
+                <option value="every-other-week">Every Other Week</option>
+                <option value="twice-a-week">Twice a Week</option>
+                <option value="weekly">Weekly</option>
+                <option value="biweekly">Biweekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
             
             <label for="edit-service-fee">Service fee:</label>
-            <input type="text" id="edit-service-fee" required />
+            <input type="number" id="edit-service-fee" required min="0" max="500" step="1" required />
 
             <label for="edit-details">Details:</label>
             <input type="text" id="edit-details" required />
-
-            <!-- <label for="edit-createdBy">Created By:</label>
-            <input type="text" id="edit-createdBy" readonly /> -->
-
-            <!-- <button class="close-btn" id="closeModalBtn">Cancel</button> -->
             <button type="submit" class="update-btn">Apply</button>
+        </form>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div id="deleteModal" class="modal" style="display:none;">
+        <div class="modal-content">
+        <span class="close-btn" id="closeModalBtn-delete">&times;</span>
+        <h3>Delete?</h3>
+        <form id="delete-form">
+            <label for="delete-service-listing">Are you sure you want to delete this listing:</label>
+            <span id="to-delete-listing"></span>
+            <label for="delete-service-category">From this category:</label>
+            <span id="to-delete-category"></span>
+            <!-- <input type="text" id="edit-service-category" required /> -->
+
+            <button type="submit" class="delete-btn">Delete</button>
         </form>
         </div>
     </div>
@@ -81,7 +103,7 @@
      <script type="module">
         import { cleanerViewServicesController } from './js/cleanerViewListingController.js';
         import { cleanerUpdateServicesController } from './js/cleanerUpdateListingController.js';
-        // import { pmDeleteServicesController } from './js/pmDeleteServicesController.js';
+        import { cleanerDeleteServicesController } from './js/cleanerDeleteServicesController.js';
         // import { pmSearchServicesController } from './js/pmSearchServicesController.js';
 
 
@@ -91,7 +113,7 @@
                 const controller = new cleanerViewServicesController();
                 return await controller.getListingList(cleanerEmail);
             }
-    j
+
             displayListingList(listingList) {
                 // console.log("DEBUG: listingList =", listingList);
                 const container = document.getElementById("data-table");
@@ -111,11 +133,12 @@
                     
                     row.innerHTML = `
                         <td>${listingData.listingName}</td>
+                        <td>${listingData.category}</td>
                         <td>${listingData.viewCount}</td>
                         <td>${listingData.viewShortlisted}</td>
                         <td>
-                            <button class="edit-btn" data-id="${listingData.id}">Edit</button>
-                            <button class="delete-btn" data-id="${listingData.id}">Delete</button>
+                            <button class="edit-btn" data-id="${listingData.id}" data-category="${listingData.category}">Edit</button>
+                            <button class="delete-btn" data-id="${listingData.id}" data-category="${listingData.category}">Delete</button>
                         </td>
                     `;
                     container.appendChild(row);
@@ -144,14 +167,24 @@
             const closeUpdate = document.getElementById("closeModalBtn-update");
             const updateForm = document.getElementById("update-form");
 
+            const deleteModal = document.getElementById("deleteModal");
+            const closeDelete = document.getElementById("closeModalBtn-delete");
+            const deleteForm = document.getElementById("delete-form");
+
+
             // when (x) is clicked closes the update modal
             closeUpdate.addEventListener("click", () => updateModal.style.display = "none");
-
+            closeDelete.addEventListener("click", () => deleteModal.style.display = "none");
+            
+             // Edit & Delete Button Click Handler
             document.getElementById("data-table").addEventListener("click", async (e) => {
                 if (e.target.classList.contains("edit-btn")) {
                     const listingId = e.target.dataset.id;
+                    const category = e.target.dataset.category;
                     const listings = await page.getListingList(loggedInUserEmail);
-                    const selected = listings.find(cat => cat.id === listingId);
+                    const selected = listings.find(
+                        list => list.id === listingId && list.category === category
+                    );
 
                     if (selected) {
                         document.getElementById("edit-service-listing").value = selected.listingName;
@@ -160,33 +193,43 @@
                         document.getElementById("edit-service-fee").value = selected.fee;
                         document.getElementById("edit-details").value = selected.details;
                         
-
                         updateForm.dataset.listingId = selected.id;
-
-                        // updateForm.dataset.categoryId = selected.id;
-
+                        updateForm.dataset.category = selected.category;
                         updateModal.style.display = "block"; //opens the modal
                     }
+                }else if (e.target.classList.contains("delete-btn")) {
+                    const listingId = e.target.dataset.id;
+                    const category = e.target.dataset.category;
+
+                    const listings = await page.getListingList(loggedInUserEmail);
+                    const selected = listings.find(
+                        list => list.id === listingId && list.category === category
+                    );
+                    // const selected = categories.find(cat => cat.id === categoryId);
+
+                    if (selected){
+                        const spanElementListing = document.getElementById("to-delete-listing")
+                        const listing_delete = document.createTextNode(selected.listingName);
+                        spanElementListing.appendChild(listing_delete);
+
+                        const spanElementCategory = document.getElementById("to-delete-category")
+                        const cat_delete = document.createTextNode(selected.category);
+                        spanElementCategory.appendChild(cat_delete);
+
+                        // deleteForm.dataset.listingDelete = selected.listingName;
+                        // deleteForm.dataset.category = selected.category;
+                        deleteForm.dataset.listingDelete = selected.listingName;
+                        deleteForm.dataset.categoryDelete = selected.category;
+
+                        // updateForm.dataset.originalCategory = selected.serviceCategory;
+
+                        deleteModal.style.display = "block"; //opens the modal
+
+                    }
                 }
-                // else if (e.target.classList.contains("delete-btn")) {
-                //     const categoryId = e.target.dataset.id;
-                //     const categories = await page.getCategoryList();
-                //     const selected = categories.find(cat => cat.id === categoryId);
-
-                //     if (selected){
-                //         const spanElement = document.getElementById("to-delete-category")
-                //         const service_delete = document.createTextNode(selected.serviceCategory);
-                //         spanElement.appendChild(service_delete);
-
-                //         deleteForm.dataset.categoryDelete = selected.serviceCategory;
-                //         // updateForm.dataset.originalCategory = selected.serviceCategory;
-
-                //         deleteModal.style.display = "block"; //opens the modal
-
-                //     }
-                // }
             });
 
+            // Opens Update Form
             updateForm.addEventListener("submit", async(e) =>{
                 e.preventDefault();
 
@@ -205,7 +248,8 @@
                         listingName: updateListing,
                         listingFrequency: updateFrequency,
                         fee: updateFee,
-                        details: updateDetails
+                        details: updateDetails,
+                        createdBy: loggedInUserEmail
                     });
 
 
@@ -217,7 +261,6 @@
                     //Refreshed the table
                     // const updatedList = await page.getListingList(cleanerEmail);
                     const updatedList = await page.getListingList(loggedInUserEmail);
-
                     page.displayListingList(updatedList);
 
                 }catch (err) {
@@ -227,6 +270,36 @@
 
             });
 
+            //Open Delete Form
+            deleteForm.addEventListener("submit", async(e) =>{
+                e.preventDefault();
+
+                const listingDelete = deleteForm.dataset.listingDelete;
+                const categoryDelete = deleteForm.dataset.categoryDelete;
+                
+                const deleteController = new cleanerDeleteServicesController();
+                try{
+                    await deleteController.deleteServiceListing({
+                        listingName: listingDelete,
+                        serviceCategory: categoryDelete,
+                        createdBy: loggedInUserEmail
+                    });
+
+
+
+                    alert("Category deleted!");
+                    deleteModal.style.display = "none"; 
+
+                    //Refreshed the table
+                    const deletedList = await page.getListingList(loggedInUserEmail);
+                    page.displayListingList(deletedList);
+
+                }catch (err) {
+                    console.log("Failed to update: " + err.message);
+                    // alert("Failed to update: " + err.message);
+                }
+
+            });
             
 
 

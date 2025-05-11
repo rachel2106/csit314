@@ -30,10 +30,19 @@
                 </select>
 
                 <label for="listingFrequency">Service Frequency:</label>
-                <input type="text" id="listingFrequency" required><br>
+                <select id="listingFrequency" required>
+                    <option value="">-- Select Frequency --</option>
+                    <option value="once">Once</option>
+                    <option value="daily">Daily</option>
+                    <option value="every-other-week">Every Other Week</option>
+                    <option value="twice-a-week">Twice a Week</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="biweekly">Biweekly</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
 
                 <label for="listingFee">Fee:</label>
-                <input type="number" id="listingFee" required><br>
+                <input type="number" id="listingFee" required min="0" max="500" step="1" required />
 
                 <label for="listingDetails">Details:</label>
                 <textarea id="listingDetails" rows="4" required></textarea><br>

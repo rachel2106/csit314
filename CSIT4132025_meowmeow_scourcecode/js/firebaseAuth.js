@@ -731,11 +731,12 @@ import {getAuth,
 
             const listingRef = collection(categoryDocRef, "serviceListings")
             const listingDocRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", serviceCategory, "serviceListings", listingId);
-            // const normalizedNaming = serviceCategory.toLowerCase().replace(/\s+/g, '');
+            const normalizedNaming = serviceListing.toLowerCase().replace(/\s+/g, '');
 
             // const categoryDocRef = 
             await setDoc(listingDocRef , {
                 listingName: serviceListing.trim(),
+                normalizedListing: normalizedNaming,
                 fee: parseFloat(fee),
                 details: details.trim(),
                 createdBy: currentUserEmail,
@@ -797,7 +798,7 @@ import {getAuth,
     }
 
     async updateServiceListing(updatedListingData){ 
-        const {listingId, serviceCategory, listingName, listingFrequency, fee,  details } = updatedListingData;
+        const {listingId, serviceCategory, listingName, listingFrequency, fee,  details, createdBy } = updatedListingData;
 
         // Validate required category
         console.log("originalListing:", listingId);
@@ -816,11 +817,20 @@ import {getAuth,
             console.log("Updating service data in Firestore:", updatedListingData);
 
             // Reference to the Firestore document for the user
-            const categoryRef = doc(this.db, `csit314/AllServiceCategory/CleaningServiceData/${serviceCategory}/serviceListings`, listingId);
+            const listingRef = doc(this.db, `csit314/AllServiceCategory/CleaningServiceData/${serviceCategory}/serviceListings`, listingId);
+            const listingSnap = await getDoc(listingRef);
 
+            if (!listingSnap.exists()) {
+                return { success: false, message: "Listing not found." };
+            }
+
+            const listingData = listingSnap.data();
+            if (listingData.createdBy !== createdBy) {
+                return { success: false, message: "Unauthorized: You can only update your own listings." };
+            }
             // Update only Firestore data (not Firebase Authentication)
            
-            await updateDoc(categoryRef, {
+            await updateDoc(listingRef, {
                 listingName: listingName.trim(),
                 fee: parseFloat(fee),
                 details: details.trim(),
@@ -830,13 +840,41 @@ import {getAuth,
 
 
             // Refresh the page after the update
-            window.location.reload(); 
+            // window.location.reload(); 
 
             return { success: true, message: "Service category updated"};
         } catch (error) {
             console.error("Error updating service category:", error);
             return { success: false, message: `Error updating category:${error.message}` };
         }
+    }
+
+    async deleteServiceListing(deleteListingData){
+        try {
+            const {listingName, serviceCategory, createdBy } = deleteListingData;
+            // Get user document based on email
+            // const categoryRef = collection(this.db, "csit314/AllServiceCategory/CleaningServiceData");
+            const categoryRef = collection(this.db, `csit314/AllServiceCategory/CleaningServiceData/${serviceCategory}/serviceListings`);
+
+            const q = query(categoryRef, where('listingName', '==', listingName), where('createdBy', '==', createdBy));
+            const querySnapshot = await getDocs(q);
+    
+            if (querySnapshot.empty) {
+                throw new Error("No user found with this email.");
+            }
+    
+            // Correct way: use for...of to await each deleteDoc
+            for (const docSnap of querySnapshot.docs) {
+                await deleteDoc(docSnap.ref);
+                // console.log(`Deleted Firestore document for service category: ${deleteCategoryData}`);
+            }
+    
+            return { success: true };
+        } catch (error) {
+            console.error("Error deleting Firestore service category:", error);
+            throw error;
+        }
+
     }
     
     

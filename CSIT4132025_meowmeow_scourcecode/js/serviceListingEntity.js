@@ -42,6 +42,17 @@ export class serviceListingEntity {
         }
     }
 
+    // Delete a service category
+    async deleteServiceListing(deleteListing) {
+        try {
+            const deleted = await firebase.deleteServiceListing(deleteListing);
+            return deleted;
+        } catch (error) {
+            console.error("Error deleting category:", error);
+            return { status: "error", message: error.message };
+        }
+    }
+
 }
 
 export default serviceListingEntity;
