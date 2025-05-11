@@ -8,26 +8,39 @@
 </head>
 <body class="homeowners-page">
     <div class="homeownersHeaderBanner">
+        <a href="homeownersPage.html">
         <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img">
+        </a>
+        
+                <a href="HMViewAllCS.html" class="services-menu">All Cleaning Services</a>
+                <a href="HMViewBKHistory.html" class="services-menu">Booking History</a>
+     
+        <a href="HMFavourites.html" class="services-menu">Favourites</a>
         <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
+        
     </div>
     
     <main>
         <div class="homeowners">
-            Welcome to your homeowners's page
+            Welcome to Homeowners page<br><br>
+            Please use the navigation bar at the top.
         </div>
 
-        <div class="view-container" id="view-container">
-            <div class="">
+    
 
-            </div>
     </main>
+
+
+    <!--action for logout button-->
 <script>
     document.getElementById("logout").addEventListener("click", function logOut() {
         console.log("Logout link has been clicked");
-        windows.location.href = "loginPage.html";
+        window.location.href = "loginPage.html";
         });
     </script>
+
+
+
 
 
 
