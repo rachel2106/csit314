@@ -986,6 +986,310 @@ button.update-btn:hover {
     color: #FFFFFF;
 }
 
+/* Cleaner Page */
+/* Search Service Listing */
+
+#search-listingName{
+    width: 20%;
+    height: 40px;
+    margin-left: 50px;
+    font-size: 18px;
+
+}
+#reset-instruction{
+    font-weight: normal;
+    font-size: 18px;
+    margin-top: 0%;
+    margin-left: 15%;
+    /* text-align: right; */
+}
+#cleaner-search-button{
+    width: 10%;
+    height: 50px;
+    /* margin-left: 20%; */
+    background-color: #636e72;
+    margin-top: 24px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 20px;
+    text-decoration: none;
+    text-align: center;
+    color: black;
+    border: 1px solid black;
+
+}
+
+#cleaner-search-button:hover {
+    background-color: #873D48;
+    color: #FFFFFF;
+}
+/* styling for cleaner page */
+.cleanerHeaderBanner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: black;
+    padding: 15px 30px;
+    position: relative;
+    z-index: 10;
+    font-size: 30px;
+}
+
+.cleanerHeaderBanner .logo-img {
+    width: 200px;
+    height: 200px;
+}
+
+/* .logoutBtn {
+    color: black;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    margin-right: 25px;
+    margin-bottom: 6px;
+    font-size: 23px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.logoutBtn:hover {
+    text-decoration: underline;
+    color: #873D48;
+} */
+
+.serviceListing-header {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 25px;
+    font-weight: 600;
+}
+
+.cleanerHistory-btn{
+    width: 20%;
+    height: 50px;
+    margin-left: 5px;
+    background-color: #636e72;
+    padding: 20px;
+    margin-top: 24px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 18px;
+    text-decoration: none;
+    text-align: center;
+    color: black;
+    border: 1px solid black;
+}
+
+.cleanerHistory-btn:hover {
+    background-color: #873D48;
+    color: #FFFFFF;
+}
+
+.cleanerCreate-btn{
+  width: 20%;
+  height: 50px;
+  margin-left: 5px;
+  background-color: #636e72;
+  padding: 20px;
+  margin-top: 24px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 18px;
+  text-decoration: none;
+  text-align: center;
+  color: black;
+  border: 1px solid black;
+}
+
+.cleanerCreate-btn:hover {
+    background-color: #873D48;
+    color: #FFFFFF;
+}
+
+/* cleaner table styling*/
+#cleaner-table{
+    width: 75%;
+    margin: auto;
+    margin-top: 3%;
+    border-collapse: collapse;
+    border: 2px solid #433A3F;
+    
+}
+
+#cleaner-tableheader tr th {
+    background-color: #bcd8fa;
+    color: #433A3F;
+    border: 1px solid #686065;
+    padding: 8px;
+}
+
+
+.cleaner-table tr td{
+    border: 1px solid #686065; 
+}
+
+
+#cleaner-table th:nth-child(1),  /* Cleaning Service Category */
+#cleaner-table td:nth-child(1) {
+    width: 25%; /* wider */
+}
+
+#cleaner-table th:nth-child(2),  /* Description */
+#cleaner-table td:nth-child(2) {
+    width: 35%; /* shorter */
+}
+
+#cleaner-table th:nth-child(3),  /* Created At */
+#cleaner-table td:nth-child(3) {
+    width: 10%; /* shorter */
+}
+
+#cleaner-table th:nth-child(4),  /* Created At */
+#cleaner-table td:nth-child(4) {
+    width: 10%; /* shorter */
+}
+
+#cleaner-table .actions-column, /* Action */
+#cleaner-table td:nth-child(5) {
+    width: 25%;
+}
+
+
+#cleaner-table td button {
+    /* margin: 0 5px; */
+    display: inline-block;
+    background-color: #878a8d;
+    color: black;
+    font-size: 15px;
+    border: none;
+    padding: 7px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+#cleaner-table th,
+#cleaner-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+/* styling for cleaner CREATE service category page */
+
+
+#createListing-main {
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    justify-content: center; /* Vertically center */
+    align-items: center; /* Horizontally center */
+    padding: 20px;
+}
+
+
+#createListing-main h2 {
+    margin-bottom: 20px;
+    font-size: 35px;
+    color: #000000;
+}
+
+
+#createListing-main .cleaner-create-form {
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+    font-size: 20px;
+}
+
+#createListing-main .cleaner-create-form input,
+#createListing-main .cleaner-create-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#createListing-main .cleaner-create-form button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#createListing-main .cleaner-create-form button:hover {
+    background-color: #45a049;
+}
+
+
+/* Button styling */
+#createListingButton {
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#createListingButton:hover {
+    background-color: #0056b3;
+}
+
+
+/* Dropdown Button */
+.dropbtn {
+    background-color: #3498DB;
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+  }
+  
+  /* Dropdown button on hover & focus */
+  .dropbtn:hover, .dropbtn:focus {
+    background-color: #2980B9;
+  }
+  
+  /* The container <div> - needed to position the dropdown content */
+  .dropdown-Category{
+    position: relative;
+    display: inline-block;
+  }
+  
+  /* Dropdown Content (Hidden by Default) */
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f1f1f1;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  
+  /* Links inside the dropdown */
+  .dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+  }
+  
+  /* Change color of dropdown links on hover */
+  .dropdown-content a:hover {background-color: #ddd;}
+  
+  /* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+  .show {display:block;}
 
 
 
