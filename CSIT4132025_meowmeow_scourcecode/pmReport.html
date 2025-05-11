@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Cleaning Service Category</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="platformManager-page">
+    <div class="platformManagerHeaderBanner">
+        <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img">
+        <a href="platformManagerPage.html" class="backBtn">Back to Categories List</a>
+        <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
+    </div>
+    
+    <main id="reportPage-main">
+        <div class="platformManager-report">
+            <h2>Display Reports</h2>
+        </div>
+
+        <!-- Create Cleaning Service Category Form -->
+        <div class="pmcreate-report">
+            <p>generate report by:</p>
+            <select id="report-timeframe" required>
+                <option value="">-- Select Time Frame --</option>
+                <option value="daily">daily</option>
+                <option value="weekly">weekly</option>
+                <option value="monthly">monthly</option>
+            </select>
+
+            <div id="monthPickerContainer" style="display:none; margin-top: 10px;">
+                <label for="selectedMonth">Select Month:</label>
+                <input type="month" id="selectedMonth">
+            </div>
+
+            <button id="generateReportBtn">Generate Report</button>
+
+            <p id="title-timeFrame"></p>
+
+            <div id="reportResults" class="report-results">
+                <table id="report-table">
+                    <thead id="report-tableheader">
+                        <tr id="report-rowheader">
+                            <th id="timeFrame"></th>
+                            <th>Created By</th>
+                            <th>Number of Services</th>
+                            <th>Number of Cleaners</th>
+                            <th class="actions-column">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table"></tbody>
+                </table>
+            </div>
+            
+        </div>
+    </main>
+    <script type="module">
+        import { pmDailyReportController } from './js/pmDailyReportController.js';
+        import { pmWeeklyReportController } from './js/pmWeeklyReportController.js';
+        import { pmMonthlyReportController } from './js/pmMonthlyReportController.js';
+
+
+        class PMReportPage{
+            async getReportDaily(){
+                const controller = new pmDailyReportController();
+                return await controller.getDailyReport();
+            }
+
+            displayDailyReport(reportList){
+
+                const container = document.getElementById("reportTable");
+                container.innerHTML = "";
+
+                if(!reportList || reportList.length === 0){
+                    const row = document.createElement("tr");
+                    row.innerHTML = `<td colspan="4">No categories found.</td>`;
+                    container.appendChild(row);
+                    return;
+
+                }
+
+                reportList.forEach((categoryData) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${categoryData.serviceCategory}</td>
+                        <td>${categoryData.createdBy}</td>
+                        <td>${categoryData.numOfServices}</td>
+                        <td>${categoryData.numCleaner}</td>
+                    `;
+                    container.appendChild(row);
+
+                });
+
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", async () => {
+            const page = new PMReportPage();
+            
+
+            document.getElementById("generateReportBtn").addEventListener("click", async (e) => {
+            
+                const timeframe = document.getElementById("report-timeframe").value;
+                const resultsDiv = document.getElementById("reportResults");
+                // const report = await page.getDailyReport();
+
+                let report = []
+
+                if (timeframe === "daily") {
+                    report = await page.getDailyReport();
+                } else if (timeframe === "weekly") {
+                    report = await page.getWeeklyReport();
+                } else if (timeframe === "monthly") {
+                    const selectedMonth = document.getElementById("selectedMonth").value;
+                    if (!selectedMonth) {
+                        resultsDiv.innerHTML = "Please select a month.";
+                        return;
+                    }
+                    report = await page.getMonthlyReport(selectedMonth);
+                } else {
+                    resultsDiv.innerHTML = "Please select a timeframe.";
+                    return;
+                }
+
+                page.displayDailyReport(report);
+
+
+            });
+        });
+
+        document.getElementById("report-timeframe").addEventListener("change", function () {
+        document.getElementById("monthPickerContainer").style.display = 
+            this.value === "monthly" ? "block" : "none";
+        });
+
+
+        document.getElementById("logout").addEventListener("click", () => {
+            localStorage.removeItem("loggedInUserEmail");
+            window.location.href = "loginPage.html";
+        });
+    </script>
+
+
+</body>
+</html>

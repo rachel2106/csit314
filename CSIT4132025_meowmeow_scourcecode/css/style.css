@@ -1064,7 +1064,7 @@ button.update-btn:hover {
     font-weight: 600;
 }
 
-.cleanerHistory-btn{
+.cleanerHistory-btn, .pmReport-btn{
     width: 20%;
     height: 50px;
     margin-left: 5px;

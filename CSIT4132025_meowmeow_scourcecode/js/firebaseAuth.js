@@ -376,55 +376,55 @@ import {getAuth,
         // Create new profile in Firestore
         async createNewProfile(newUser) {
             try {
-        // Define valid user types
-        const validTypes = ["userAdmin", "platformManager", "cleaners", "homeowners"];
-        const userTypeFormatted = newUser.userType.trim().toLowerCase(); // Ensure lowercase type
+            // Define valid user types
+            const validTypes = ["userAdmin", "platformManager", "cleaners", "homeowners"];
+            const userTypeFormatted = newUser.userType.trim().toLowerCase(); // Ensure lowercase type
 
-        // Check if the userType is valid
-        if (!validTypes.includes(userTypeFormatted)) {
+            // Check if the userType is valid
+            if (!validTypes.includes(userTypeFormatted)) {
+                return {
+                    status: "error",
+                    message: `Invalid userType provided: ${newUser.userType}`
+                };
+            }
+
+            // Check if user already exists in Firestore based on email
+            const userCollectionRef = collection(this.db, "csit314/AllUsers/UserData");
+            const q = query(userCollectionRef, where("email", "==", newUser.userEmail));
+            const querySnapshot = await getDocs(q);
+
+            // If user already exists, return an error
+            if (!querySnapshot.empty) {
+                return {
+                    status: "error",
+                    message: "A user with this email already exists."
+                };
+            }
+
+            // If email doesn't exist, create the user profile in Firestore
+            const userDocRef = doc(userCollectionRef, newUser.userEmail);
+            await setDoc(userDocRef, {
+                firstName: newUser.firstName,
+                lastName: newUser.lastName,
+                email: newUser.userEmail,
+                password: newUser.userPass, // Consider hashing passwords in production
+                userType: userTypeFormatted,
+                userStatus: "Active"
+            });
+
             return {
-                status: "error",
-                message: `Invalid userType provided: ${newUser.userType}`
+                status: "success",
+                message: "Profile created successfully",
+                userEmail: newUser.userEmail
             };
+            } catch (error) {
+                console.error("Error creating new profile in Firestore:", error);
+                return {
+                    status: "error",
+                    message: error.message
+                };
+            }
         }
-
-        // Check if user already exists in Firestore based on email
-        const userCollectionRef = collection(this.db, "csit314/AllUsers/UserData");
-        const q = query(userCollectionRef, where("email", "==", newUser.userEmail));
-        const querySnapshot = await getDocs(q);
-
-        // If user already exists, return an error
-        if (!querySnapshot.empty) {
-            return {
-                status: "error",
-                message: "A user with this email already exists."
-            };
-        }
-
-        // If email doesn't exist, create the user profile in Firestore
-        const userDocRef = doc(userCollectionRef, newUser.userEmail);
-        await setDoc(userDocRef, {
-            firstName: newUser.firstName,
-            lastName: newUser.lastName,
-            email: newUser.userEmail,
-            password: newUser.userPass, // Consider hashing passwords in production
-            userType: userTypeFormatted,
-            userStatus: "Active"
-        });
-
-        return {
-            status: "success",
-            message: "Profile created successfully",
-            userEmail: newUser.userEmail
-        };
-    } catch (error) {
-        console.error("Error creating new profile in Firestore:", error);
-        return {
-            status: "error",
-            message: error.message
-        };
-    }
-}
 
 
 
@@ -700,53 +700,53 @@ import {getAuth,
 
         // Fetch all cleaning services
     async fetchAllCleaningServices() {
-    const servicesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
-    const querySnapshot = await getDocs(servicesRef);
-    const services = [];
+        const servicesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
+        const querySnapshot = await getDocs(servicesRef);
+        const services = [];
 
-    querySnapshot.forEach((doc) => {
-        services.push(doc.data());
-    });
+        querySnapshot.forEach((doc) => {
+            services.push(doc.data());
+        });
 
-    return services;
-}
+        return services;
+    }
 
     // Fetch filtered cleaning services based on user selection (already existing)
     async fetchCleaningServices(filters) {
-    const servicesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
+        const servicesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
 
-    let q = servicesRef;
+        let q = servicesRef;
 
-    // Filter by category
-    if (filters.category) {
-        q = query(q, where("category", "==", filters.category));
+        // Filter by category
+        if (filters.category) {
+            q = query(q, where("category", "==", filters.category));
+        }
+
+        // Filter by status
+        if (filters.status) {
+            q = query(q, where("status", "==", filters.status));
+        }
+
+        // Filter by price range (using the correct syntax for multiple conditions)
+        if (filters.price) {
+            const priceRange = filters.price.split("-");
+            const minPrice = parseInt(priceRange[0]);
+            const maxPrice = parseInt(priceRange[1]);
+            
+            // Firestore queries for price ranges should use `>=` and `<=` in the same query
+            q = query(q, where("price", ">=", minPrice), where("price", "<=", maxPrice));
+        }
+
+        // Execute the query
+        const querySnapshot = await getDocs(q);
+        const services = [];
+
+        querySnapshot.forEach((doc) => {
+            services.push(doc.data());
+        });
+
+        return services;
     }
-
-    // Filter by status
-    if (filters.status) {
-        q = query(q, where("status", "==", filters.status));
-    }
-
-    // Filter by price range (using the correct syntax for multiple conditions)
-    if (filters.price) {
-        const priceRange = filters.price.split("-");
-        const minPrice = parseInt(priceRange[0]);
-        const maxPrice = parseInt(priceRange[1]);
-        
-        // Firestore queries for price ranges should use `>=` and `<=` in the same query
-        q = query(q, where("price", ">=", minPrice), where("price", "<=", maxPrice));
-    }
-
-    // Execute the query
-    const querySnapshot = await getDocs(q);
-    const services = [];
-
-    querySnapshot.forEach((doc) => {
-        services.push(doc.data());
-    });
-
-    return services;
-}
 
 
         
