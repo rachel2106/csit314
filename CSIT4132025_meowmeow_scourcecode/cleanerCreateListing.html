@@ -44,6 +44,13 @@
                 <label for="listingFee">Fee:</label>
                 <input type="number" id="listingFee" required min="0" max="500" step="1" required />
 
+                <label for="listingStatus">Availibility:</label>
+                <select id="listingStatus" required>
+                    <option value="">-- Select Availibility --</option>
+                    <option value="available">Available</option>
+                    <option value="inavailable">Inavailable</option>
+                  </select>
+
                 <label for="listingDetails">Details:</label>
                 <textarea id="listingDetails" rows="4" required></textarea><br>
 
@@ -79,7 +86,7 @@
         
 
 
-        async function createServiceListing(serviceListing, serviceCategory, frequency, listingFee, listingDetails,  currentUserEmail) {
+        async function createServiceListing(serviceListing, serviceCategory, frequency, listingFee, listStatus, listingDetails,  currentUserEmail) {
             try {
 
                 if (!currentUserEmail) {
@@ -93,6 +100,7 @@
                     serviceCategory,
                     frequency,
                     fee: listingFee,
+                    listStatus: listStatus,
                     details: listingDetails,
                     currentUserEmail
                 };
@@ -120,20 +128,20 @@
             const listingName = document.getElementById("listingName").value.trim();
             const listingCategory = document.getElementById("listingCategory").value.trim();
             const frequency = document.getElementById("listingFrequency").value.trim();
-
             const listingFee = document.getElementById("listingFee").value.trim();
+            const listingStatus = document.getElementById("listingStatus").value.trim();
             const listingDetails = document.getElementById("listingDetails").value.trim();
             const currentUserEmail = localStorage.getItem("loggedInUserEmail");
 
 
-            if (!listingName || !listingCategory || !frequency|| !listingFee || !listingDetails ) {
+            if (!listingName || !listingCategory || !frequency|| !listingFee || !listingStatus ||!listingDetails ) {
                 alert("Please fill in all fields.");
                 return;
             }
 
             // Proceed to check user and create the category
             
-            await createServiceListing(listingName, listingCategory, frequency, listingFee, listingDetails, currentUserEmail);
+            await createServiceListing(listingName, listingCategory, frequency, listingFee, listingStatus,  listingDetails, currentUserEmail);
 
         });
 

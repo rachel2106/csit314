@@ -29,6 +29,7 @@
                     <tr id="cleaner-rowheader">
                         <th>Cleaning Service Listing:</th>
                         <th>Cleaning Service Category:</th>
+                        <th>Availability:</th>
                         <th>View Count</th>
                         <th>Shortlisted Count</th>
                         <th class="actions-column">Actions</th>
@@ -67,6 +68,13 @@
             
             <label for="edit-service-fee">Service fee:</label>
             <input type="number" id="edit-service-fee" required min="0" max="500" step="1" required />
+
+            <label for="edit-service-avail">Availibility</label>
+            <select id="edit-service-avail" required>
+                <option value="">-- Select Availibility --</option>
+                <option value="available">Available</option>
+                <option value="inavailable">Inavailable</option>
+              </select>
 
             <label for="edit-details">Details:</label>
             <input type="text" id="edit-details" required />
@@ -134,6 +142,7 @@
                     row.innerHTML = `
                         <td>${listingData.listingName}</td>
                         <td>${listingData.category}</td>
+                        <td>${listingData.listStatus}</td>
                         <td>${listingData.viewCount}</td>
                         <td>${listingData.viewShortlisted}</td>
                         <td>
@@ -194,6 +203,7 @@
                         document.getElementById("edit-service-listingcategory").value = selected.category;
                         document.getElementById("edit-service-frequency").value = selected.listingFrequency;
                         document.getElementById("edit-service-fee").value = selected.fee;
+                        document.getElementById("edit-service-avail").value = selected.listStatus;
                         document.getElementById("edit-details").value = selected.details;
                         
                         updateForm.dataset.listingId = selected.id;
@@ -235,6 +245,7 @@
                 const updateListing = document.getElementById("edit-service-listing").value;
                 const updateFrequency = document.getElementById("edit-service-frequency").value;
                 const updateFee = document.getElementById("edit-service-fee").value;
+                const updateAvail = document.getElementById("edit-service-avail").value;
                 const updateDetails = document.getElementById("edit-details").value;
                 const updateCategory = document.getElementById("edit-service-listingcategory").value; 
 
@@ -247,6 +258,7 @@
                         listingFrequency: updateFrequency,
                         fee: updateFee,
                         details: updateDetails,
+                        listStatus: updateAvail,
                         createdBy: loggedInUserEmail
                     });
 
