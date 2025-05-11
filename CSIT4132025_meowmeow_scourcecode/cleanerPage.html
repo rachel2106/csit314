@@ -39,6 +39,7 @@
         </div>
 
     </main>
+    
     <!-- Modal for updating service category -->
     <!-- Update Modal -->
     <div id="updateModal" class="modal" style="display:none;">
@@ -84,7 +85,6 @@
             <span id="to-delete-listing"></span>
             <label for="delete-service-category">From this category:</label>
             <span id="to-delete-category"></span>
-            <!-- <input type="text" id="edit-service-category" required /> -->
 
             <button type="submit" class="delete-btn">Delete</button>
         </form>
@@ -205,7 +205,6 @@
                     const selected = listings.find(
                         list => list.id === listingId && list.category === category
                     );
-                    // const selected = categories.find(cat => cat.id === categoryId);
 
                     if (selected){
                         const spanElementListing = document.getElementById("to-delete-listing")
@@ -216,12 +215,8 @@
                         const cat_delete = document.createTextNode(selected.category);
                         spanElementCategory.appendChild(cat_delete);
 
-                        // deleteForm.dataset.listingDelete = selected.listingName;
-                        // deleteForm.dataset.category = selected.category;
                         deleteForm.dataset.listingDelete = selected.listingName;
                         deleteForm.dataset.categoryDelete = selected.category;
-
-                        // updateForm.dataset.originalCategory = selected.serviceCategory;
 
                         deleteModal.style.display = "block"; //opens the modal
 
@@ -255,11 +250,8 @@
 
                     alert("Listing updated!");
                     updateModal.style.display = "none"; 
-                    // const cleanerEmail = localStorage.getItem("loggedInUserEmail");
-
 
                     //Refreshed the table
-                    // const updatedList = await page.getListingList(cleanerEmail);
                     const updatedList = await page.getListingList(loggedInUserEmail);
                     page.displayListingList(updatedList);
 
@@ -284,8 +276,6 @@
                         serviceCategory: categoryDelete,
                         createdBy: loggedInUserEmail
                     });
-
-
 
                     alert("Category deleted!");
                     deleteModal.style.display = "none"; 

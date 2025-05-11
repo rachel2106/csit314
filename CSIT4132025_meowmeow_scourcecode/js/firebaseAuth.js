@@ -725,11 +725,8 @@ import {getAuth,
                 };
             }
 
-            // const categoryRef = collection(this.db, "csit314/AllServiceCategory/CleaningServiceData");
-
             const listingId = serviceListing.toLowerCase().replace(/\s+/g, "_");
 
-            const listingRef = collection(categoryDocRef, "serviceListings")
             const listingDocRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", serviceCategory, "serviceListings", listingId);
             const normalizedNaming = serviceListing.toLowerCase().replace(/\s+/g, '');
 
@@ -746,11 +743,10 @@ import {getAuth,
                 viewShortlisted: 0,
 
             });
-            let status = "success";
 
+            let status = "success";
             return status;
-                // message: "Service category created successfully",
-                // categoryId: categoryDocRef.i;
+
         } catch (error) {
             console.error("Error creating service category:", error);
             return {
@@ -837,11 +833,6 @@ import {getAuth,
                 listingFrequency: listingFrequency.trim()
             });
 
-
-
-            // Refresh the page after the update
-            // window.location.reload(); 
-
             return { success: true, message: "Service category updated"};
         } catch (error) {
             console.error("Error updating service category:", error);
@@ -853,7 +844,6 @@ import {getAuth,
         try {
             const {listingName, serviceCategory, createdBy } = deleteListingData;
             // Get user document based on email
-            // const categoryRef = collection(this.db, "csit314/AllServiceCategory/CleaningServiceData");
             const categoryRef = collection(this.db, `csit314/AllServiceCategory/CleaningServiceData/${serviceCategory}/serviceListings`);
 
             const q = query(categoryRef, where('listingName', '==', listingName), where('createdBy', '==', createdBy));
@@ -866,7 +856,6 @@ import {getAuth,
             // Correct way: use for...of to await each deleteDoc
             for (const docSnap of querySnapshot.docs) {
                 await deleteDoc(docSnap.ref);
-                // console.log(`Deleted Firestore document for service category: ${deleteCategoryData}`);
             }
     
             return { success: true };

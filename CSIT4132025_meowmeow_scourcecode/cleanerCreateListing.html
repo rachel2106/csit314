@@ -81,7 +81,6 @@
 
         async function createServiceListing(serviceListing, serviceCategory, frequency, listingFee, listingDetails,  currentUserEmail) {
             try {
-                // currentUserEmail = await controller.getCurrentUserEmail();
 
                 if (!currentUserEmail) {
                     alert("You must be logged in.");
@@ -97,19 +96,10 @@
                     details: listingDetails,
                     currentUserEmail
                 };
-                // console.log("This is frequency" + frequency)
 
                 alert (currentUserEmail);
 
                 const result = await controller.createServiceListing(listing);
-
-                // if (result === "success") {
-                //     alert("Category created successfully.");
-                //     window.location.href = "cleanerPage.html";
-                // } else {
-                //     console.error("Creation failed:", result);
-                //     alert("Error: " + result.message);
-                // }
 
                 if (result === "success") {
                     alert("Category created successfully.");
