@@ -39,7 +39,7 @@
         </div>
 
     </main>
-    
+
     <!-- Modal for updating service category -->
     <!-- Update Modal -->
     <div id="updateModal" class="modal" style="display:none;">
@@ -103,8 +103,8 @@
      <script type="module">
         import { cleanerViewServicesController } from './js/cleanerViewListingController.js';
         import { cleanerUpdateServicesController } from './js/cleanerUpdateListingController.js';
-        import { cleanerDeleteServicesController } from './js/cleanerDeleteServicesController.js';
-        // import { pmSearchServicesController } from './js/pmSearchServicesController.js';
+        import { cleanerDeleteServicesController } from './js/cleanerDeleteListingController.js';
+        import { cleanerSearchServicesController } from './js/cleanerSearchListingController.js';
 
 
         class CleanerPage {
@@ -170,6 +170,9 @@
             const deleteModal = document.getElementById("deleteModal");
             const closeDelete = document.getElementById("closeModalBtn-delete");
             const deleteForm = document.getElementById("delete-form");
+
+            const searchBtn = document.getElementById('cleaner-search-button');
+            const searchInput = document.getElementById('search-listingName');
 
 
             // when (x) is clicked closes the update modal
@@ -291,7 +294,36 @@
 
             });
             
+            searchBtn.addEventListener("click", async () =>{
+                const searchListing = searchInput.value.trim().toLowerCase();
+                
+                if(!searchListing){
+                    // alert("Please enter a category name to search");
+                    // page.displayCategoriesList(categories);
+                    page.displayListingList(listing);
+                    return;
+                }
 
+                const searchController = new cleanerSearchServicesController();
+
+                try{
+                    const searchList = await searchController.searchServiceListing({
+                        listingName: searchListing,
+                        createdBy: loggedInUserEmail 
+                    });
+
+                    if(searchList.length > 0){
+                        page.displayListingList(searchList);
+                        // page.displayCategoriesList(searchList);
+                    } else{
+                        const container = document.getElementById("data-table");
+                        container.innerHTML = `<tr><td colspan="4">No matching categories found.</td></tr>`;
+                    }
+                } catch (err){
+                    console.error ("Search error:", err);
+                    alert("An error occured while searching");
+                }
+            });
 
 
         });

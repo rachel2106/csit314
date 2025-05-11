@@ -865,6 +865,49 @@ import {getAuth,
         }
 
     }
+
+    async searchServiceListing(searchListingData){
+        try{
+            const {listingName, createdBy } = searchListingData;
+
+            const categoriesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
+            const categorySnapshots = await getDocs(categoriesRef);
+            const listingList = [];
+            
+    
+
+            for (const categoryDoc of categorySnapshots.docs) {
+                const categoryId = categoryDoc.id;
+    
+                const listingsRef = collection(
+                    db,
+                    `csit314/AllServiceCategory/CleaningServiceData/${categoryId}/serviceListings` // 🔁 Fixed here
+                );
+                const searchData = listingName.toLowerCase().replace(/\s+/g, '');
+                const q = query(listingsRef, where("normalizedListing", "==", searchData.trim()), where('createdBy', '==', createdBy));
+                const snapshot = await getDocs(q);
+                
+
+                snapshot.docs.map(doc => {
+                    const serviceData = doc.data();
+                    listingList.push({
+                        id: doc.id,
+                        category: serviceData.category,
+                        listingName: serviceData.listingName,
+                        viewCount: serviceData.viewCount,
+                        viewShortlisted: serviceData.viewShortlisted,
+
+                    });
+                });
+            }
+
+
+            return listingList;
+        }catch (error){
+            console.error("Error deleting Firestore user:", error);
+            throw error;
+        }
+    }
     
     
 

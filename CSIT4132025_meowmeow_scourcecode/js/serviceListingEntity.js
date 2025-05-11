@@ -53,6 +53,16 @@ export class serviceListingEntity {
         }
     }
 
+    async searchServiceListing(searchListing) {
+        try {
+            const searched = await firebase.searchServiceListing(searchListing);
+            return searched;
+        } catch (error) {
+            console.error("Error searching for category:", error);
+            return { status: "error", message: error.message };
+        }
+    }
+
 }
 
 export default serviceListingEntity;
