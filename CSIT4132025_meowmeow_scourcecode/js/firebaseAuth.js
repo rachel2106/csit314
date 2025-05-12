@@ -38,7 +38,7 @@ import {getAuth,
   //Initialize cloud firestore and get a reference to the service
   const db = getFirestore(app);
 
-  export const auth = getAuth(app);
+  const auth = getAuth(app);
 
   export default class Firebase {
 
@@ -376,55 +376,55 @@ import {getAuth,
         // Create new profile in Firestore
         async createNewProfile(newUser) {
             try {
-            // Define valid user types
-            const validTypes = ["userAdmin", "platformManager", "cleaners", "homeowners"];
-            const userTypeFormatted = newUser.userType.trim().toLowerCase(); // Ensure lowercase type
+        // Define valid user types
+        const validTypes = ["userAdmin", "platformManager", "cleaners", "homeowners"];
+        const userTypeFormatted = newUser.userType.trim().toLowerCase(); // Ensure lowercase type
 
-            // Check if the userType is valid
-            if (!validTypes.includes(userTypeFormatted)) {
-                return {
-                    status: "error",
-                    message: `Invalid userType provided: ${newUser.userType}`
-                };
-            }
-
-            // Check if user already exists in Firestore based on email
-            const userCollectionRef = collection(this.db, "csit314/AllUsers/UserData");
-            const q = query(userCollectionRef, where("email", "==", newUser.userEmail));
-            const querySnapshot = await getDocs(q);
-
-            // If user already exists, return an error
-            if (!querySnapshot.empty) {
-                return {
-                    status: "error",
-                    message: "A user with this email already exists."
-                };
-            }
-
-            // If email doesn't exist, create the user profile in Firestore
-            const userDocRef = doc(userCollectionRef, newUser.userEmail);
-            await setDoc(userDocRef, {
-                firstName: newUser.firstName,
-                lastName: newUser.lastName,
-                email: newUser.userEmail,
-                password: newUser.userPass, // Consider hashing passwords in production
-                userType: userTypeFormatted,
-                userStatus: "Active"
-            });
-
+        // Check if the userType is valid
+        if (!validTypes.includes(userTypeFormatted)) {
             return {
-                status: "success",
-                message: "Profile created successfully",
-                userEmail: newUser.userEmail
+                status: "error",
+                message: `Invalid userType provided: ${newUser.userType}`
             };
-            } catch (error) {
-                console.error("Error creating new profile in Firestore:", error);
-                return {
-                    status: "error",
-                    message: error.message
-                };
-            }
         }
+
+        // Check if user already exists in Firestore based on email
+        const userCollectionRef = collection(this.db, "csit314/AllUsers/UserData");
+        const q = query(userCollectionRef, where("email", "==", newUser.userEmail));
+        const querySnapshot = await getDocs(q);
+
+        // If user already exists, return an error
+        if (!querySnapshot.empty) {
+            return {
+                status: "error",
+                message: "A user with this email already exists."
+            };
+        }
+
+        // If email doesn't exist, create the user profile in Firestore
+        const userDocRef = doc(userCollectionRef, newUser.userEmail);
+        await setDoc(userDocRef, {
+            firstName: newUser.firstName,
+            lastName: newUser.lastName,
+            email: newUser.userEmail,
+            password: newUser.userPass, // Consider hashing passwords in production
+            userType: userTypeFormatted,
+            userStatus: "Active"
+        });
+
+        return {
+            status: "success",
+            message: "Profile created successfully",
+            userEmail: newUser.userEmail
+        };
+    } catch (error) {
+        console.error("Error creating new profile in Firestore:", error);
+        return {
+            status: "error",
+            message: error.message
+        };
+    }
+}
 
 
 
@@ -517,63 +517,6 @@ import {getAuth,
 
 
     // Platform Manager Functions
-    // Generate Report Daily, Weekly, Monthly
-    async getDailyReport (dailyDate){
-        try{
-            const { start, end } = dailyDate;
-            const categoriesSnap = await getDocs(collection(this.db, "csit314/AllServiceCategory/CleaningServiceData"));
-            let groupedServices = [];
-
-            for (const catDoc of categoriesSnap.docs){
-                const catName = catDoc.id;
-
-                const listingRef = collection(this.db, `csit314/AllServiceCategory/CleaningServiceData/${catName}/serviceListings`);
-                const q = query(
-                    listingRef, 
-                    where("createdAt", ">=", start),
-                    where("createdAt", "<", end)
-                );
-
-                const listingSnap = await getDocs(q);
-                let listings = [];
-                let uniqueCleaner = new Set();
-
-                listingSnap.forEach(doc => {
-                    const data = doc.data();
-                    listings.push({
-                        listingId: doc.id,
-                        ...data
-                    });
-
-                    if (data.createdBy) {
-                        uniqueCleaner.add(data.createdBy);
-                    }
-                });
-
-                if (listings.length > 0) {
-                    groupedServices[catName] = {
-                        totalListings: listings.length,
-                        totalCleaners: uniqueCleaner.size,
-                        listings: listings
-                    };
-                }
-
-            }
-            return {
-                status: "success",
-                date: start.toDateString(),
-                report : groupedServices
-            };
-        } catch (error){
-            console.error("Error generating daily report:", error);
-            return {
-                status: "error",
-                message: error.message
-            };
-        }
-    }
-
-
     // Create a new service category (used by Platform Manager)
     async createServiceCategory(categoryData) {
         try {
@@ -613,11 +556,12 @@ import {getAuth,
                 numCleaner: 0, //number of cleaner having each of category
                 numHomeowner: 0 //number of homeowner uses the service in that category
             });
-            const status = "success";
 
-            return status;
-                // message: "Service category created successfully",
-                // categoryId: categoryDocRef.i;
+            return {
+                status: "success",
+                message: "Service category created successfully",
+                categoryId: categoryDocRef.id
+            };
         } catch (error) {
             console.error("Error creating service category:", error);
             return {
@@ -750,301 +694,103 @@ import {getAuth,
             console.error("Error deleting Firestore user:", error);
             throw error;
         }
+   
     }
 
 
-    // Cleaner Functions
-    // Create a new service listing (used by Cleaner)
-    async createServiceListing(listingData) {
-        try {
-            const { serviceListing, serviceCategory, frequency, fee, details,listStatus, currentUserEmail  } = listingData;
-            console.log("This is frequency" + frequency)
 
+// Fetch all service listings from all categories
+async fetchAllServiceListings() {
+  const basePath = "csit314/AllServiceCategory/CleaningServiceData";
+  const categoriesCol = collection(this.db, basePath);
+  const categoryDocs = await getDocs(categoriesCol);
 
-            // Validate name
-            if (!serviceListing || !serviceCategory || !frequency || !fee || !details || !listStatus || !currentUserEmail) {
-                console.error("Missing required fields:", listingData);
-                return {
-                    status: "error",
-                    message: "Missing required fields" + serviceListing + serviceCategory + frequency +fee + listStatus + details + currentUserEmail
-                 };
-            }
+  const allServices = [];
 
-            const categoryDocRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", serviceCategory);
+  for (const categoryDoc of categoryDocs.docs) {
+    const categoryName = categoryDoc.id;
+    const listingsPath = `${basePath}/${categoryName}/serviceListings`;
+    const listingsCol = collection(this.db, listingsPath);
+    const listingsSnap = await getDocs(listingsCol);
 
-            // Optional: Check if category already exists
-            const catSnap = await getDoc(categoryDocRef);
-            if (!catSnap.exists()) {
-                console.error(`Category "${serviceCategory}" does not exist.`);
-                return {
-                    status: "error",
-                    message: "Category does not exist"
-                };
-            }
+    listingsSnap.forEach(doc => {
+      allServices.push({
+        id: doc.id,
+        ...doc.data(),
+        serviceCategory: categoryName,
+      });
+    });
+  }
 
-            const listingId = serviceListing.toLowerCase().replace(/\s+/g, "_");
+  return allServices;
+}
 
-            const listingDocRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", serviceCategory, "serviceListings", listingId);
-            const normalizedNaming = serviceListing.toLowerCase().replace(/\s+/g, '');
+// Fetch filtered cleaning services
+async getFilteredCleaningServices({ category, price, status }) {
+  const basePath = "csit314/AllServiceCategory/CleaningServiceData";
+  const categoriesCol = collection(this.db, basePath);
+  const categoryDocs = await getDocs(categoriesCol);
 
-            // create the listing into the database
-            await setDoc(listingDocRef , {
-                listingName: serviceListing.trim(),
-                normalizedListing: normalizedNaming,
-                fee: parseFloat(fee),
-                details: details.trim(),
-                createdBy: currentUserEmail,
-                createdAt: serverTimestamp(),
-                category: serviceCategory.trim(),
-                listingFrequency: frequency.trim(),
-                listStatus: listStatus.trim(),
-                viewCount: 0,
-                viewShortlisted: 0,
+  const allServices = [];
 
-            });
+  for (const categoryDoc of categoryDocs.docs) {
+    const categoryName = categoryDoc.id;
 
-            // check if this cleaner is already counted in the category
-            const cleanerTrackerRef = doc(this.db, `csit314/AllServiceCategory/CleaningServiceData/${serviceCategory}/cleanerTrackers/${currentUserEmail}`);
-            const cleanerSnap = await getDoc(cleanerTrackerRef);
+    if (category && category !== categoryName) continue;
 
-            let updateData = { numOfServices: (catSnap.data().numOfServices || 0) + 1 };
+    const listingsPath = `${basePath}/${categoryName}/serviceListings`;
+    const listingsCol = collection(this.db, listingsPath);
+    const listingsSnap = await getDocs(listingsCol);
 
-            if (!cleanerSnap.exists()) {
-                // First time this cleaner is adding to this category
-                updateData.numCleaner = (catSnap.data().numCleaner || 0) + 1;
+    listingsSnap.forEach(doc => {
+      const data = doc.data();
 
-                // Create a marker document to track this cleaner
-                await setDoc(cleanerTrackerRef, { 
-                    email: currentUserEmail,
-                    normalizedEmail: currentUserEmail.toLowerCase().trim(), 
-                    timestamp: serverTimestamp() });
-            }
+      if (status && data.listStatus?.toLowerCase() !== status.toLowerCase()) return;
 
-            // Update the category document
-            await updateDoc(categoryDocRef, updateData);
+      if (price) {
+        const [min, max] = price.split("-").map(Number);
+        const fee = typeof data.fee === "number" ? data.fee : parseFloat(data.fee);
+        if (isNaN(fee) || fee < min || fee > max) return;
+      }
 
-            let status = "success";
-            return status;
+      allServices.push({
+        id: doc.id,
+        ...data,
+        serviceCategory: categoryName,
+      });
+    });
+  }
 
-        } catch (error) {
-            console.error("Error creating service category:", error);
-            return {
-                status: "error",
-                message: error.message
-            };
-        }
-    }
+  return allServices;
+}
 
-    // View all service categories
-    async getListingList(cleanerEmail) {
-        try {
-            const categoriesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
-            const categorySnapshots = await getDocs(categoriesRef);
-    
-            const cleanerListings = [];
-    
-            for (const categoryDoc of categorySnapshots.docs) {
-                const categoryId = categoryDoc.id;
-    
-                const listingsRef = collection(
-                    db,
-                    `csit314/AllServiceCategory/CleaningServiceData/${categoryId}/serviceListings` // 🔁 Fixed here
-                );
-                const listingSnapshots = await getDocs(listingsRef);
-    
-                listingSnapshots.forEach(listingDoc => {
-                    const data = listingDoc.data();
-                    if (data.createdBy === cleanerEmail) {
-                        cleanerListings.push({
-                            id: listingDoc.id,
-                            category: categoryId,
-                            ...data
-                        });
-                    }
-                });
-            }
-    
-            return cleanerListings;
-    
-        } catch (error) {
-            console.error("Error fetching listings by cleaner email:", error);
-            return [];
-        }
-    }
+// Increment view count
+async incrementViewCount(categoryName, serviceId) {
+  if (!categoryName || !serviceId) return;
 
-    async updateServiceListing(updatedListingData){ 
-        const {listingId, serviceCategory, listingName, listingFrequency, fee,  details, listStatus, createdBy } = updatedListingData;
+  const docRef = doc(this.db, `csit314/AllServiceCategory/CleaningServiceData/${categoryName}/serviceListings/${serviceId}`);
+  const docSnap = await getDoc(docRef);
 
-        // Validate required category
-        console.log("originalListing:", listingId);
-        console.log("serviceListing:", listingName);
-        console.log("frequency:", listingFrequency);
-        console.log("fee:", fee);
-        console.log("status", listStatus);
-        console.log("details:", details);
+  if (docSnap.exists()) {
+    const current = docSnap.data().viewCount || 0;
+    await updateDoc(docRef, { viewCount: current + 1 });
+  }
+}
 
-        if (!listingId || !serviceCategory || !listingName || !listingFrequency || !fee || !listStatus || !details) {
-            console.error("Error: Missing required fields for user update."); 
-            return {success: false, message: "Missing required fields!"};
+// Increment shortlist count
+async incrementShortlistCount(categoryName, serviceId) {
+  if (!categoryName || !serviceId) return;
 
-        }
+  const docRef = doc(this.db, `csit314/AllServiceCategory/CleaningServiceData/${categoryName}/serviceListings/${serviceId}`);
+  const docSnap = await getDoc(docRef);
 
-        try{
-            console.log("Updating service data in Firestore:", updatedListingData);
+  if (docSnap.exists()) {
+    const current = docSnap.data().viewShortlisted || 0;
+    await updateDoc(docRef, { viewShortlisted: current + 1 });
+  }
+}
+  }
 
-            // Reference to the Firestore document for the user
-            const listingRef = doc(this.db, `csit314/AllServiceCategory/CleaningServiceData/${serviceCategory}/serviceListings`, listingId);
-            const listingSnap = await getDoc(listingRef);
-
-            if (!listingSnap.exists()) {
-                return { success: false, message: "Listing not found." };
-            }
-
-            const listingData = listingSnap.data();
-            if (listingData.createdBy !== createdBy) {
-                return { success: false, message: "Unauthorized: You can only update your own listings." };
-            }
-            // Update only Firestore data (not Firebase Authentication)
-           
-            await updateDoc(listingRef, {
-                listingName: listingName.trim(),
-                fee: parseFloat(fee),
-                details: details.trim(),
-                listingFrequency: listingFrequency.trim(),
-                listStatus: listStatus.trim()
-            });
-
-            return { success: true, message: "Service category updated"};
-        } catch (error) {
-            console.error("Error updating service category:", error);
-            return { success: false, message: `Error updating category:${error.message}` };
-        }
-    }
-
-    async deleteServiceListing(deleteListingData){
-        try {
-            const {listingName, serviceCategory, createdBy } = deleteListingData;
-            // Get user document based on email
-            const categoryRef = collection(this.db, `csit314/AllServiceCategory/CleaningServiceData/${serviceCategory}/serviceListings`);
-
-            const q = query(categoryRef, where('listingName', '==', listingName), where('createdBy', '==', createdBy));
-            const querySnapshot = await getDocs(q);
-    
-            if (querySnapshot.empty) {
-                throw new Error("No user found with this email.");
-            }
-    
-            // Correct way: use for...of to await each deleteDoc
-            for (const docSnap of querySnapshot.docs) {
-                await deleteDoc(docSnap.ref);
-            }
-    
-            return { success: true };
-        } catch (error) {
-            console.error("Error deleting Firestore service category:", error);
-            throw error;
-        }
-
-    }
-
-    async searchServiceListing(searchListingData){
-        try{
-            const {listingName, createdBy } = searchListingData;
-
-            const categoriesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
-            const categorySnapshots = await getDocs(categoriesRef);
-            const listingList = [];
-            
-    
-
-            for (const categoryDoc of categorySnapshots.docs) {
-                const categoryId = categoryDoc.id;
-    
-                const listingsRef = collection(
-                    db,
-                    `csit314/AllServiceCategory/CleaningServiceData/${categoryId}/serviceListings` // 🔁 Fixed here
-                );
-                const searchData = listingName.toLowerCase().replace(/\s+/g, '');
-                const q = query(listingsRef, where("normalizedListing", "==", searchData.trim()), where('createdBy', '==', createdBy));
-                const snapshot = await getDocs(q);
-                
-
-                snapshot.docs.map(doc => {
-                    const serviceData = doc.data();
-                    listingList.push({
-                        id: doc.id,
-                        category: serviceData.category,
-                        listingName: serviceData.listingName,
-                        viewCount: serviceData.viewCount,
-                        viewShortlisted: serviceData.viewShortlisted,
-
-                    });
-                });
-            }
-
-
-            return listingList;
-        }catch (error){
-            console.error("Error deleting Firestore user:", error);
-            throw error;
-        }
-    }
-
-
-        // Homeowner codes
-        // Fetch all cleaning services
-    async fetchAllCleaningServices() {
-        const servicesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
-        const querySnapshot = await getDocs(servicesRef);
-        const services = [];
-
-        querySnapshot.forEach((doc) => {
-            services.push(doc.data());
-        });
-
-        return services;
-    }
-
-    // Fetch filtered cleaning services based on user selection (already existing)
-    async fetchCleaningServices(filters) {
-        const servicesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
-
-        let q = servicesRef;
-
-        // Filter by category
-        if (filters.category) {
-            q = query(q, where("category", "==", filters.category));
-        }
-
-        // Filter by status
-        if (filters.status) {
-            q = query(q, where("status", "==", filters.status));
-        }
-
-        // Filter by price range (using the correct syntax for multiple conditions)
-        if (filters.price) {
-            const priceRange = filters.price.split("-");
-            const minPrice = parseInt(priceRange[0]);
-            const maxPrice = parseInt(priceRange[1]);
-            
-            // Firestore queries for price ranges should use `>=` and `<=` in the same query
-            q = query(q, where("price", ">=", minPrice), where("price", "<=", maxPrice));
-        }
-
-        // Execute the query
-        const querySnapshot = await getDocs(q);
-        const services = [];
-
-        querySnapshot.forEach((doc) => {
-            services.push(doc.data());
-        });
-
-        return services;
-    }
-
-
-        
-    }
     export {db, Firebase}
       
 
