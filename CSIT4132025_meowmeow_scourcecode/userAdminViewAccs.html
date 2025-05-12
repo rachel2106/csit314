@@ -130,7 +130,7 @@
                         <td>${userData.status}</td>
                         <td>
                             <button class="update-account-icon" value="${userData.email}">Update</button>
-                            <button class="delete-account-icon" value="${userData.email}">Delete</button>
+                            <button class="suspend-account-icon" value="${userData.email}">Suspend/Unsuspend</button>
                         </td>`;
                     table.appendChild(row);
                 });
@@ -192,7 +192,7 @@
                     <td>${userData.status}</td>
                     <td>
                         <button class="update-account-icon" value="${userData.email}">Update</button>
-                        <button class="delete-account-icon" value="${userData.email}">Delete</button>
+                        <button class="suspend-account-icon" value="${userData.email}">Suspend/Unsuspend</button>
                     </td>`;
                 table.appendChild(row);
             });
@@ -319,7 +319,7 @@
                         <td>${user.userStatus}</td>
                         <td>
                             <button class="update-account-icon" value="${user.email}">Update</button>
-                            <button class="delete-account-icon" value="${user.email}">Delete</button>
+                            <button class="suspend-account-icon" value="${userData.email}">Suspend/Unsuspend</button>
                         </td>
                     </tr>`;
                     table.innerHTML = row;
@@ -337,26 +337,31 @@
 
 <script type="module">
     //admin delete user
-    import { AdminDeleteUserController } from "./js/userAdminDeleteUserController.js"; // Import the controller
+    import { AdminSuspendUserController } from "./js/userAdminSuspendUserController.js"; // Import the controller
 
     document.addEventListener("DOMContentLoaded", () => {
         const profileTable = document.getElementById("admin-table");
 
         profileTable.addEventListener("click", async (event) => {
-            if (event.target.classList.contains("delete-account-icon")) {
+            if (event.target.classList.contains("suspend-account-icon")) {
                 const userEmail = event.target.value;
-                const controller = new AdminDeleteUserController();
+                const controller = new AdminSuspendUserController();
+                const message = await controller.suspendUser(userEmail);
+                alert(message);
 
-                const confirmDelete = confirm(`Are you sure you want to delete the account with email: ${userEmail}?`);
-                if (confirmDelete) {
-                    try {
-                        await controller.deleteUser(userEmail);  // Delete user
-                        alert("User has been deleted.");
-                        location.reload();  // Refresh to update the table
-                    } catch (error) {
-                        alert("Error deleting user: " + error.message);
-                    }
-                }
+
+                location.reload();
+
+                // const confirmDelete = confirm(`Are you sure you want to delete the account with email: ${userEmail}?`);
+                // if (confirmDelete) {
+                //     try {
+                //         await controller.deleteUser(userEmail);  // Delete user
+                //         alert("User has been deleted.");
+                //         location.reload();  // Refresh to update the table
+                //     } catch (error) {
+                //         alert("Error deleting user: " + error.message);
+                //     }
+                // }
             }
         });
     });

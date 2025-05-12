@@ -102,6 +102,8 @@ import {getAuth,
             const userData = userDoc.data();
     
             console.log("Fetched User Data:", userData); // Debugging output for user data
+
+        
     
             // Simple password check (plain-text example, consider hashing passwords in production)
             if (userData.password === password) {
@@ -343,6 +345,43 @@ import {getAuth,
             } catch (err) {
                 console.error("Firestore error:", err);
                 throw new Error("Error searching Firestore by userType: " + err.message);
+            }
+        }
+
+        //admin suspend user in admin page
+        async suspendUser(userEmail){
+            let message = "";
+            try{
+                // Get user document based on email
+                const userRef = doc(this.db, "csit314/AllUsers/UserData", userEmail);
+                
+                
+                const usersCollectionRef = collection(this.db, 'csit314/AllUsers/UserData');
+                const q = query(usersCollectionRef, where('email', '==', userEmail));
+                const querySnapshot = await getDocs(q);
+
+                // if (querySnapshot.empty) {
+                //     throw new Error("No user found with this email.");
+                // }
+
+                const userDoc = querySnapshot.docs[0];
+                const userData = userDoc.data();
+
+                if( userData.userStatus === "Active"){
+                    await updateDoc(userRef, {
+                        userStatus: "Inactive"
+                    });
+                    message = "suspended";
+                }else{
+                    await updateDoc(userRef, {
+                        userStatus: "Active"
+                    });
+                    message = "Unsuspended";
+                }
+                return message;
+            }catch (err){
+                message = "Error to suspend";
+                return message;
             }
         }
 

@@ -53,6 +53,9 @@ export class userEntity {
 
         const userDoc = querySnapshot.docs[0];
         const userData = userDoc.data();
+        if( userData.userStatus !== "Active"){
+            return { status: "error", message: "Inactive Account." };
+        }
 
         // Check password
         if (userData.password === password) {
@@ -115,16 +118,27 @@ export class userEntity {
     }
 
     // Admin delete user
-    async deleteUser(userEmail) {
-        return firebase.deleteUser(userEmail)
-            .then(result => {
-                console.log(`User with email ${userEmail} has been successfully deleted.`);
-                return result;
-            })
-            .catch(error => {
-                console.error(`Failed to delete user with email ${userEmail}:`, error);
-                throw error;  // Pass error upwards
-            });
+    async suspendUser(userEmail) {
+        
+
+        try {
+            // const searched = await firebase.searchServiceListing(searchListing);
+            // return searched;
+            const message = await firebase.suspendUser(userEmail);
+            return message;
+        } catch (error) {
+            console.error("Error searching for category:", error);
+            return { status: "error", message: error.message };
+        }
+
+            // .then(result => {
+            //     console.log(`User with email ${userEmail} has been successfully deleted.`);
+            //     return result;
+            // })
+            // .catch(error => {
+            //     console.error(`Failed to delete user with email ${userEmail}:`, error);
+            //     throw error;  // Pass error upwards
+            // });
     }
               
 
