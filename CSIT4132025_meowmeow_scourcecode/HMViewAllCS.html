@@ -55,7 +55,11 @@
   </main>
 
   <script type="module">
-    import { HMViewAllCSController } from './HMViewAllCSController.js';
+    import { HMViewAllCSController } from './js/HMViewAllCSController.js';
+    import { HMSearchAllCSController } from './js/HMSearchAllCSController.js';
+
+    const controller = new HMViewAllCSController();
+    const searchController = new HMSearchAllCSController();
 
     const categoryFilter = document.getElementById("categoryFilter");
     const priceFilter = document.getElementById("priceFilter");
@@ -81,37 +85,63 @@
         return;
       }
 
+      const categories = {};
+
       services.forEach(service => {
-        const div = document.createElement("div");
-        div.classList.add("service-card");
-        div.innerHTML = `
-          <h3>${service.name || "Unnamed Service"}</h3>
-          <p><strong>Category:</strong> ${service.category}</p>
-          <p><strong>Status:</strong> ${service.status}</p>
-          <p><strong>Price:</strong> $${service.price}</p>
-          <p><strong>View Count:</strong> ${service.viewCount || 0}</p>
-          <p><strong>Shortlisted:</strong> ${service.shortlisted || 0}</p>
-          <button class="book-btn" data-id="${service.id}">Book Now</button>
-          <button class="fav-btn" data-id="${service.id}">Add to Favourites</button>
-        `;
-        servicesContainer.appendChild(div);
+        const category = service.serviceCategory || "Uncategorized";
+        if (!categories[category]) {
+          categories[category] = [];
+        }
+        categories[category].push(service);
       });
 
-      // Attach button listeners
-      document.querySelectorAll(".book-btn").forEach(button => {
-        button.addEventListener("click", () => {
-          const id = button.getAttribute("data-id");
-          alert(`Redirect to booking page for service ID: ${id}`);
-          // window.location.href = `HMBookService.html?serviceId=${id}`;
+      Object.keys(categories).forEach(category => {
+        const categoryDiv = document.createElement("div");
+        categoryDiv.classList.add("category-section");
+
+        const categoryHeader = document.createElement("h2");
+        categoryHeader.textContent = category;
+        categoryDiv.appendChild(categoryHeader);
+
+        const serviceList = document.createElement("ul");
+        serviceList.classList.add("service-list");
+
+        categories[category].forEach(service => {
+          const listItem = document.createElement("li");
+          listItem.classList.add("service-item");
+          listItem.innerHTML = `
+            <p><strong>Category:</strong> ${service.serviceCategory || "N/A"}</p>
+            <div class="divider"></div>
+            <p><strong>Status:</strong> ${service.listStatus || "N/A"}</p>
+            <div class="divider"></div>
+            <p><strong>Price:</strong> $${service.fee || 0}</p>
+            <div class="divider"></div>
+            <p><strong>View Count:</strong> ${service.viewCount || 0}</p>
+            <div class="divider"></div>
+            <p><strong>Shortlisted:</strong> ${service.viewShortlisted || 0}</p>
+            <div class="divider"></div>
+            <p><strong>Created By:</strong> ${service.createdBy || "Unknown"}</p>
+            <button class="book-btn" data-id="${service.id}">Book Now</button>
+            <button class="fav-btn" data-id="${service.id}" data-category="${service.serviceCategory}">Add to Favourites</button>
+          `;
+          serviceList.appendChild(listItem);
         });
+
+        categoryDiv.appendChild(serviceList);
+        servicesContainer.appendChild(categoryDiv);
       });
 
+      // Add "Add to Favourites" event listeners
       document.querySelectorAll(".fav-btn").forEach(button => {
-        button.addEventListener("click", async () => {
-          const id = button.getAttribute("data-id");
-          alert(`Service ID ${id} added to favourites!`);
-          // Call a controller function to update Firestore if needed
-          // await HMViewAllCSController.addToFavourites(id);
+        button.addEventListener("click", async (e) => {
+          const serviceId = e.target.dataset.id;
+          const serviceCategory = e.target.dataset.category;
+          try {
+            await searchController.incrementShortlistCount(serviceCategory, serviceId);
+            alert("Added to favourites!");
+          } catch (error) {
+            console.error("Failed to update shortlist count:", error);
+          }
         });
       });
     }
@@ -125,11 +155,11 @@
           status: statusFilter.value
         };
 
-        const services = await HMViewAllCSController.getFilteredServices(filters);
+        const services = await searchController.getFilteredServices(filters);
         displayServices(services);
       } catch (err) {
-        console.error("Error fetching filtered services:", err);
-        displayError("Something went wrong while applying filters. Please try again.");
+        console.error("Filter error:", err);
+        displayError("Failed to load services. Please try again.");
       }
     }
 
@@ -138,10 +168,16 @@
     window.addEventListener("DOMContentLoaded", async () => {
       clearError();
       try {
-        const services = await HMViewAllCSController.getAllServices();
+        const filters = {
+          category: '',
+          price: '',
+          status: ''
+        };
+
+        const services = await searchController.getFilteredServices(filters);
         displayServices(services);
       } catch (err) {
-        console.error("Error loading services:", err);
+        console.error("Initial load error:", err);
         displayError("Failed to load services. Please check your connection.");
       }
     });
