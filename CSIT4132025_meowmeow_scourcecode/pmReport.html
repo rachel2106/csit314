@@ -20,31 +20,39 @@
 
         <!-- Create Cleaning Service Category Form -->
         <div class="pmcreate-report">
-            <p>generate report by:</p>
-            <select id="report-timeframe" required>
-                <option value="">-- Select Time Frame --</option>
-                <option value="daily">daily</option>
-                <option value="weekly">weekly</option>
-                <option value="monthly">monthly</option>
-            </select>
+            <div id="the-header">
+                <p>generate report by:</p>
+                <select id="report-timeframe" required>
+                    <option value="">-- Select Time Frame --</option>
+                    <option value="daily">daily</option>
+                    <option value="weekly">weekly</option>
+                    <option value="monthly">monthly</option>
+                </select>
 
-            <div id="monthPickerContainer" style="display:none; margin-top: 10px;">
-                <label for="selectedMonth">Select Month:</label>
-                <input type="month" id="selectedMonth">
+                <!-- container for user to pick the timeframe to generate the report -->
+                
+                <div id="monthPickerContainer" style="display:none; margin-top: 10px;">
+                    <label for="selectedMonth">Select Month:</label>
+                    <input type="month" id="selectedMonth">
+                </div>
+                <!-- if user never pick a report type -->
+                <p id="timeframe-message" ></p>
+                <button id="generateReportBtn">Generate Report</button>
+
+                <!-- A title label for the report -->
+                <p id="title-timeFrame"></p>
+
             </div>
-            <!-- if user never pick a report type -->
-            <p id="timeframe-message" ></p>
-            <button id="generateReportBtn">Generate Report</button>
-
-            <!-- A title label for the report -->
-            <p id="title-timeFrame"></p>
+            
+            
 
             <!-- The report displays here -->
             <div id="reportResults" class="report-results">
                 <table id="report-table">
                     <thead id="report-tableheader">
                         <tr id="report-rowheader">
-                            <th id="timeFrame-choice"></th>
+                            <!-- <th id="timeFrame-choice"> Categories </th> -->
+                            <th>Categories</th>
                             <!-- <th>Created By</th> -->
                             <th>Number of Services</th>
                             <th>Number of Cleaners</th>
@@ -80,23 +88,26 @@
             displayReport(reportList){
                 const container = document.getElementById("data-table");
                 container.innerHTML = "";
+                const typeTimeframe = reportList.timeframe;
+
 
                 if(!reportList || reportList.status !== "success" || !reportList.report){
                     const row = document.createElement("tr");
                     row.innerHTML = `<td colspan="4">No categories found.</td>`;
                     container.appendChild(row);
-                    return;
+                    return typeTimeframe;
 
                 }
 
                 const report = reportList.report;
                 const cat = Object.keys(report);
-
+                
                 if (cat.length === 0){
                     const row = document.createElement("tr");
                     row.innerHTML = `<td colspan="3">No listings created during this timeframe.</td>`;
                     container.appendChild(row);
-                    return;
+
+                    return typeTimeframe;
                 }
 
                 cat.forEach(categoryName => {
@@ -110,17 +121,10 @@
                     container.appendChild(row);
                 });
 
-
-                // reportList.forEach((categoryData) => {
-                //     const row = document.createElement("tr");
-                //     row.innerHTML = `
-                //         <td>${categoryData.serviceCategory}</td>
-                //         <td>${categoryData.numOfServices}</td>
-                //         <td>${categoryData.numCleaner}</td>
-                //     `;
-                //     container.appendChild(row);
-                // });
+                
+                return typeTimeframe;
             }
+        c
         }
 
         window.addEventListener("DOMContentLoaded", async () => {
@@ -131,15 +135,15 @@
                 const monthPicker = document.getElementById("monthPickerContainer");
                 const selectedMonth = document.getElementById("selectedMonth").value;
                 const message = document.getElementById("timeframe-message"); // when user never pick the timeframe message
-                const title = document.getElementById("title-timeFrame");
-                const tableHeader = document.getElementById("timeFrame-choice");
+                // const title = document.getElementById("title-timeFrame");
+                // const tableHeader = document.getElementById("timeFrame-choice");
                 const dataTable = document.getElementById("data-table");
                 
-                const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1);
+                // const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1);
 
                 // Clear previous messages or results
                 message.textContent = "";
-                title.textContent = "";
+                // title.textContent = "";
                 dataTable.innerHTML = "";
 
                 if (reportType === "monthly"){
@@ -150,21 +154,25 @@
                 } else {
                     monthPicker.style.display = "none";
                     message.textContent = "";
-                    title.textContent = reportType;
-                    tableHeader.textContent = reportType;
+                    // title.textContent = reportType;
+                    // tableHeader.textContent = reportType;
                 }
 
-                title.textContent = capitalize(reportType) + " Report";
-                tableHeader.textContent = capitalize(reportType);
+                // title.textContent = capitalize(reportType) + " Report";
+                // tableHeader.textContent = capitalize(reportType);
 
             });
+
+            //when user clicks the button
             document.getElementById("generateReportBtn").addEventListener("click", async function () {
                 const message = document.getElementById("timeframe-message"); // when user never pick the timeframe message
                 const selectedMonth = document.getElementById("selectedMonth").value;
                 const reportType = document.getElementById("report-timeframe").value;
-
+                const title = document.getElementById("title-timeFrame");
 
                 let report = [];
+                const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1);
+
 
                 if (reportType === "daily") {
                     const now = new Date();
@@ -178,17 +186,27 @@
                     };
 
                     report = await page.getReportDaily(dailyDate);
+                    title.textContent = reportType;
+
                 } else if (reportType === "weekly") {
                     report = await page.getReportWeekly();
+                    title.textContent = reportType;
+
                 } else if (reportType === "monthly") {
+                    // to make sure user selects a month
                     if (selectedMonth === ""){
                         message.textContent = "Please select a month";
                         return;
                     }
+                    // console.log(selectedMonth)
                     report = await page.getReportMonthly(selectedMonth);
+                    title.textContent = reportType;
                 }
 
-                page.displayReport(report);
+                
+                const typeTimeframe = page.displayReport(report);
+                title.textContent = typeTimeframe + " "+ capitalize(reportType) + " Report";
+
             });
         });
 

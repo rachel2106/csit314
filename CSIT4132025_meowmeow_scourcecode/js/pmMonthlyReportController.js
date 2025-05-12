@@ -5,6 +5,6 @@ export class pmMonthlyReportController {
         const reportEntity = new generateReportEntity();
         const reportList = await reportEntity.getMonthlyReport(theMonth);
 
-        return reportList
+        return reportList;
     }
 }
