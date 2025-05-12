@@ -98,9 +98,12 @@
                     if (typeCompare !== 0) return typeCompare;
                     
                     // If same userType, extract numbers from lastName (assuming format "Smith 1", "Johnson 2", etc.)
-                    const numA = parseInt(a.lastName.match(/\d+/)?.[0] || 0); // Extract number from lastName
-                    const numB = parseInt(b.lastName.match(/\d+/)?.[0] || 0); // Extract number from lastName
-                    
+                    // const numA = parseInt(a.lastName.match(/\d+/)?.[0] || 0); // Extract number from lastName
+                    // const numB = parseInt(b.lastName.match(/\d+/)?.[0] || 0); // Extract number from lastName
+                    const numA = parseInt((a.lastName || "").match(/\d+/)?.[0] || 0);
+                    const numB = parseInt((b.lastName || "").match(/\d+/)?.[0] || 0);
+                    // return numA - numB;
+
                     // Compare numerically
                     return numA - numB;
                 });
@@ -161,9 +164,13 @@
             userList.sort((a, b) => {
                 const typeCompare = a.userType.localeCompare(b.userType);
                 if (typeCompare !== 0) return typeCompare;
-                const numA = parseInt(a.lastName.match(/\d+/)?.[0] || 0);
-                const numB = parseInt(b.lastName.match(/\d+/)?.[0] || 0);
+                // const numA = parseInt(a.lastName.match(/\d+/)?.[0] || 0);
+                // const numB = parseInt(b.lastName.match(/\d+/)?.[0] || 0);
+                // return numA - numB;
+                const numA = parseInt((a.lastName || "").match(/\d+/)?.[0] || 0);
+                const numB = parseInt((b.lastName || "").match(/\d+/)?.[0] || 0);
                 return numA - numB;
+
             });
 
             let lastType = "";
