@@ -441,6 +441,14 @@ import {getAuth,
         async updateUserInFirestore(originalEmail, firstName, lastName, newEmail, password) {
             const cleanedEmail = originalEmail.trim().toLowerCase();  
             const userCollection = collection(db, "csit314/AllUsers/UserData"); 
+            let message = "";
+
+            // if (!originalEmail || !firstName || !lastName || !newEmail || !password) {
+            //     console.error("Error: Missing required fields for user update.");
+            //     message = "failed"
+            //     // return { success: false, message: "Missing required fields." };
+            //     return message;
+            // }
         
             // Query Firestore by email instead of assuming it's the document ID
             const q = query(userCollection, where("email", "==", cleanedEmail));
@@ -468,8 +476,10 @@ import {getAuth,
         
                 await updateDoc(userRef, updatedData);
                 console.log("User updated successfully in Firestore");
-        
-                return { status: "success", message: "User updated successfully." };
+                message = "success"
+
+                return message;
+                // return { status: "success", message: "User updated successfully." };
             } catch (error) {
                 console.error("Error updating Firestore user:", error);
                 return { status: "error", message: "Error updating user in Firestore." };
@@ -500,7 +510,7 @@ import {getAuth,
                     password: password, // You may want to hash the password if storing it in Firestore
                 });
         
-                console.log("User data successfully updated in Firestore.");
+                console.log("User data successfully updated in Firestore.");  
         
                 // Refresh the page after the update
                 window.location.reload();

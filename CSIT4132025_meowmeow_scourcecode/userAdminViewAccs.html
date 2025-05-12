@@ -218,6 +218,7 @@
                 document.getElementById("first-name").value = userData.firstName;
                 document.getElementById("last-name").value = userData.lastName;
                 document.getElementById("email").value = userData.email;
+                document.getElementById("password").value = "";
 
                 updateForm.dataset.originalEmail = userEmail;
             }
@@ -241,21 +242,33 @@
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
 
+            if (!originalEmail || !firstName || !lastName || !email || ! password) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
             const controller = new userAdminUpdateAccController();
             try {
-                await controller.updateUserAccount({
+                const message = await controller.updateUserAccount({
                     originalEmail,
                     firstName,
                     lastName,
                     newEmail: email,
                     password
                 });
-                alert("User account updated!");
+                // alert("User account updated!");
                 modal.style.display = "none";
 
-                // 🔥 Refresh the user list using same admin instance!
-                const users = await admin.getUserList();
-                admin.displayUserList(users);
+                if(message === "success"){
+                    // 🔥 Refresh the user list using same admin instance!
+                    alert(message);
+                    const users = await admin.getUserList();
+                    admin.displayUserList(users);
+                } else{
+                    alert(message);
+                }
+
+                
             } catch (err) {
                 alert("Error updating user: " + err.message);
             }
