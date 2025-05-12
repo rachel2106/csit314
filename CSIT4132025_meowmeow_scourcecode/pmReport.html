@@ -45,7 +45,7 @@
                     <thead id="report-tableheader">
                         <tr id="report-rowheader">
                             <th id="timeFrame-choice"></th>
-                            <th>Created By</th>
+                            <!-- <th>Created By</th> -->
                             <th>Number of Services</th>
                             <th>Number of Cleaners</th>
                         </tr>
@@ -63,9 +63,9 @@
 
 
         class PMReportPage{
-            async getReportDaily(){
+            async getReportDaily(dailyDate){
                 const controller = new pmDailyReportController();
-                return await controller.getDailyReport();
+                return await controller.getDailyReport(dailyDate);
             }
             async getReportWeekly(){
                 const controller = new pmWeeklyReportController();
@@ -81,7 +81,7 @@
                 const container = document.getElementById("data-table");
                 container.innerHTML = "";
 
-                if(!reportList || reportList.length === 0){
+                if(!reportList || reportList.status !== "success" || !reportList.report){
                     const row = document.createElement("tr");
                     row.innerHTML = `<td colspan="4">No categories found.</td>`;
                     container.appendChild(row);
@@ -89,16 +89,37 @@
 
                 }
 
-                reportList.forEach((categoryData) => {
+                const report = reportList.report;
+                const cat = Object.keys(report);
+
+                if (cat.length === 0){
+                    const row = document.createElement("tr");
+                    row.innerHTML = `<td colspan="3">No listings created during this timeframe.</td>`;
+                    container.appendChild(row);
+                    return;
+                }
+
+                cat.forEach(categoryName => {
+                    const categoryData = report[categoryName];
                     const row = document.createElement("tr");
                     row.innerHTML = `
-                        <td>${categoryData.serviceCategory}</td>
-                        <td>${categoryData.createdBy}</td>
-                        <td>${categoryData.numOfServices}</td>
-                        <td>${categoryData.numCleaner}</td>
+                        <td>${categoryName}</td>
+                        <td>${categoryData.totalListings}</td>
+                        <td>${categoryData.totalCleaners}</td>
                     `;
                     container.appendChild(row);
                 });
+
+
+                // reportList.forEach((categoryData) => {
+                //     const row = document.createElement("tr");
+                //     row.innerHTML = `
+                //         <td>${categoryData.serviceCategory}</td>
+                //         <td>${categoryData.numOfServices}</td>
+                //         <td>${categoryData.numCleaner}</td>
+                //     `;
+                //     container.appendChild(row);
+                // });
             }
         }
 
@@ -146,7 +167,17 @@
                 let report = [];
 
                 if (reportType === "daily") {
-                    report = await page.getReportDaily();
+                    const now = new Date();
+                    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    const end = new Date(start);
+                    end.setDate(end.getDate() + 1);
+
+                    const dailyDate = {
+                        start: start,
+                        end: end
+                    };
+
+                    report = await page.getReportDaily(dailyDate);
                 } else if (reportType === "weekly") {
                     report = await page.getReportWeekly();
                 } else if (reportType === "monthly") {

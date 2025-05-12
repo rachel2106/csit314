@@ -9,10 +9,10 @@ export class generateReportEntity {
     }
 
     //Generate Daily Report
-    async getDailyReport(){
+    async getDailyReport(dailyDate){
         try{
-            const report = await firebase.getDailyReport()
-            return report
+            const report = await firebase.getDailyReport(dailyDate);
+            return report;
         } catch (error){
             console.error("Error creating service category:", error);
             return { status: "error", message: error.message };
@@ -22,8 +22,8 @@ export class generateReportEntity {
     //Generate weekly Report
     async getWeeklyReport(){
         try{
-            const report = await firebase.getWeeklyReport()
-            return report
+            const report = await firebase.getWeeklyReport();
+            return report;
         } catch (error){
             console.error("Error creating service category:", error);
             return { status: "error", message: error.message };
@@ -33,8 +33,8 @@ export class generateReportEntity {
     //Generate Daily Report
     async getMonthlyReport(theMonth){
         try{
-            const report = await firebase.getMonthlyReport(theMonth)
-            return report
+            const report = await firebase.getMonthlyReport(theMonth);
+            return report;
         } catch (error){
             console.error("Error creating service category:", error);
             return { status: "error", message: error.message };

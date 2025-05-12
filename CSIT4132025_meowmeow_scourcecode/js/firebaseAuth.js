@@ -517,6 +517,63 @@ import {getAuth,
 
 
     // Platform Manager Functions
+    // Generate Report Daily, Weekly, Monthly
+    async getDailyReport (dailyDate){
+        try{
+            const { start, end } = dailyDate;
+            const categoriesSnap = await getDocs(collection(this.db, "csit314/AllServiceCategory/CleaningServiceData"));
+            let groupedServices = [];
+
+            for (const catDoc of categoriesSnap.docs){
+                const catName = catDoc.id;
+
+                const listingRef = collection(this.db, `csit314/AllServiceCategory/CleaningServiceData/${catName}/serviceListings`);
+                const q = query(
+                    listingRef, 
+                    where("createdAt", ">=", start),
+                    where("createdAt", "<", end)
+                );
+
+                const listingSnap = await getDocs(q);
+                let listings = [];
+                let uniqueCleaner = new Set();
+
+                listingSnap.forEach(doc => {
+                    const data = doc.data();
+                    listings.push({
+                        listingId: doc.id,
+                        ...data
+                    });
+
+                    if (data.createdBy) {
+                        uniqueCleaner.add(data.createdBy);
+                    }
+                });
+
+                if (listings.length > 0) {
+                    groupedServices[catName] = {
+                        totalListings: listings.length,
+                        totalCleaners: uniqueCleaner.size,
+                        listings: listings
+                    };
+                }
+
+            }
+            return {
+                status: "success",
+                date: start.toDateString(),
+                report : groupedServices
+            };
+        } catch (error){
+            console.error("Error generating daily report:", error);
+            return {
+                status: "error",
+                message: error.message
+            };
+        }
+    }
+
+
     // Create a new service category (used by Platform Manager)
     async createServiceCategory(categoryData) {
         try {
@@ -730,13 +787,14 @@ import {getAuth,
             const listingDocRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", serviceCategory, "serviceListings", listingId);
             const normalizedNaming = serviceListing.toLowerCase().replace(/\s+/g, '');
 
-            // const categoryDocRef = 
+            // create the listing into the database
             await setDoc(listingDocRef , {
                 listingName: serviceListing.trim(),
                 normalizedListing: normalizedNaming,
                 fee: parseFloat(fee),
                 details: details.trim(),
                 createdBy: currentUserEmail,
+                createdAt: serverTimestamp(),
                 category: serviceCategory.trim(),
                 listingFrequency: frequency.trim(),
                 listStatus: listStatus.trim(),
@@ -756,7 +814,10 @@ import {getAuth,
                 updateData.numCleaner = (catSnap.data().numCleaner || 0) + 1;
 
                 // Create a marker document to track this cleaner
-                await setDoc(cleanerTrackerRef, { email: currentUserEmail, timestamp: Date.now() });
+                await setDoc(cleanerTrackerRef, { 
+                    email: currentUserEmail,
+                    normalizedEmail: currentUserEmail.toLowerCase().trim(), 
+                    timestamp: serverTimestamp() });
             }
 
             // Update the category document

@@ -2,10 +2,10 @@
 import { generateReportEntity } from './generateReportEntity.js';
 
 export class pmDailyReportController {
-    async getDailyReport (){
+    async getDailyReport (dailyDate){
         const reportEntity = new generateReportEntity();
-        const reportList = await reportEntity.getDailyReport();
+        const reportList = await reportEntity.getDailyReport(dailyDate);
 
-        return reportList
+        return reportList;
     }
 }
