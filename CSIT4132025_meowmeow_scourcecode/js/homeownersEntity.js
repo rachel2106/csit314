@@ -1,58 +1,31 @@
-
 // homeownersEntity.js
 import { db } from "./firebaseAuth.js";
-import { collection, getDocs, query, where } from "./firebaseAuth.js";
+import  Firebase  from "./firebaseAuth.js";
+
+const firebase = new Firebase();
 
 export class HomeownersEntity {
-    constructor() {}
+  constructor() {
+    this.db = db;
+  }
 
-    // Fetch all cleaning services
-    async fetchAllCleaningServices() {
-        const servicesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
-        const querySnapshot = await getDocs(servicesRef);
-        const services = [];
+  // Fetch all services without filtering
+  async fetchAllCleaningServices() {
+    return await firebase.fetchAllServiceListings();
+  }
 
-        querySnapshot.forEach((doc) => {
-            services.push(doc.data());
-        });
+  // Fetch with filtering (category, price, status)
+  async fetchCleaningServices(filters) {
+    return await firebase.getFilteredCleaningServices(filters);
+  }
 
-        return services;
-    }
+  //increment for viewcount 
+  async incrementViewCount(categoryName, serviceId) {
+    return await incrementViewCount(categoryName, serviceId);
+  }
 
-    // Fetch filtered cleaning services based on user selection
-    async fetchCleaningServices(filters) {
-        const servicesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
-        let q = servicesRef;
-
-        const conditions = [];
-
-        if (filters.category) {
-            conditions.push(where("category", "==", filters.category));
-        }
-
-        if (filters.status) {
-            conditions.push(where("status", "==", filters.status));
-        }
-
-        if (filters.price) {
-            const priceRange = filters.price.split("-");
-            const minPrice = parseInt(priceRange[0]);
-            const maxPrice = parseInt(priceRange[1]);
-            conditions.push(where("price", ">=", minPrice));
-            conditions.push(where("price", "<=", maxPrice));
-        }
-
-        if (conditions.length > 0) {
-            q = query(servicesRef, ...conditions);
-        }
-
-        const querySnapshot = await getDocs(q);
-        const services = [];
-
-        querySnapshot.forEach((doc) => {
-            services.push(doc.data());
-        });
-
-        return services;
-    }
+  //increment for shortlisted count
+  async incrementShortlistCount(categoryName, serviceId) {
+    return await incrementShortlistCount(categoryName, serviceId);
+  }
 }
