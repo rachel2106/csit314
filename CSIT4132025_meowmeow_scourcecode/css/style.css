@@ -1293,6 +1293,74 @@ button.update-btn:hover {
 
 
 
+  /* PLATFORM MANAGER Generate Report Page */
+
+#report-table{
+    width: 75%;
+    margin: auto;
+    margin-top: 3%;
+    border-collapse: collapse;
+    border: 2px solid #433A3F;
+    
+}
+
+#report-tableheader tr th {
+    background-color: #bcd8fa;
+    color: #433A3F;
+    border: 1px solid #686065;
+    padding: 8px;
+}
+
+
+.report-table tr td{
+    border: 1px solid #686065; 
+}
+
+
+#report-table th:nth-child(1),  /* Cleaning Service Category */
+#report-table td:nth-child(1) {
+    width: 20%; /* wider */
+}
+
+#report-table th:nth-child(2),  /* Description */
+#report-table td:nth-child(2) {
+    width: 30%; /* shorter */
+}
+
+#report-table th:nth-child(3),  /* Created At */
+#report-table td:nth-child(3) {
+    width: 15%; /* shorter */
+}
+
+#report-table th:nth-child(4),  /* Created At */
+#report-table td:nth-child(4) {
+    width: 15%; /* shorter */
+}
+
+
+
+#report-table td button {
+    /* margin: 0 5px; */
+    display: inline-block;
+    background-color: #878a8d;
+    color: black;
+    font-size: 15px;
+    border: none;
+    padding: 7px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+#report-table th,
+#report-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+
+
 /* Form Title
 .pmcreate-form h2 {
     text-align: center;

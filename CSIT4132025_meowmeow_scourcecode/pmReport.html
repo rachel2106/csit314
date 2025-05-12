@@ -32,20 +32,22 @@
                 <label for="selectedMonth">Select Month:</label>
                 <input type="month" id="selectedMonth">
             </div>
-
+            <!-- if user never pick a report type -->
+            <p id="timeframe-message" ></p>
             <button id="generateReportBtn">Generate Report</button>
 
+            <!-- A title label for the report -->
             <p id="title-timeFrame"></p>
 
+            <!-- The report displays here -->
             <div id="reportResults" class="report-results">
                 <table id="report-table">
                     <thead id="report-tableheader">
                         <tr id="report-rowheader">
-                            <th id="timeFrame"></th>
+                            <th id="timeFrame-choice"></th>
                             <th>Created By</th>
                             <th>Number of Services</th>
                             <th>Number of Cleaners</th>
-                            <th class="actions-column">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="data-table"></tbody>
@@ -65,10 +67,18 @@
                 const controller = new pmDailyReportController();
                 return await controller.getDailyReport();
             }
+            async getReportWeekly(){
+                const controller = new pmWeeklyReportController();
+                return await controller.getWeeklyReport();
+            }
 
-            displayDailyReport(reportList){
+            async getReportMonthly(selectedMonth){
+                const controller = new pmMonthlyReportController();
+                return await controller.getMonthlyReport(selectedMonth);
+            }
 
-                const container = document.getElementById("reportTable");
+            displayReport(reportList){
+                const container = document.getElementById("data-table");
                 container.innerHTML = "";
 
                 if(!reportList || reportList.length === 0){
@@ -88,52 +98,71 @@
                         <td>${categoryData.numCleaner}</td>
                     `;
                     container.appendChild(row);
-
                 });
-
             }
         }
 
         window.addEventListener("DOMContentLoaded", async () => {
             const page = new PMReportPage();
-            
 
-            document.getElementById("generateReportBtn").addEventListener("click", async (e) => {
-            
-                const timeframe = document.getElementById("report-timeframe").value;
-                const resultsDiv = document.getElementById("reportResults");
-                // const report = await page.getDailyReport();
+            document.getElementById("report-timeframe").addEventListener("change", function () {
+                const reportType = document.getElementById("report-timeframe").value;
+                const monthPicker = document.getElementById("monthPickerContainer");
+                const selectedMonth = document.getElementById("selectedMonth").value;
+                const message = document.getElementById("timeframe-message"); // when user never pick the timeframe message
+                const title = document.getElementById("title-timeFrame");
+                const tableHeader = document.getElementById("timeFrame-choice");
+                const dataTable = document.getElementById("data-table");
+                
+                const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1);
 
-                let report = []
+                // Clear previous messages or results
+                message.textContent = "";
+                title.textContent = "";
+                dataTable.innerHTML = "";
 
-                if (timeframe === "daily") {
-                    report = await page.getDailyReport();
-                } else if (timeframe === "weekly") {
-                    report = await page.getWeeklyReport();
-                } else if (timeframe === "monthly") {
-                    const selectedMonth = document.getElementById("selectedMonth").value;
-                    if (!selectedMonth) {
-                        resultsDiv.innerHTML = "Please select a month.";
-                        return;
-                    }
-                    report = await page.getMonthlyReport(selectedMonth);
-                } else {
-                    resultsDiv.innerHTML = "Please select a timeframe.";
+                if (reportType === "monthly"){
+                    monthPicker.style.display = "block";
+                } else if (reportType === ""){
+                    message.textContent = "Pick a Timeframe";
                     return;
+                } else {
+                    monthPicker.style.display = "none";
+                    message.textContent = "";
+                    title.textContent = reportType;
+                    tableHeader.textContent = reportType;
                 }
 
-                page.displayDailyReport(report);
+                title.textContent = capitalize(reportType) + " Report";
+                tableHeader.textContent = capitalize(reportType);
+
+            });
+            document.getElementById("generateReportBtn").addEventListener("click", async function () {
+                const message = document.getElementById("timeframe-message"); // when user never pick the timeframe message
+                const selectedMonth = document.getElementById("selectedMonth").value;
+                const reportType = document.getElementById("report-timeframe").value;
 
 
+                let report = [];
+
+                if (reportType === "daily") {
+                    report = await page.getReportDaily();
+                } else if (reportType === "weekly") {
+                    report = await page.getReportWeekly();
+                } else if (reportType === "monthly") {
+                    if (selectedMonth === ""){
+                        message.textContent = "Please select a month";
+                        return;
+                    }
+                    report = await page.getReportMonthly(selectedMonth);
+                }
+
+                page.displayReport(report);
             });
         });
 
-        document.getElementById("report-timeframe").addEventListener("change", function () {
-        document.getElementById("monthPickerContainer").style.display = 
-            this.value === "monthly" ? "block" : "none";
-        });
 
-
+        // Log Out
         document.getElementById("logout").addEventListener("click", () => {
             localStorage.removeItem("loggedInUserEmail");
             window.location.href = "loginPage.html";
