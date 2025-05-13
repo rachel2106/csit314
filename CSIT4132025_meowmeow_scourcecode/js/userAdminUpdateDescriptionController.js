@@ -2,7 +2,12 @@
 
 import { profileEntity } from './profileEntity.js';
 
-export async function updateUserTypeDescription(userType, newDescription) {
-  const entity = new profileEntity();
-  return await entity.updateUserTypeDescription(userType, newDescription); // Just return the result
+export class UserAdminUpdateDescriptionController {
+  constructor() {
+    this.entity = new profileEntity();
+  }
+
+  async updateDescription(userType, newDescription) {
+    return await this.entity.updateUserTypeDescription(userType, newDescription);
+  }
 }
