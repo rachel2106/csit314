@@ -1,277 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>User Admin Dashboard</title>
-  <link rel="stylesheet" href="css/style.css" />
-</head>
-<body class="useradmin-page">
-  <div class="userAdminHeaderBanner">
-    <a href="userAdminPage.html">
-      <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img" />
-    </a>
-    <a href="userAdminViewAccs.html" id="adminViewAccs">View Users Accounts</a>
-    <a href="userAdminPageProfiles.html" id="adminProfilePage">View Profiles</a>
-    <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
-  </div>
+import { Firebase } from "./firebaseAuth.js";
+const firebase = new Firebase();
 
-  <main>
-    <div class="useradmin-viewAccs">Welcome to User Admin Profile page</div>
-
-    <div class="userAdmin-viewContainer" id="admin-viewContiner">
-      <div class="useradmin-viewContainerHeader">
-        <h2 class="viewUserAcc">View User Profiles:</h2>
-        <a href="userAdminCreateProfile.html" class="adminCreateProfileBtn" id="admin-create-profile">Create Profile</a>
-      </div>
-
-      <div class="admin-viewtable" id="adminView">
-        <table id="admin-table">
-          <thead id="admin-tableheader">
-            <tr id="admin-rowheader">
-              <th>Profile:</th>
-              <th>Status:</th>
-              <th>Description:</th>
-              <th>Options:</th>
-            </tr>
-          </thead>
-          <tbody id="data-table"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="profile-details" id="profile-details-container"></div>
-
-    <!-- Modal for updating description -->
-    <div id="updateDescriptionModal" class="modal-updateDesc">
-      <h3>Update Description for <span id="modalProfileName"></span></h3>
-      <textarea id="newDescriptionInput" rows="4" cols="50"></textarea><br>
-      <div id="update-error-message" class="error-message"></div>
-      <button id="saveDescriptionBtn">Save</button>
-      <button id="cancelDescriptionBtn">Cancel</button>
-    </div>
-  </main>
-
- <script type="module">
-import { userAdminAllProfilesController } from "./js/userAdminAllProfilesController.js";
-import { profileEntity } from "./js/profileEntity.js";
-import { UpdateUserTypeDescriptionController } from './js/userAdminUpdateDescriptionController.js';
-import Firebase from "./js/firebaseAuth.js";
-
-class AdminProfilePage {
-  constructor() {
-    this.controller = new userAdminAllProfilesController();
-    console.log("AdminProfilePage initialized.");
-    this.currentlyEditingProfile = null;
+class HMLoginController {
+  constructor(formId) {
+    this.formId = formId;
+    this.form = document.getElementById(this.formId);
+    this.form.addEventListener('submit', (event) => this.handleLogin(event));
   }
 
-  extractNumberFromLastName(lastName) {
-    const match = lastName.match(/\d+/);
-    return match ? parseInt(match[0], 10) : 0;
-  }
-
-  async getAllProfiles() {
-    try {
-      console.log("Fetching all profiles...");
-      const profiles = await this.controller.getAllProfiles();
-      console.log("Profiles fetched:", profiles);
-      return profiles;
-    } catch (error) {
-      console.error("Error loading profiles:", error);
-      document.getElementById('update-error-message').textContent = "Error loading profiles. Please try again later.";
-      return [];
-    }
-  }
-
-  displayProfiles(profileList) {
-    const table = document.getElementById("data-table");
-    table.innerHTML = "";
-
-    const displayedUserTypes = new Set();
-    console.log("Displaying profiles...");
-
-    profileList.sort((a, b) => {
-      const nameA = (a.firstName || "").toLowerCase();
-      const nameB = (b.firstName || "").toLowerCase();
-      const firstNameCompare = nameA.localeCompare(nameB);
-      if (firstNameCompare !== 0) return firstNameCompare;
-
-      const numA = this.extractNumberFromLastName(a.lastName || "");
-      const numB = this.extractNumberFromLastName(b.lastName || "");
-      return numA - numB;
-    });
-
-    for (const profile of profileList) {
-      if (profile.userType && !displayedUserTypes.has(profile.userType)) {
-        displayedUserTypes.add(profile.userType);
-        let profileDescription = profile.description || this.getDefaultDescription(profile.userType);
-
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${profile.userType.charAt(0).toUpperCase() + profile.userType.slice(1)}</td>
-          <td>${profile.userStatus || "Active"}</td>
-          <td class="profile-description">${profileDescription}</td>
-          <td>
-            <button class="search-profile-btn" data-type="${profile.userType}">Search Profile</button>
-            <button class="delete-profile-btn" data-type="${profile.userType}">Delete Profile</button>
-            <button class="update-desc-btn" data-type="${profile.userType}">Update Description</button>
-          </td>
-        `;
-        table.appendChild(row);
-      }
-    }
-
-    this.addSearchProfileListeners();
-    this.addDeleteProfileListeners();
-    this.addUpdateDescriptionListeners();
-  }
-
-  getDefaultDescription(userType) {
-    switch (userType.toLowerCase()) {
-      case "useradmin":
-        return "Admin has full control over all user profiles.";
-      case "platformmanager":
-        return "Platform manager manages user accounts and oversees platform functions.";
-      case "cleaners":
-        return "Cleaner is responsible for providing cleaning services.";
-      case "homeowners":
-        return "Homeowner is the account holder who requests cleaning services.";
-      default:
-        return "No description available.";
-    }
-  }
-
-  addSearchProfileListeners() {
-    document.querySelectorAll(".search-profile-btn").forEach(button => {
-      button.addEventListener("click", async (event) => {
-        const userType = event.target.getAttribute("data-type");
-        await this.displayProfileDetails(userType);
-      });
-    });
-  }
-
-  async displayProfileDetails(userType) {
-    try {
-      const users = await this.controller.searchProfile(userType);
-      const container = document.getElementById("profile-details-container");
-
-      if (users.length > 0) {
-        container.innerHTML = `<h3>Users with profile type "${userType}":</h3>`;
-
-        users.sort((a, b) => {
-          const firstNameCompare = a.firstName.localeCompare(b.firstName);
-          if (firstNameCompare !== 0) return firstNameCompare;
-          const numA = this.extractNumberFromLastName(a.lastName);
-          const numB = this.extractNumberFromLastName(b.lastName);
-          return numA - numB;
-        });
-
-        users.forEach(user => {
-          container.innerHTML += `
-            <div class="profile-card">
-              <p><strong>Name:</strong> ${user.firstName} ${user.lastName}</p>
-              <p><strong>Email:</strong> ${user.email}</p>
-              <p><strong>Status:</strong> ${user.userStatus}</p>
-              <hr/>
-            </div>
-          `;
-        });
-      } else {
-        container.innerHTML = `<p class="error-message">No users found with profile type "${userType}"</p>`;
-      }
-    } catch (error) {
-      console.error("Error fetching profile details:", error);
-      document.getElementById('update-error-message').textContent = "Error loading profile details. Please try again later.";
-    }
-  }
-
-  async deleteProfile(userType) {
-    try {
-      const profileEntityInstance = new profileEntity();
-      await profileEntityInstance.deleteProfileByUserType(userType);
-
-      const rows = document.querySelectorAll("#admin-table tbody tr");
-      rows.forEach(row => {
-        const rowUserType = row.cells[0].textContent.trim().toLowerCase();
-        if (rowUserType === userType.toLowerCase()) {
-          row.remove();
-        }
-      });
-    } catch (error) {
-      console.error(`Error deleting profiles with userType "${userType}":`, error);
-      document.getElementById('update-error-message').textContent = `Error deleting profiles with userType "${userType}". Please try again later.`;
-    }
-  }
-
-  addDeleteProfileListeners() {
-    document.querySelectorAll(".delete-profile-btn").forEach(button => {
-      button.addEventListener("click", async (event) => {
-        const userType = event.target.dataset.type;
-        const confirmed = confirm(`Are you sure you want to delete all profiles with the userType "${userType}"?`);
-        if (confirmed) await this.deleteProfile(userType);
-      });
-    });
-  }
-
-  addUpdateDescriptionListeners() {
-    document.querySelectorAll(".update-desc-btn").forEach(button => {
-      button.addEventListener("click", (event) => {
-        const profileName = event.target.getAttribute("data-type");
-        const row = event.target.closest("tr");
-        const currentDescription = row.querySelector(".profile-description").textContent;
-        
-        this.currentlyEditingProfile = { profileName, row };
-        document.getElementById("modalProfileName").textContent = profileName;
-        document.getElementById("newDescriptionInput").value = currentDescription;
-        document.getElementById("updateDescriptionModal").style.display = "block";
-      });
-    });
-  }
-
-  async handleDescriptionUpdate() {
-    const newDesc = document.getElementById("newDescriptionInput").value.trim();
-    const errorContainer = document.getElementById("update-error-message");
-    errorContainer.textContent = "";
-
-    if (!newDesc) {
-      errorContainer.textContent = "Please provide a valid description.";
-      return;
-    }
+  // Handle login
+  async handleLogin(event) {
+    event.preventDefault();
+    
+    const email = this.form.querySelector("#email").value;
+    const password = this.form.querySelector("#password").value;
 
     try {
-      const controller = new UpdateUserTypeDescriptionController();
-      await controller.updateUserTypeDescription(this.currentlyEditingProfile.profileName, newDesc);
+      const user = await firebase.login(email, password);
+      console.log("User logged in:", user);
       
-      // Update the UI directly
-      this.currentlyEditingProfile.row.querySelector(".profile-description").textContent = newDesc;
-      document.getElementById("updateDescriptionModal").style.display = "none";
-      this.currentlyEditingProfile = null;
+      // After successful login, you can redirect to the dashboard or display user data
+      window.location.href = "/HMViewAllCS.html";  // Redirect to the homeowner dashboard or relevant page
     } catch (error) {
-      console.error("Failed to update description:", error);
-      errorContainer.textContent = "Failed to update description. Please try again later.";
+      alert("Login failed: " + error.message);
     }
   }
 }
 
-// Initialize the page
-const adminProfilePage = new AdminProfilePage();
-
-// Load and display profiles when page loads
-window.addEventListener('DOMContentLoaded', async () => {
-  const profiles = await adminProfilePage.getAllProfiles();
-  adminProfilePage.displayProfiles(profiles);
-
-  // Set up modal buttons
-  document.getElementById("saveDescriptionBtn").addEventListener("click", () => {
-    adminProfilePage.handleDescriptionUpdate();
-  });
-
-  document.getElementById("cancelDescriptionBtn").addEventListener("click", () => {
-    document.getElementById("updateDescriptionModal").style.display = "none";
-    adminProfilePage.currentlyEditingProfile = null;
-  });
-});
-</script>
-
-</body>
-</html>
+// Instantiate the controller for handling login form submission
+const loginController = new HMLoginController("loginFormId"); // Replace with your actual form ID
