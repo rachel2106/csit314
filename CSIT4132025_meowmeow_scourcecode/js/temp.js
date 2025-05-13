@@ -250,8 +250,10 @@
             // Update the category document
             await updateDoc(categoryDocRef, updateData);
 
-            let status = "success";
-            return status;
+            return {
+                status: "success",
+                message: "listing created!"
+            }
 
         } catch (error) {
             console.error("Error creating service category:", error);
@@ -332,6 +334,7 @@
                 return { success: false, message: "Unauthorized: You can only update your own listings." };
             }
             // Update only Firestore data (not Firebase Authentication)
+
            
             await updateDoc(listingRef, {
                 listingName: listingName.trim(),
@@ -341,7 +344,10 @@
                 listStatus: listStatus.trim()
             });
 
-            return { success: true, message: "Service category updated"};
+            return { 
+                success: true, 
+                message: "Service category updated"
+            };
         } catch (error) {
             console.error("Error updating service category:", error);
             return { success: false, message: `Error updating category:${error.message}` };
