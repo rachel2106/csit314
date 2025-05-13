@@ -1070,6 +1070,44 @@ button.update-btn:hover {
     color: #FFFFFF;
 }
 
+/* PLATFORM MANAGER generate report page */
+
+.platformManager-report{
+    text-align: center;
+    font-size: 30px;
+    margin-top: 0;
+}
+
+#the-header{
+    text-align: center;
+    font-size: 24px;
+}
+#generateReportBtn{
+    width: 15%;
+    height: 50px;
+    /* margin-left: 20%; */
+    background-color: #81cbd4;
+    margin-top: 24px;
+    cursor: pointer;
+    /* font-weight: bold; */
+    font-size: 20px;
+    text-decoration: none;
+    text-align: center;
+    color: black;
+    border: 1px solid black;
+
+}
+
+#report-timeframe{
+    font-size: 18px;
+}
+
+#title-timeFrame{
+    font-size: 30px;
+    font-weight: bold;
+}
+
+
 /* Cleaner Page */
 /* Search Service Listing */
 
@@ -1383,6 +1421,8 @@ button.update-btn:hover {
     margin-bottom: 20px;
     color: #333;
 } */
+
+
 
 
 
