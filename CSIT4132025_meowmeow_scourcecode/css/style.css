@@ -354,6 +354,8 @@ body.platformManager-page{
   background-color: #873D48;
 }
 
+
+
 .services-menu{
     color: black;
     padding: 10px 18px;
@@ -372,7 +374,8 @@ body.platformManager-page{
 
 .services-container {
     max-width: 900px;         /* Make the section narrower */
-  margin: 0 auto;           /* Center it horizontally */
+  margin: 0 auto;  
+  font-size: 20px;         /* Center it horizontally */
   padding: 20px;
     }
 
@@ -547,51 +550,51 @@ input[name="admin-search-userAcc"] {
 }
 
 /*update user in userAdmin */
-/* Modal Styles */
- /* Modal styles */
-    /* Modal Styles */
-.modal-updateDesc {
-  display: none; /* Initially hidden */
-  position: fixed; /* Fixed positioning to stay on top */
-  top: 50%; /* Position the modal in the middle of the viewport */
-  left: 50%;
-  transform: translate(-50%, -50%); /* Centering effect */
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  z-index: 1000; /* Ensure the modal is above other content */
-  width: 80%; /* Or any width that suits you */
-  max-width: 600px; /* Optional: to prevent the modal from being too wide */
+/* Modal overlay */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto; /* Enable scrolling if needed */
+  background-color: rgba(0, 0, 0, 0.5); /* Dark semi-transparent background */
+  justify-content: center;
+  align-items: center;
 }
 
-.modal-updateDesc h3 {
-  margin: 0 0 15px;
+/* Modal content */
+.modal-content {
+  background-color: #fff;
+  margin: auto;
+  padding: 20px 30px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  text-align: center;
 }
 
-textarea {
-  width: 100%; /* Make the textarea fit the modal width */
-  box-sizing: border-box;
-}
-
-button {
-  margin: 10px 5px;
-  padding: 10px;
+/* Cancel button style (optional) */
+.cancel-btn
+.confirm-btn {
+  background-color: #ccc;
   border: none;
-  background-color: #636e72;
-  color: white;
+  padding: 8px 16px;
+  margin-left: 10px;
+  border-radius: 4px;
   cursor: pointer;
-  border-radius: 5px;
 }
 
-button:hover {
-  background-color: #873D48;
+.cancel-btn:hover
+.confirm-btn:hover {
+  background-color: #bbb;
 }
 
-#error-message {
-  color: red;
-  font-size: 14px;
-}
+
+
 
 
 form input {
@@ -1070,44 +1073,6 @@ button.update-btn:hover {
     color: #FFFFFF;
 }
 
-/* PLATFORM MANAGER generate report page */
-
-.platformManager-report{
-    text-align: center;
-    font-size: 30px;
-    margin-top: 0;
-}
-
-#the-header{
-    text-align: center;
-    font-size: 24px;
-}
-#generateReportBtn{
-    width: 15%;
-    height: 50px;
-    /* margin-left: 20%; */
-    background-color: #81cbd4;
-    margin-top: 24px;
-    cursor: pointer;
-    /* font-weight: bold; */
-    font-size: 20px;
-    text-decoration: none;
-    text-align: center;
-    color: black;
-    border: 1px solid black;
-
-}
-
-#report-timeframe{
-    font-size: 18px;
-}
-
-#title-timeFrame{
-    font-size: 30px;
-    font-weight: bold;
-}
-
-
 /* Cleaner Page */
 /* Search Service Listing */
 
@@ -1421,8 +1386,6 @@ button.update-btn:hover {
     margin-bottom: 20px;
     color: #333;
 } */
-
-
 
 
 
