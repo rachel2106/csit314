@@ -1255,8 +1255,68 @@ async incrementShortlistCount(categoryName, serviceId) {
     await updateDoc(docRef, { viewShortlisted: current + 1 });
   }
 }
+
+ // Fetch all service listings
+  async fetchAllServiceListings() {
+    const basePath = "csit314/AllServiceCategory/CleaningServiceData";
+    const categoriesCol = collection(this.db, basePath);
+    const categoryDocs = await getDocs(categoriesCol);
+
+    const allServices = [];
+
+    for (const categoryDoc of categoryDocs.docs) {
+      const categoryName = categoryDoc.id;
+      const listingsPath = `${basePath}/${categoryName}/serviceListings`;
+      const listingsCol = collection(this.db, listingsPath);
+      const listingsSnap = await getDocs(listingsCol);
+
+      listingsSnap.forEach(doc => {
+        allServices.push({
+          id: doc.id,
+          ...doc.data(),
+          serviceCategory: categoryName,
+        });
+      });
+    }
+
+    return allServices;
   }
 
+
+  //create a booking
+  async createBooking(serviceId, cleanerId, bookingDetails) {
+  const user = this.auth.currentUser;
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  const homeownerEmail = user.email;
+
+  // Get service details
+  const allServices = await this.fetchAllServiceListings();
+  const selectedService = allServices.find(service => service.id === serviceId);
+  if (!selectedService) {
+    throw new Error("Service not found");
+  }
+
+  // Reference the subcollection for bookings under the homeowner's email
+  const bookingsColRef = collection(this.db, `csit314/AllBookings/Bookings/${homeownerEmail}`);
+
+  // Create a new booking document
+  await addDoc(bookingsColRef, {
+    serviceId,
+    cleanerId,
+    selectedService,
+    ...bookingDetails,
+    timestamp: new Date(),
+  });
+
+  console.log("Booking created successfully");
+}
+}
+
+
     export {db, Firebase}
+      
       
 
