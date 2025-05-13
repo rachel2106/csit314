@@ -1,3 +1,4 @@
+// HMViewAllCSController.js
 import { HomeownersEntity } from "./homeownersEntity.js";
 
 export class HMViewAllCSController {
@@ -5,18 +6,16 @@ export class HMViewAllCSController {
     this.entity = new HomeownersEntity();
   }
 
-  // Fetch all services
-  async getAllServices() {
+  async fetchAllCleaningServices() {
     return await this.entity.fetchAllCleaningServices();
   }
 
-  // Increment the view count for a given service
-  async incrementViewCount(categoryName, serviceId) {
-    return await this.entity.incrementViewCount(categoryName, serviceId);
-  }
+  async getFilteredCleaningServices(filters) {
+  return await this.entity.getFilteredCleaningServices(filters);
+}
 
-  // Increment the shortlist count for a given service
-  async incrementShortlistCount(categoryName, serviceId) {
-    return await this.entity.incrementShortlistCount(categoryName, serviceId);
+
+  async incrementViewCount(serviceId) {
+    return await this.entity.incrementViewCount(serviceId);
   }
 }
