@@ -1,7 +1,15 @@
+// import firebase from 'firebase/compat/app';
 import { db } from './firebaseAuth.js';  // Import db from firebaseAuth.js
 import { collection, query, where, getDocs, addDoc, Timestamp, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";  // Import updateDoc and doc
+import Firebase from "./firebaseAuth.js";
+
+const firebase = new Firebase();
 
 export class profileEntity {
+
+    constructor() {
+        this.db = db;
+    }
     // Get all profiles
     async getAllProfiles() {
         try {
@@ -42,7 +50,8 @@ export class profileEntity {
             await addDoc(collection(db, "csit314/AllUsers/UserData"), {
                 ...profileData,
                 createdDate: Timestamp.now(),
-                lastUpdated: Timestamp.now()
+                lastUpdated: Timestamp.now(),
+                profileStatus: "Active"
             });
         } catch (error) {
             // Do nothing on error
@@ -62,6 +71,19 @@ export class profileEntity {
             profileListContainer.appendChild(profileItem);
         });
     }
+
+    //suspend profile byt userType
+    async suspendProfile(userType) {
+        try{
+            const response = await firebase.suspendProfile(userType);
+            return response;
+
+        }catch (error) {
+            console.error("Error creating service category:", error);
+            return { status: "error", message: error.message };
+        }
+
+    }
     
     // Delete profile by userType
     async deleteProfileByUserType(userType) {
@@ -79,6 +101,8 @@ export class profileEntity {
         }
     }
 
+
+
     // Update profile description by userType (assumes only one match; modify if multiple allowed)
     async updateUserTypeDescription(userType, newDescription) {
         try {
@@ -89,7 +113,8 @@ export class profileEntity {
                 snapshot.forEach(async (docSnap) => {
                     await updateDoc(docSnap.ref, {
                         description: newDescription,
-                        lastUpdated: Timestamp.now()
+                        lastUpdated: Timestamp.now(),
+                        profileStatus: "Active"
                     });
                 });
             }

@@ -56,6 +56,9 @@ export class userEntity {
         if( userData.userStatus !== "Active"){
             return { status: "error", message: "Inactive Account." };
         }
+        if( userData.profilestatus !== "Active"){
+            return { status: "error", message: "Inactive Profile." };
+        }
 
         // Check password
         if (userData.password === password) {

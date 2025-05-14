@@ -385,6 +385,84 @@ import {getAuth,
             }
         }
 
+         //admin suspend user in admin page
+         // admin suspend user in admin page
+        async suspendProfile(userType) {
+            let message = "";
+            try {
+                const usersCollectionRef = collection(this.db, 'csit314/AllUsers/UserData');
+                const q = query(usersCollectionRef, where('userType', '==', userType));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    throw new Error("No users found with this user type.");
+                }
+
+                for (const docSnapshot of querySnapshot.docs) {
+                    const userData = docSnapshot.data();
+                    const currentStatus = userData.profileStatus;
+                    const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
+
+                    const userRef = doc(this.db, 'csit314/AllUsers/UserData', docSnapshot.id);
+                    await updateDoc(userRef, {
+                        profileStatus: newStatus
+                    });
+
+                    console.log(`User ${docSnapshot.id} status changed to ${newStatus}`);
+                }
+
+                message = "Users updated successfully.";
+            } catch (err) {
+                console.error("Error suspending profiles:", err);
+                message = "Error updating user statuses.";
+            }
+
+            return message;
+        }
+
+        //  async suspendProfile(userType){
+        //     let message = "";
+        //     try{
+        //         // Get user document based on email
+        //         const userRef = doc(this.db, "csit314/AllUsers/UserData", userType);
+                
+                
+        //         const usersCollectionRef = collection(this.db, 'csit314/AllUsers/UserData');
+        //         const q = query(usersCollectionRef, where('userType', '==', userType));
+        //         const querySnapshot = await getDocs(q);
+
+        //         // if (querySnapshot.empty) {
+        //         //     throw new Error("No user found with this email.");
+        //         // }
+
+        //         const userDoc = querySnapshot.docs[0];
+        //         const userData = userDoc.data();
+
+        //         if (!querySnapshot.empty) {
+        //             querySnapshot.forEach(async (docSnapshot) => {
+        //                 if( userData.profileStatus === "Active"){
+        //                     await updateDoc(userRef, {
+        //                         profileStatus: "Inactive"
+        //                     });
+        //                     message = "suspended";
+        //                 }else{
+        //                     await updateDoc(userRef, {
+        //                         profileStatus: "Active"
+        //                     });
+        //                     message = "Unsuspended";
+        //                 }
+        //             });
+        //         }
+
+                
+        //         return message;
+        //     }catch (err){
+        //         message = "Error to suspend";
+        //         return message;
+        //     }
+        // }
+
+
         //admin deleting user in admin page
         async deleteUser(userEmail) {
             try {
