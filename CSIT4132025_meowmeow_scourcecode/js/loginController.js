@@ -41,11 +41,12 @@ class LoginController {
 
     // Now add only unique options to the dropdown
     uniqueUserTypes.forEach(userType => {
-        const option = document.createElement('option');
-        option.value = userType;
-        option.textContent = userType.charAt(0).toUpperCase() + userType.slice(1);
-        select.appendChild(option);
-    });
+    const option = document.createElement('option');
+    const lowercaseType = userType.toLowerCase();
+    option.value = lowercaseType;
+    option.textContent = lowercaseType;
+    select.appendChild(option);
+});
 }
 
     async handleLogin(e) {
