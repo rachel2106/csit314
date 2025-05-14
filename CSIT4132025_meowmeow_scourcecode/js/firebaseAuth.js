@@ -649,7 +649,7 @@ import {getAuth,
         try{
             const { start, end } = dailyData;
             const categoriesSnap = await getDocs(collection(this.db, "csit314/AllServiceCategory/CleaningServiceData"));
-            let groupedServices = [];
+            let groupedServices = {};
 
             for (const catDoc of categoriesSnap.docs){
                 const catName = catDoc.id;
@@ -686,16 +686,19 @@ import {getAuth,
                 }
 
             }
-            return {
-                status: "success",
-                timeframe: start.toDateString(),
-                report : groupedServices
-            };
+            const report = {
+                status: "success", //string
+                timeframe: start.toDateString(), //string
+                report : groupedServices //object
+            }
+
+
+            return report; //obj
         } catch (error){
             console.error("Error generating daily report:", error);
             return {
-                status: "error",
-                message: error.message
+                status: "error", //string
+                message: error.message //string
             };
         }
     }
@@ -750,16 +753,18 @@ import {getAuth,
                 }
 
             }
-            return {
-                status: "success",
-                timeframe: `${start.toDateString()} to ${end.toDateString()}`,
-                report : groupedServices
-            };
+
+            const report = {
+                status: "success", //string
+                timeframe: `${start.toDateString()} to ${end.toDateString()}`, //string
+                report : groupedServices //object
+            }
+            return report; //obj
         } catch (error){
             console.error("Error generating daily report:", error);
             return {
-                status: "error",
-                message: error.message
+                status: "error", //string
+                message: error.message //string
             };
         }
     }
@@ -809,13 +814,16 @@ import {getAuth,
                 }
 
             }
-            return {
+
+            const report = {
                 status: "success",
-                timeframe: monthlyData,
+                timeframe: monthlyData, 
                 report : groupedServices
-            };
+            }
+            return report; //obj
         } catch (error){
             console.error("Error generating monthly report:", error);
+
             return {
                 status: "error",
                 message: error.message
@@ -863,15 +871,14 @@ import {getAuth,
             });
 
             return {
-                status: "success",
-                message: "Service category created successfully",
-                categoryId: categoryDocRef.id
+                status: "success", //string
+                message: "Service category created successfully" //string
             };
         } catch (error) {
             console.error("Error creating service category:", error);
             return {
-                status: "error",
-                message: error.message
+                status: "error", //string
+                message: error.message //string
             };
         }
     }
@@ -896,7 +903,7 @@ import {getAuth,
             });
 
 
-            return categoryList;
+            return categoryList; // array
         } catch (error) {
             console.error("Error fetching service categories:", error);
             return [];
@@ -940,9 +947,12 @@ import {getAuth,
 
 
             // Refresh the page after the update
-            window.location.reload(); 
+            // window.location.reload(); 
 
-            return { success: true, message: "Service category updated"};
+            return { 
+                success: true, //boolean
+                message: "Service category updated" //string
+            };
         } catch (error) {
             console.error("Error updating service category:", error);
             return { success: false, message: `Error updating category:${error.message}` };
@@ -966,7 +976,7 @@ import {getAuth,
                 // console.log(`Deleted Firestore document for service category: ${deleteCategoryData}`);
             }
     
-            return { success: true };
+            return { success: true }; //boolean
         } catch (error) {
             console.error("Error deleting Firestore service category:", error);
             throw error;
@@ -994,7 +1004,7 @@ import {getAuth,
             });
 
 
-            return categoryList;
+            return categoryList; // array
         }catch (error){
             console.error("Error deleting Firestore user:", error);
             throw error;
@@ -1007,7 +1017,7 @@ import {getAuth,
     async createServiceListing(listingData) {
         try {
             const { serviceListing, serviceCategory, frequency, fee, details,listStatus, currentUserEmail  } = listingData;
-            console.log("This is frequency" + frequency)
+            console.log("This is frequency " + frequency)
 
 
             // Validate name
@@ -1043,6 +1053,7 @@ import {getAuth,
                 fee: parseFloat(fee),
                 details: details.trim(),
                 createdBy: currentUserEmail,
+                createdAt: serverTimestamp(),
                 category: serviceCategory.trim(),
                 listingFrequency: frequency.trim(),
                 listStatus: listStatus.trim(),
@@ -1068,13 +1079,17 @@ import {getAuth,
             // Update the category document
             await updateDoc(categoryDocRef, updateData);
 
+
+            console.log("Service listing successfully created!");
+
+
             return {
-                status: "success",
-                message: "listing created!"
-            }
+                status: "success", //string
+                message: "Listing created!" //string
+            };
 
         } catch (error) {
-            console.error("Error creating service category:", error);
+            console.error("Error creating service listing:", error);
             return {
                 status: "error",
                 message: error.message
@@ -1111,7 +1126,7 @@ import {getAuth,
                 });
             }
     
-            return cleanerListings;
+            return cleanerListings; //array
     
         } catch (error) {
             console.error("Error fetching listings by cleaner email:", error);
@@ -1163,12 +1178,12 @@ import {getAuth,
             });
 
             return { 
-                success: true, 
-                message: "Service category updated"
+                success: true, //boolean
+                message: "Service Listing updated" //string
             };
         } catch (error) {
-            console.error("Error updating service category:", error);
-            return { success: false, message: `Error updating category:${error.message}` };
+            console.error("Error updating service listing:", error);
+            return { success: false, message: `Error updating listing:${error.message}` };
         }
     }
 
@@ -1192,7 +1207,7 @@ import {getAuth,
     
             return { success: true };
         } catch (error) {
-            console.error("Error deleting Firestore service category:", error);
+            console.error("Error deleting Firestore service listing:", error);
             throw error;
         }
 
@@ -1234,7 +1249,7 @@ import {getAuth,
             }
 
 
-            return listingList;
+            return listingList; //array
         }catch (error){
             console.error("Error deleting Firestore user:", error);
             throw error;

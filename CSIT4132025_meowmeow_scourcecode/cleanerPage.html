@@ -252,7 +252,7 @@
                 const updateController = new cleanerUpdateServicesController();
                 try{
 
-                    await updateController.updateServiceListing({
+                    const result = await updateController.updateServiceListing({
                         listingId,
                         serviceCategory: updateCategory,
                         listingName: updateListing,
@@ -263,9 +263,14 @@
                         createdBy: loggedInUserEmail
                     });
 
+                    if (result.success){
+                        alert(result.message);
+                        updateModal.style.display = "none"; 
 
-                    alert("Listing updated!");
-                    updateModal.style.display = "none"; 
+                    }
+
+
+                    
 
                     //Refreshed the table
                     const updatedList = await page.getListingList(loggedInUserEmail);
@@ -288,13 +293,13 @@
                 const deleteController = new cleanerDeleteServicesController();
                 const message = "";
                 try{
-                    message = await deleteController.deleteServiceListing({
+                    const result = await deleteController.deleteServiceListing({
                         listingName: listingDelete,
                         serviceCategory: categoryDelete,
                         createdBy: loggedInUserEmail
                     });
 
-                    if (message){
+                    if (result){
                         alert("Category deleted!");
 
                     }else {

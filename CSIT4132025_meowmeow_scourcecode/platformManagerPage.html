@@ -219,15 +219,20 @@
                 
                 const updateController = new pmUpdateServicesController();
                 try{
-                    await updateController.updateServiceCategory({
+                    const result = await updateController.updateServiceCategory({
                         categoryId,
                         serviceCategory: updateCategory,
                         description: updateDescription
                     });
+                    
+                    if (result.success){
+                        alert(result.message);
+                        updateModal.style.display = "none";
+
+                    }
 
 
-                    alert("Category updated!");
-                    updateModal.style.display = "none"; 
+                     
 
                     //Refreshed the table
                     const updatedList = await page.getCategoryList();
@@ -248,12 +253,13 @@
                 
                 const deleteController = new pmDeleteServicesController();
                 try{
-                    await deleteController.deleteServiceCategory(categoryDelete);
+                    const result = await deleteController.deleteServiceCategory(categoryDelete);
 
-
-                    alert("Category deleted!");
-                    deleteModal.style.display = "none"; 
-
+                    if (result){
+                        alert("Category deleted!");
+                        deleteModal.style.display = "none"; 
+                    }
+                    
                     //Refreshed the table
                     const deletedList = await page.getCategoryList();
                     page.displayCategoriesList(deletedList);

@@ -3,8 +3,8 @@
  export class pmWeeklyReportController {
      async getWeeklyReport (){
          const reportEntity = new generateReportEntity();
-         const reportList = await reportEntity.getWeeklyReport();
+         const report = await reportEntity.getWeeklyReport();
  
-         return reportList
+         return report;
      }
  }

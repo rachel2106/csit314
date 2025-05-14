@@ -11,8 +11,8 @@ export class serviceCategoryEntity {
     // Create a new service category
     async createServiceCategory(categoryObj) {
         try {
-            const response = await firebase.createServiceCategory(categoryObj);
-            return response;
+            const message = await firebase.createServiceCategory(categoryObj);
+            return message;
         } catch (error) {
             console.error("Error creating service category:", error);
             return { status: "error", message: error.message };

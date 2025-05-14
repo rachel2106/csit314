@@ -109,8 +109,8 @@
 
                 const result = await controller.createServiceListing(listing);
 
-                if (result === "success") {
-                    alert("Category created successfully.");
+                if (result.status === "success") {
+                    alert(result.message);
                     window.location.href = "cleanerPage.html";
                 } else {
                     console.error("Creation failed:", result);
