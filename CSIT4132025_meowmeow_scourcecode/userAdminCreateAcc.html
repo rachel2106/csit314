@@ -132,8 +132,8 @@
             const result = await controller.createUserAcc(newUserObj);
 
             if (result.status === "success") {
-                // alert("User created successfully!");
-                console.log("User created successfully:", newUserObj);  // Log the user details to the console
+                alert(result.message);
+                // console.log("User created successfully:", newUserObj);  // Log the user details to the console
                 // window.location.href = "userAdminViewAccs.html";
             } else {
                 alert("Failed to create user: " + result.message);

@@ -3,13 +3,11 @@ import { profileEntity } from "./profileEntity.js";
 export class userAdminAllProfilesController {
     async getAllProfiles() {
         const entity = new profileEntity(); //creating an instance (object) of profileEntity
-        return await entity.getAllProfiles();
+        const profileList = await entity.getAllProfiles();
+        return profileList;
     }
 
-    async searchProfile(userType) {
-        const entity = new profileEntity(); //creating an instance (object) of profileEntity
-        return await entity.searchProfiles(userType); // pass userType!
-    }
+    
 
     
 }

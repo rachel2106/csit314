@@ -55,7 +55,7 @@
  <script type="module">
 import { userAdminAllProfilesController } from "./js/userAdminAllProfilesController.js";
 import { userAdminSuspendProfileController} from "./js/userAdminSuspendProfileController.js"
-// import { profileEntity } from "./js/profileEntity.js";
+import { userAdminSearchProfileController} from "./js/userAdminSearchProfileController.js"
 import { UpdateUserTypeDescriptionController } from './js/userAdminUpdateDescriptionController.js';
 // import Firebase from "./js/firebaseAuth.js";
 
@@ -105,7 +105,7 @@ class AdminProfilePage {
     for (const profile of profileList) {
       if (profile.userType && !displayedUserTypes.has(profile.userType)) {
         displayedUserTypes.add(profile.userType);
-        let profileDescription = profile.description || this.getDefaultDescription(profile.userType);
+        let profileDescription = profile.description ;
 
         const row = document.createElement("tr");
         row.innerHTML = `
@@ -127,20 +127,20 @@ class AdminProfilePage {
     this.addUpdateDescriptionListeners();
   }
 
-  getDefaultDescription(userType) {
-    switch (userType.toLowerCase()) {
-      case "useradmin":
-        return "Admin has full control over all user profiles.";
-      case "platformmanager":
-        return "Platform manager manages user accounts and oversees platform functions.";
-      case "cleaners":
-        return "Cleaner is responsible for providing cleaning services.";
-      case "homeowners":
-        return "Homeowner is the account holder who requests cleaning services.";
-      default:
-        return "No description available.";
-    }
-  }
+  // getDefaultDescription(userType) {
+  //   switch (userType.toLowerCase()) {
+  //     case "useradmin":
+  //       return "Admin has full control over all user profiles.";
+  //     case "platformmanager":
+  //       return "Platform manager manages user accounts and oversees platform functions.";
+  //     case "cleaners":
+  //       return "Cleaner is responsible for providing cleaning services.";
+  //     case "homeowners":
+  //       return "Homeowner is the account holder who requests cleaning services.";
+  //     default:
+  //       return "No description available.";
+  //   }
+  // }
 
   addSearchProfileListeners() {
     document.querySelectorAll(".search-profile-btn").forEach(button => {
@@ -153,13 +153,14 @@ class AdminProfilePage {
 
   async displayProfileDetails(userType) {
     try {
-      const users = await this.controller.searchProfile(userType);
+      const searchController = new userAdminSearchProfileController();
+      const userList = await searchController.searchProfile(userType);
       const container = document.getElementById("profile-details-container");
 
-      if (users.length > 0) {
+      if (userList.length > 0) {
         container.innerHTML = `<h3>Users with profile type "${userType}":</h3>`;
 
-        users.sort((a, b) => {
+        userList.sort((a, b) => {
           const firstNameCompare = a.firstName.localeCompare(b.firstName);
           if (firstNameCompare !== 0) return firstNameCompare;
           const numA = this.extractNumberFromLastName(a.lastName);
@@ -167,7 +168,7 @@ class AdminProfilePage {
           return numA - numB;
         });
 
-        users.forEach(user => {
+        userList.forEach(user => {
           container.innerHTML += `
             <div class="profile-card">
               <p><strong>Name:</strong> ${user.firstName} ${user.lastName}</p>
@@ -186,25 +187,15 @@ class AdminProfilePage {
     }
   }
 
-  async suspendProfile(userType) {
+  async suspendProfiles(userType) {
     try {
       // const profileEntityInstance = new profileEntity();
       const suspendController = new  userAdminSuspendProfileController();
       const message = await suspendController.suspendProfile(userType)
       alert(message);
-
-      // await profileEntityInstance.suspendProfileByUserType(userType);
-
-      // const rows = document.querySelectorAll("#admin-table tbody tr");
-      // rows.forEach(row => {
-      //   const rowUserType = row.cells[0].textContent.trim().toLowerCase();
-      //   if (rowUserType === userType.toLowerCase()) {
-      //     row.remove();
-      //   }
-      // });
     } catch (error) {
-      console.error(`Error deleting profiles with userType "${userType}":`, error);
-      document.getElementById('update-error-message').textContent = `Error deleting profiles with userType "${userType}". Please try again later.`;
+      console.error(`Error suspending profiles with userType "${userType}":`, error);
+      document.getElementById('update-error-message').textContent = `Error suspending profiles with userType "${userType}". Please try again later.`;
     }
   }
 
@@ -212,10 +203,12 @@ class AdminProfilePage {
     document.querySelectorAll(".suspend-profile-btn").forEach(button => {
       button.addEventListener("click", async (event) => {
         const userType = event.target.dataset.type;
-        const confirmed = confirm(`Are you sure you want to suspend all profiles with the userType "${userType}"?`);
-        if (confirmed) await this.suspendProfile(userType);
+        const confirmed = confirm(`Are you sure you want to suspend/unsuspend all profiles with the userType "${userType}"?`);
+        if (confirmed) await this.suspendProfiles(userType);
+        window.location.reload();
       });
-    });
+    }
+  );
   }
 
   addUpdateDescriptionListeners() {
@@ -245,8 +238,9 @@ class AdminProfilePage {
 
     try {
       const controller = new UpdateUserTypeDescriptionController();
-      await controller.updateUserTypeDescription(this.currentlyEditingProfile.profileName, newDesc);
+      const message = await controller.updateUserTypeDescription(this.currentlyEditingProfile.profileName, newDesc);
       
+      alert(message);
       // Update the UI directly
       this.currentlyEditingProfile.row.querySelector(".profile-description").textContent = newDesc;
       document.getElementById("updateDescriptionModal").style.display = "none";
@@ -267,8 +261,10 @@ window.addEventListener('DOMContentLoaded', async () => {
   adminProfilePage.displayProfiles(profiles);
 
   // Set up modal buttons
-  document.getElementById("saveDescriptionBtn").addEventListener("click", () => {
+  document.getElementById("saveDescriptionBtn").addEventListener("click", async () => {
     adminProfilePage.handleDescriptionUpdate();
+    const updatedList = await adminProfilePage.getAllProfiles();
+    adminProfilePage.displayProfiles(updatedList);
   });
 
   document.getElementById("cancelDescriptionBtn").addEventListener("click", () => {
@@ -276,8 +272,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     adminProfilePage.currentlyEditingProfile = null;
   });
 
-  // document.getElementById("suspend-profile-btn").addEventListener("click", () => {
-  //   adminProfilePage.displayProfiles(profiles);
+  // document.getElementById("suspend-profile-btn").addEventListener("click", async () => {
+    
+  //   // const updatedList = await adminProfilePage.getAllProfiles();
+  //   // adminProfilePage.displayProfiles(updatedList);
     
   // });
 

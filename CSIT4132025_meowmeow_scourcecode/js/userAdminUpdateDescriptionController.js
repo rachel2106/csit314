@@ -6,6 +6,8 @@ export class UpdateUserTypeDescriptionController {
   // Method to update the description for a given user type
   async updateUserTypeDescription(userType, newDescription) {
     const entity = new profileEntity();
-    return await entity.updateUserTypeDescription(userType, newDescription); // Just return the result
+    const message = await entity.updateUserTypeDescription(userType, newDescription); // Just return the result
+  
+    return message;
   }
 }

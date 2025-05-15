@@ -47,76 +47,142 @@ import {getAuth,
         this.auth = auth;
     }
 
-    // Registration Function
-    async registerUser(newUser) {
-        try {
-            // Create user in Firebase Authentication
-            const userCredential = await createUserWithEmailAndPassword(
-                auth, // Firebase auth instance
-                newUser.userEmail,
-                newUser.userPass
-            );
-            const user = userCredential.user;
+    // // Registration Function
+    // async registerUser(newUser) {
+    //     try {
+    //         // Create user in Firebase Authentication
+    //         const userCredential = await createUserWithEmailAndPassword(
+    //             auth, // Firebase auth instance
+    //             newUser.userEmail,
+    //             newUser.userPass
+    //         );
+    //         const user = userCredential.user;
     
-            // Log the Firebase user
-            console.log("User successfully created in Firebase Auth:", user.email);
+    //         // Log the Firebase user
+    //         console.log("User successfully created in Firebase Auth:", user.email);
     
-            // Now, add the user to Firestore (excluding password)
-            const usersData = collection(db, "csit314/AllUsers/UserData");
-            const userDocRef = doc(usersData, user.email); // Use user email as the document ID
+    //         // Now, add the user to Firestore (excluding password)
+    //         const usersData = collection(db, "csit314/AllUsers/UserData");
+    //         const userDocRef = doc(usersData, user.email); // Use user email as the document ID
     
-            // Save user data to Firestore
-            await setDoc(userDocRef, {
-                firstName: newUser.firstName,
-                lastName: newUser.lastName,
-                email: user.email,
-                password: newUser.userPass,
-                userType: newUser.userType,
-                userStatus: "Active",
-            });
+    //         // Save user data to Firestore
+    //         await setDoc(userDocRef, {
+    //             firstName: newUser.firstName,
+    //             lastName: newUser.lastName,
+    //             email: user.email,
+    //             password: newUser.userPass,
+    //             userType: newUser.userType,
+    //             userStatus: "Active",
+    //         });
     
-            console.log("User successfully added to Firestore:", user.email);
+    //         console.log("User successfully added to Firestore:", user.email);
     
-            // Lead users back to login page
-            window.location.href = "loginPage.html";
+    //         // Lead users back to login page
+    //         window.location.href = "loginPage.html";
     
-        } catch (error) {
-            console.error("Error during registration:", error);
-            alert("Registration failed. Please try again.");
-        }
-    }
+    //     } catch (error) {
+    //         console.error("Error during registration:", error);
+    //         alert("Registration failed. Please try again.");
+    //     }
+    // }
 
 
-    //Login for users
-    async loginUser(email, password, userType) {
-        try {
-            const usersCollection = collection(db, "csit314/AllUsers/UserData");
-            const q = query(usersCollection, where("email", "==", email), where("userType", "==", userType));
-            const querySnapshot = await getDocs(q);
+    // //Login for users
+    // async loginUser(email, password, userType) {
+    //     try {
+    //         const usersCollection = collection(db, "csit314/AllUsers/UserData");
+    //         const q = query(usersCollection, where("email", "==", email), where("userType", "==", userType));
+    //         const querySnapshot = await getDocs(q);
     
-            if (querySnapshot.empty) {
-                return { status: "error", message: "No user found with this email and profile." };
-            }
+    //         if (querySnapshot.empty) {
+    //             return { status: "error", message: "No user found with this email and profile." };
+    //         }
     
-            const userDoc = querySnapshot.docs[0];
-            const userData = userDoc.data();
+    //         const userDoc = querySnapshot.docs[0];
+    //         const userData = userDoc.data();
     
-            console.log("Fetched User Data:", userData); // Debugging output for user data
+    //         console.log("Fetched User Data:", userData); // Debugging output for user data
 
         
     
-            // Simple password check (plain-text example, consider hashing passwords in production)
-            if (userData.password === password) {
-                return { status: "success", userData };
-            } else {
-                return { status: "error", message: "Incorrect password." };
+    //         // Simple password check (plain-text example, consider hashing passwords in production)
+    //         if (userData.password === password) {
+    //             return { status: "success", userData };
+    //         } else {
+    //             return { status: "error", message: "Incorrect password." };
+    //         }
+    //     } catch (err) {
+    //         console.error("Error during login:", err.message);
+    //         throw new Error("Login failed.");
+    //     }
+    // }
+
+    // User Account CRUDS 
+    // Create user account in Firebase Auth and Firestore
+    async createUser(newUser) {
+        try {
+            // Use lowercase userType values
+            const validTypes = ["userAdmin", "platformManager", "cleaners", "homeowners"];
+            const userTypeFormatted = newUser.userType.trim(); // Do not uppercase it
+    
+            if (!validTypes.includes(userTypeFormatted)) {
+                return {
+                    status: "error",
+                    message: `Invalid userType provided: ${newUser.userType}`
+                };
             }
-        } catch (err) {
-            console.error("Error during login:", err.message);
-            throw new Error("Login failed.");
+    
+            // Check if user already exists in Firestore based on email
+            const userCollectionRef = collection(this.db, "csit314/AllUsers/UserData");
+            const q = query(userCollectionRef, where("email", "==", newUser.userEmail));
+            const querySnapshot = await getDocs(q);
+    
+            if (!querySnapshot.empty) {
+                // If email exists, allow duplicate by creating a new unique document ID
+                const timestamp = new Date().getTime(); // Create a unique timestamp
+                const userDocRef = doc(this.db, "csit314/AllUsers/UserData", `user_${timestamp}`);
+    
+                // Store the user in Firestore
+                await setDoc(userDocRef, {
+                    firstName: newUser.firstName,
+                    lastName: newUser.lastName,
+                    email: newUser.userEmail, // Keep the email
+                    password: newUser.userPass, // Store password (consider hashing it)
+                    userType: userTypeFormatted,
+                    userStatus: "Active"
+                });
+    
+                // also a success - allows duplicate email
+                return {
+                    status: "success", //string
+                    message: "User created successfully with duplicate email allowed.", //string
+                };
+            } else {
+                // If email doesn't exist, create the user with email as the document ID
+                const userDocRef = doc(this.db, "csit314/AllUsers/UserData", newUser.userEmail);
+                await setDoc(userDocRef, {
+                    firstName: newUser.firstName,
+                    lastName: newUser.lastName,
+                    email: newUser.userEmail,
+                    password: newUser.userPass, // Store password (consider hashing it)
+                    userType: userTypeFormatted,
+                    userStatus: "Active"
+                });
+    
+                //success - new email
+                return {
+                    status: "success", //string
+                    message: "User created successfully" //string
+                };
+            }
+        } catch (error) {
+            console.error("Error creating user in Firestore:", error);
+            return {
+                status: "error", //string
+                message: error.message //string
+            };
         }
     }
-
 
 
 // Get list of all user emails (as IDs) and their statuses from UserData
@@ -144,281 +210,354 @@ import {getAuth,
       }
     }
 
+    // Update user account by admin (Firestore update)
+    async updateUserInFirestore({originalEmail, firstName, lastName, newEmail, password}) {
+        const cleanedEmail = originalEmail.trim().toLowerCase();  
+        const userCollection = collection(db, "csit314/AllUsers/UserData"); 
+        let message = "";
+
+        // if (!originalEmail || !firstName || !lastName || !newEmail || !password) {
+        //     console.error("Error: Missing required fields for user update.");
+        //     message = "failed"
+        //     // return { success: false, message: "Missing required fields." };
+        //     return message;
+        // }
+    
+        // Query Firestore by email instead of assuming it's the document ID
+        // const q = query(userCollection, where("email", "==", originalEmail));
+        const q = query(userCollection, where("email", "==", cleanedEmail));
+
+        const querySnapshot = await getDocs(q);
+    
+        if (querySnapshot.empty) {
+            console.error("No user found with email:", cleanedEmail);
+            return { status: "error", message: "User not found in Firestore." };
+        } 
+    
+        // Get the first matching document
+        const userDoc = querySnapshot.docs[0];
+        console.log("User document found:", userDoc.data());
+    
+        // Get the document reference for updating
+        const userRef = userDoc.ref;
+    
+        try {
+            const updatedData = {
+                firstName: firstName,
+                lastName: lastName,
+                email: newEmail,
+                password: password,
+            };
+    
+            await updateDoc(userRef, updatedData);
+            console.log("User updated successfully in Firestore");
+            message = true;
+
+            return message; //bool
+            // return { status: "success", message: "User updated successfully." };
+        } catch (error) {
+            console.error("Error updating Firestore user:", error);
+            return { status: "error", message: "Error updating user in Firestore." };
+        }
+    }
+
+    //admin suspend user in admin page
+    async suspendUser(userEmail){
+        let message = "";
+        try{
+            // Get user document based on email
+            const userRef = doc(this.db, "csit314/AllUsers/UserData", userEmail);
+            
+            
+            const usersCollectionRef = collection(this.db, 'csit314/AllUsers/UserData');
+            const q = query(usersCollectionRef, where('email', '==', userEmail));
+            const querySnapshot = await getDocs(q);
+
+            // if (querySnapshot.empty) {
+            //     throw new Error("No user found with this email.");
+            // }
+
+            const userDoc = querySnapshot.docs[0];
+            const userData = userDoc.data();
+
+            if( userData.userStatus === "Active"){
+                await updateDoc(userRef, {
+                    userStatus: "Inactive"
+                });
+                message = "suspended";
+            }else{
+                await updateDoc(userRef, {
+                    userStatus: "Active"
+                });
+                message = "Unsuspended";
+            }
+
+            return message; //string
+        }catch (err){
+            message = "Error to suspend";
+            return message; //string
+        }
+    }
+
+    //searching for user based on email
+    async searchUser(searchEmail) {
+        try {
+            const cleanedEmail = searchEmail.trim().toLowerCase();
+            console.log("Searching Firestore for:", cleanedEmail);
+
+            const qx = query(
+                collection(db, "csit314/AllUsers/UserData"),
+                 where("email", "==", cleanedEmail)
+            );
+            const querySnapshot = await getDocs(qx);
+
+            console.log("Query Snapshot Size:", querySnapshot.size); // Debug log
+
+            if (querySnapshot.empty) return null;
+
+            const result = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            if (!result || result.length === 0) {
+                console.warn("No user found with email:", searchEmail);
+                return null;  // Ensure it returns null if no user is found
+            }
+
+            const found = result[0];
+
+            // querySnapshot.docs.map(doc => doc.data()); // Return structured user data
+
+
+            return found; // obj
+        } catch (err) {
+            console.error("Firestore error:", err);
+            throw new Error("Error searching Firestore: " + err.message);
+        }
+    }
+
+
+
+    // User Profile CRUDS
+    // Create New User Profile
+    async createProfile(profileData) {
+        try {
+            const {userType, description} = profileData;
+
+            // Validate profile
+            if (!userType || typeof userType !== "string" || userType.trim() === "") {
+                return {
+                    status: "error", //string
+                    message: "Invalid or missing profile" //string
+                };
+            }
+
+
+            await addDoc(collection(db, "csit314/AllUsers/UserData"), {
+                userType: userType.trim(),
+                description : description.trim(),
+                createdDate: serverTimestamp(),
+                lastUpdated: serverTimestamp(),
+                profileStatus: "Active"
+            });
+
+            return {
+                status: "success", //string
+                message: "Profile Created" //string
+            };
+        } catch (error) {
+            return{
+                status: "error", //string
+                message: error //string
+            }
+            // Do nothing on error
+        }
+    }
+
     //getting all profiles from firestore
     async getAllProfiles() {
         try {
-            const collectionRef = collection(db, "csit314/AllUsers/UserData");
-            const querySnapshot = await getDocs(collectionRef);
-            const userTypesSet = new Set();
-    
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                if (data.userType) {
-                    userTypesSet.add(data.userType);
-                }
+            const querySnapshot = await getDocs(collection(db, "csit314/AllUsers/UserData"));
+
+            const userList = [];
+
+            querySnapshot.forEach(doc => {
+                const userData = doc.data();
+                userList.push({
+                    userType: userData.userType,
+                    description: userData.description,
+                    profileStatus: userData.profileStatus,
+                    // firstName: userData.firstName,
+                    // lastName: userData.lastName,
+                    // email: userData.email,
+                    // status: userData.userStatus
+                });
             });
-    
-            // Convert Set to Array of objects
-            const userTypesList = Array.from(userTypesSet).map((type, index) => ({
-                id: index,
-                userType: type,
-                userStatus: "Active" // or some placeholder if needed
-            }));
-    
-            return userTypesList;
+
+        return userList; //array
         } catch (error) {
             console.error("Error fetching unique user types:", error);
             return [];
         }
     }
 
-    //search Profile
-    async searchProfile(searchType) {
-        try {
-            // Create a query to filter by userType
-            const qx = query(
-                collection(db, "csit314/AllUsers/UserData"),
-                where("userType", "==", searchType)
-            );
-    
-            // Execute the query and get the snapshot
-            const querySnapshot = await getDocs(qx);
-            
-            // Initialize an array to store user data
-            let userList = [];
-    
-            // Loop through the query results
-            querySnapshot.forEach((doc) => {
-                userList.push(doc.data());
-            });
-    
+    //update Profile
 
-            console.log("Found profiles:", userList);    // Return the user list (or you can return the list as a string or other format)
-            return userList;
+    async updateUserTypeDescription(userType, newDescription) {
+        try {
+            let message = "";
+            const q = query(collection(db, "csit314/AllUsers/UserData"), where("userType", "==", userType));
+            const snapshot = await getDocs(q);
+
+
+            if (!snapshot.empty) {
+                const updatePromises = snapshot.docs.map(docSnap =>
+                    updateDoc(docSnap.ref, {
+                        description: newDescription.trim(),
+                        lastUpdated: serverTimestamp()
+                    })
+                );
+    
+                await Promise.all(updatePromises); // Wait for all updates to finish
+                message = "Update successful"; //string
+            
+            }
+            return message;
         } catch (error) {
-            console.error("Error searching profiles:", error);
-            return []; // Return an empty array if there's an error
+            // Do nothing on error
         }
     }
 
-        // Update user account by admin
-        async updateUserAcc(updatedUser) {
-            const { originalEmail, firstName, lastName, newEmail, password } = updatedUser;
-        
-            // Validate that the required fields are provided
-            if (!originalEmail || !firstName || !lastName || !newEmail || !password) {
-                console.error("Error: Missing required fields for user update.");
-                return { success: false, message: "Missing required fields." };
-            }
-        
-            try {
-                console.log("Updating user data in Firestore:", updatedUser);
-        
-                // Reference to the Firestore document for the user
-                const userRef = doc(this.db, "csit314/AllUsers/UserData", originalEmail);
-                
-                // Update only Firestore data (not Firebase Authentication)
-                await updateDoc(userRef, {
-                    firstName: firstName,
-                    lastName: lastName,
-                    email: newEmail,
-                    password: password, // You may want to hash the password if storing it in Firestore
+
+    //search Profile
+    async searchProfile(searchType) {
+        try {
+            const q = query(
+                collection(db, "csit314/AllUsers/UserData"),
+                where("userType", "==", searchType)
+            );
+            const querySnapshot = await getDocs(q);
+    
+            const userList = [];
+            
+            querySnapshot.forEach(doc => {
+                userList.push({
+                    id: doc.id,
+                    ...doc.data()
                 });
-        
-                console.log("User data successfully updated in Firestore.");
-        
-                return { success: true, message: "User updated successfully in Firestore." };
-            } catch (error) {
-                console.error("Error updating Firestore user:", error);
-                return { success: false, message: `Error updating Firestore user: ${error.message}` };
+            });
+    
+            return userList; //array
+        } catch (error) {
+            console.error("Error searching profiles:", error);
+            return []; // Return empty array on failure
+        }
+    }
+
+     // admin suspend user in admin page
+     async suspendProfile(userType) {
+        let message = "";
+        try {
+            const usersCollectionRef = collection(this.db, 'csit314/AllUsers/UserData');
+            const q = query(usersCollectionRef, where('userType', '==', userType));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                throw new Error("No users found with this user type.");
             }
+
+            for (const docSnapshot of querySnapshot.docs) {
+                const userData = docSnapshot.data();
+                const currentStatus = userData.profileStatus;
+                const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
+
+                const userRef = doc(this.db, 'csit314/AllUsers/UserData', docSnapshot.id);
+                await updateDoc(userRef, {
+                    profileStatus: newStatus
+                });
+
+                console.log(`User ${docSnapshot.id} status changed to ${newStatus}`);
+            }
+
+            message = "Users updated successfully."; // string
+        } catch (err) {
+            console.error("Error suspending profiles:", err);
+            message = "Error updating user statuses."; //string
         }
 
-
-
-         // Create user account in Firebase Auth and Firestore
-         async createUserByAdmin(newUser) {
-            try {
-                // Use lowercase userType values
-                const validTypes = ["userAdmin", "platformManager", "cleaners", "homeowners"];
-                const userTypeFormatted = newUser.userType.trim(); // Do not uppercase it
-        
-                if (!validTypes.includes(userTypeFormatted)) {
-                    return {
-                        status: "error",
-                        message: `Invalid userType provided: ${newUser.userType}`
-                    };
-                }
-        
-                // Check if user already exists in Firestore based on email
-                const userCollectionRef = collection(this.db, "csit314/AllUsers/UserData");
-                const q = query(userCollectionRef, where("email", "==", newUser.userEmail));
-                const querySnapshot = await getDocs(q);
-        
-                if (!querySnapshot.empty) {
-                    // If email exists, allow duplicate by creating a new unique document ID
-                    const timestamp = new Date().getTime(); // Create a unique timestamp
-                    const userDocRef = doc(this.db, "csit314/AllUsers/UserData", `user_${timestamp}`);
-        
-                    // Store the user in Firestore
-                    await setDoc(userDocRef, {
-                        firstName: newUser.firstName,
-                        lastName: newUser.lastName,
-                        email: newUser.userEmail, // Keep the email
-                        password: newUser.userPass, // Store password (consider hashing it)
-                        userType: userTypeFormatted,
-                        userStatus: "Active"
-                    });
-        
-                    return {
-                        status: "success",
-                        message: "User created successfully with duplicate email allowed.",
-                        userEmail: newUser.userEmail
-                    };
-                } else {
-                    // If email doesn't exist, create the user with email as the document ID
-                    const userDocRef = doc(this.db, "csit314/AllUsers/UserData", newUser.userEmail);
-                    await setDoc(userDocRef, {
-                        firstName: newUser.firstName,
-                        lastName: newUser.lastName,
-                        email: newUser.userEmail,
-                        password: newUser.userPass, // Store password (consider hashing it)
-                        userType: userTypeFormatted,
-                        userStatus: "Active"
-                    });
-        
-                    return {
-                        status: "success",
-                        message: "User created successfully",
-                        userEmail: newUser.userEmail
-                    };
-                }
-            } catch (error) {
-                console.error("Error creating user in Firestore:", error);
-                return {
-                    status: "error",
-                    message: error.message
-                };
-            }
-        }
-        
-
-
-        //searching for user based on email
-        async searchUser(searchEmail) {
-            try {
-                const cleanedEmail = searchEmail.trim().toLowerCase();
-                console.log("Searching Firestore for:", cleanedEmail);
+        return message;
+    }
     
-                const qx = query(collection(db, "csit314/AllUsers/UserData"), where("email", "==", cleanedEmail));
-                const querySnapshot = await getDocs(qx);
-    
-                console.log("Query Snapshot Size:", querySnapshot.size); // Debug log
-    
-                if (querySnapshot.empty) return null;
-    
-                return querySnapshot.docs.map(doc => doc.data()); // Return structured user data
-            } catch (err) {
-                console.error("Firestore error:", err);
-                throw new Error("Error searching Firestore: " + err.message);
-            }
-        }
     
 
-        //search by usertype for profile admin
-        async searchProfileByUserType(userType) {
-            try {
-                const cleanedUserType = userType.trim().toLowerCase();
-                const qx = query(
-                    collection(db, "CSIT314/AllUsers/UserData"), // Correct Firestore path
-                    where("userType", "==", cleanedUserType) // Search by userType
-                );
+        // // Update user account by admin
+        // async updateUserAcc(updatedUser) {
+        //     const { originalEmail, firstName, lastName, newEmail, password } = updatedUser;
         
-                const querySnapshot = await getDocs(qx);
+        //     // Validate that the required fields are provided
+        //     if (!originalEmail || !firstName || !lastName || !newEmail || !password) {
+        //         console.error("Error: Missing required fields for user update.");
+        //         return { success: false, message: "Missing required fields." };
+        //     }
         
-                if (querySnapshot.empty) {
-                    console.warn("No profiles found for userType:", cleanedUserType);
-                    return [];
-                }
+        //     try {
+        //         console.log("Updating user data in Firestore:", updatedUser);
         
-                return querySnapshot.docs.map(doc => doc.data()); // Return profile data
-            } catch (err) {
-                console.error("Firestore error:", err);
-                throw new Error("Error searching Firestore by userType: " + err.message);
-            }
-        }
-
-        //admin suspend user in admin page
-        async suspendUser(userEmail){
-            let message = "";
-            try{
-                // Get user document based on email
-                const userRef = doc(this.db, "csit314/AllUsers/UserData", userEmail);
+        //         // Reference to the Firestore document for the user
+        //         const userRef = doc(this.db, "csit314/AllUsers/UserData", originalEmail);
                 
-                
-                const usersCollectionRef = collection(this.db, 'csit314/AllUsers/UserData');
-                const q = query(usersCollectionRef, where('email', '==', userEmail));
-                const querySnapshot = await getDocs(q);
+        //         // Update only Firestore data (not Firebase Authentication)
+        //         await updateDoc(userRef, {
+        //             firstName: firstName,
+        //             lastName: lastName,
+        //             email: newEmail,
+        //             password: password, // You may want to hash the password if storing it in Firestore
+        //         });
+        
+        //         console.log("User data successfully updated in Firestore.");
+        
+        //         return { success: true, message: "User updated successfully in Firestore." };
+        //     } catch (error) {
+        //         console.error("Error updating Firestore user:", error);
+        //         return { success: false, message: `Error updating Firestore user: ${error.message}` };
+        //     }
+        // }
 
-                // if (querySnapshot.empty) {
-                //     throw new Error("No user found with this email.");
-                // }
 
-                const userDoc = querySnapshot.docs[0];
-                const userData = userDoc.data();
 
-                if( userData.userStatus === "Active"){
-                    await updateDoc(userRef, {
-                        userStatus: "Inactive"
-                    });
-                    message = "suspended";
-                }else{
-                    await updateDoc(userRef, {
-                        userStatus: "Active"
-                    });
-                    message = "Unsuspended";
-                }
-                return message;
-            }catch (err){
-                message = "Error to suspend";
-                return message;
-            }
-        }
+         
+        
 
-         //admin suspend user in admin page
-         // admin suspend user in admin page
-        async suspendProfile(userType) {
-            let message = "";
-            try {
-                const usersCollectionRef = collection(this.db, 'csit314/AllUsers/UserData');
-                const q = query(usersCollectionRef, where('userType', '==', userType));
-                const querySnapshot = await getDocs(q);
 
-                if (querySnapshot.empty) {
-                    throw new Error("No users found with this user type.");
-                }
+        
+    
 
-                for (const docSnapshot of querySnapshot.docs) {
-                    const userData = docSnapshot.data();
-                    const currentStatus = userData.profileStatus;
-                    const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
+        // //search by usertype for profile admin
+        // async searchProfileByUserType(userType) {
+        //     try {
+        //         const cleanedUserType = userType.trim().toLowerCase();
+        //         const qx = query(
+        //             collection(db, "CSIT314/AllUsers/UserData"), // Correct Firestore path
+        //             where("userType", "==", cleanedUserType) // Search by userType
+        //         );
+        
+        //         const querySnapshot = await getDocs(qx);
+        
+        //         if (querySnapshot.empty) {
+        //             console.warn("No profiles found for userType:", cleanedUserType);
+        //             return [];
+        //         }
+        
+        //         return querySnapshot.docs.map(doc => doc.data()); // Return profile data
+        //     } catch (err) {
+        //         console.error("Firestore error:", err);
+        //         throw new Error("Error searching Firestore by userType: " + err.message);
+        //     }
+        // }
 
-                    const userRef = doc(this.db, 'csit314/AllUsers/UserData', docSnapshot.id);
-                    await updateDoc(userRef, {
-                        profileStatus: newStatus
-                    });
-
-                    console.log(`User ${docSnapshot.id} status changed to ${newStatus}`);
-                }
-
-                message = "Users updated successfully.";
-            } catch (err) {
-                console.error("Error suspending profiles:", err);
-                message = "Error updating user statuses.";
-            }
-
-            return message;
-        }
+        
+        
 
         //  async suspendProfile(userType){
         //     let message = "";
@@ -463,136 +602,87 @@ import {getAuth,
         // }
 
 
-        //admin deleting user in admin page
-        async deleteUser(userEmail) {
-            try {
-                // Get user document based on email
-                const usersCollectionRef = collection(this.db, 'csit314/AllUsers/UserData');
-                const q = query(usersCollectionRef, where('email', '==', userEmail));
-                const querySnapshot = await getDocs(q);
+        // //admin deleting user in admin page
+        // async deleteUser(userEmail) {
+        //     try {
+        //         // Get user document based on email
+        //         const usersCollectionRef = collection(this.db, 'csit314/AllUsers/UserData');
+        //         const q = query(usersCollectionRef, where('email', '==', userEmail));
+        //         const querySnapshot = await getDocs(q);
         
-                if (querySnapshot.empty) {
-                    throw new Error("No user found with this email.");
-                }
+        //         if (querySnapshot.empty) {
+        //             throw new Error("No user found with this email.");
+        //         }
         
-                // Correct way: use for...of to await each deleteDoc
-                for (const docSnap of querySnapshot.docs) {
-                    await deleteDoc(docSnap.ref);
-                    console.log(`Deleted Firestore document for email: ${userEmail}`);
-                }
+        //         // Correct way: use for...of to await each deleteDoc
+        //         for (const docSnap of querySnapshot.docs) {
+        //             await deleteDoc(docSnap.ref);
+        //             console.log(`Deleted Firestore document for email: ${userEmail}`);
+        //         }
         
-                return { success: true };
-            } catch (error) {
-                console.error("Error deleting Firestore user:", error);
-                throw error;
-            }
-        }
+        //         return { success: true };
+        //     } catch (error) {
+        //         console.error("Error deleting Firestore user:", error);
+        //         throw error;
+        //     }
+        // }
 
 
         
-        // Create new profile in Firestore
-        async createNewProfile(newUser) {
-            try {
-                // Define valid user types
-                const validTypes = ["userAdmin", "platformManager", "cleaners", "homeowners"];
-                const userTypeFormatted = newUser.userType.trim().toLowerCase(); // Ensure lowercase type
+        // // Create new profile in Firestore
+        // async createNewProfile(newUser) {
+        //     try {
+        //         // Define valid user types
+        //         const validTypes = ["userAdmin", "platformManager", "cleaners", "homeowners"];
+        //         const userTypeFormatted = newUser.userType.trim().toLowerCase(); // Ensure lowercase type
 
-                // Check if the userType is valid
-                if (!validTypes.includes(userTypeFormatted)) {
-                    return {
-                        status: "error",
-                        message: `Invalid userType provided: ${newUser.userType}`
-                    };
-                }
+        //         // Check if the userType is valid
+        //         if (!validTypes.includes(userTypeFormatted)) {
+        //             return {
+        //                 status: "error",
+        //                 message: `Invalid userType provided: ${newUser.userType}`
+        //             };
+        //         }
 
-                // Check if user already exists in Firestore based on email
-                const userCollectionRef = collection(this.db, "csit314/AllUsers/UserData");
-                const q = query(userCollectionRef, where("email", "==", newUser.userEmail));
-                const querySnapshot = await getDocs(q);
+        //         // Check if user already exists in Firestore based on email
+        //         const userCollectionRef = collection(this.db, "csit314/AllUsers/UserData");
+        //         const q = query(userCollectionRef, where("email", "==", newUser.userEmail));
+        //         const querySnapshot = await getDocs(q);
 
-                // If user already exists, return an error
-                if (!querySnapshot.empty) {
-                    return {
-                        status: "error",
-                        message: "A user with this email already exists."
-                    };
-                }
+        //         // If user already exists, return an error
+        //         if (!querySnapshot.empty) {
+        //             return {
+        //                 status: "error",
+        //                 message: "A user with this email already exists."
+        //             };
+        //         }
 
-                // If email doesn't exist, create the user profile in Firestore
-                const userDocRef = doc(userCollectionRef, newUser.userEmail);
-                await setDoc(userDocRef, {
-                    firstName: newUser.firstName,
-                    lastName: newUser.lastName,
-                    email: newUser.userEmail,
-                    password: newUser.userPass, // Consider hashing passwords in production
-                    userType: userTypeFormatted,
-                    userStatus: "Active"
-                });
+        //         // If email doesn't exist, create the user profile in Firestore
+        //         const userDocRef = doc(userCollectionRef, newUser.userEmail);
+        //         await setDoc(userDocRef, {
+        //             firstName: newUser.firstName,
+        //             lastName: newUser.lastName,
+        //             email: newUser.userEmail,
+        //             password: newUser.userPass, // Consider hashing passwords in production
+        //             userType: userTypeFormatted,
+        //             userStatus: "Active"
+        //         });
 
-                return {
-                    status: "success",
-                    message: "Profile created successfully",
-                    userEmail: newUser.userEmail
-                };
-            } catch (error) {
-                console.error("Error creating new profile in Firestore:", error);
-                return {
-                    status: "error",
-                    message: error.message
-                };
-            }
-        }
+        //         return {
+        //             status: "success",
+        //             message: "Profile created successfully",
+        //             userEmail: newUser.userEmail
+        //         };
+        //     } catch (error) {
+        //         console.error("Error creating new profile in Firestore:", error);
+        //         return {
+        //             status: "error",
+        //             message: error.message
+        //         };
+        //     }
+        // }
 
-        // Update user account by admin (Firestore update)
-        async updateUserInFirestore({originalEmail, firstName, lastName, newEmail, password}) {
-            const cleanedEmail = originalEmail.trim().toLowerCase();  
-            const userCollection = collection(db, "csit314/AllUsers/UserData"); 
-            let message = "";
-
-            // if (!originalEmail || !firstName || !lastName || !newEmail || !password) {
-            //     console.error("Error: Missing required fields for user update.");
-            //     message = "failed"
-            //     // return { success: false, message: "Missing required fields." };
-            //     return message;
-            // }
         
-            // Query Firestore by email instead of assuming it's the document ID
-            // const q = query(userCollection, where("email", "==", originalEmail));
-            const q = query(userCollection, where("email", "==", cleanedEmail));
-
-            const querySnapshot = await getDocs(q);
-        
-            if (querySnapshot.empty) {
-                console.error("No user found with email:", cleanedEmail);
-                return { status: "error", message: "User not found in Firestore." };
-            } 
-        
-            // Get the first matching document
-            const userDoc = querySnapshot.docs[0];
-            console.log("User document found:", userDoc.data());
-        
-            // Get the document reference for updating
-            const userRef = userDoc.ref;
-        
-            try {
-                const updatedData = {
-                    firstName: firstName,
-                    lastName: lastName,
-                    email: newEmail,
-                    password: password,
-                };
-        
-                await updateDoc(userRef, updatedData);
-                console.log("User updated successfully in Firestore");
-                message = true;
-
-                return message; //bool
-                // return { status: "success", message: "User updated successfully." };
-            } catch (error) {
-                console.error("Error updating Firestore user:", error);
-                return { status: "error", message: "Error updating user in Firestore." };
-            }
-        }
 
         // // inside Firebase class
         // async updateUserAcc(updatedUser) {

@@ -13,6 +13,7 @@ export class userEntity {
     }
 
     // Create a user in both Firebase Auth and Firestore
+    // Registration
     async createToDB(newUser) {
         try {
             // Use the email as the document ID
@@ -40,41 +41,45 @@ export class userEntity {
 
    
     // Login user by checking Firestore directly (no Firebase Auth)
+    // Login
     async loginUser(email, password, userType) {
-    try {
-        console.log("Login attempt with userType:", userType);  // Debugging log
-        const usersCollection = collection(db, "csit314/AllUsers/UserData");
-        const q = query(usersCollection, where("email", "==", email), where("userType", "==", userType));
-        const querySnapshot = await getDocs(q);
+        try {
+            console.log("Login attempt with userType:", userType);  // Debugging log
+            const usersCollection = collection(db, "csit314/AllUsers/UserData");
+            const q = query(usersCollection, where("email", "==", email), where("userType", "==", userType));
+            const querySnapshot = await getDocs(q);
 
-        if (querySnapshot.empty) {
-            return { status: "error", message: "No user found with this email and profile." };
-        }
+            if (querySnapshot.empty) {
+                return { status: "error", message: "No user found with this email and profile." };
+            }
 
-        const userDoc = querySnapshot.docs[0];
-        const userData = userDoc.data();
-        if( userData.userStatus !== "Active"){
-            return { status: "error", message: "Inactive Account." };
-        }
+            const userDoc = querySnapshot.docs[0];
+            const userData = userDoc.data();
+            if( userData.userStatus !== "Active"){
+                return { status: "error", message: "Inactive Account." };
+            }
 
-        if( userData.profileStatus !== "Active"){
-            return { status: "error", message: "Inactive Profile." };
-        }
+            if( userData.profileStatus !== "Active"){
+                return { status: "error", message: "Inactive Profile." };
+            }
 
-        // Check password
-        if (userData.password === password) {
-            return { status: "success", userData };
-        } else {
-            return { status: "error", message: "Incorrect password." };
+            // Check password
+            if (userData.password === password) {
+                return { status: "success", userData };
+            } else {
+                return { status: "error", message: "Incorrect password." };
+            }
+        } catch (err) {
+            console.error("Error during login:", err.message);
+            throw new Error("Login failed.");
         }
-    } catch (err) {
-        console.error("Error during login:", err.message);
-        throw new Error("Login failed.");
     }
-}
 
-
-       
+    // Create new user in admin
+    async createUser(newUserObj) {
+        const result = await firebase.createUser(newUserObj);
+        return result;
+    }
 
     // Fetch the user list from Firestore (if needed for admin purposes)
     async getUserList() {
@@ -98,23 +103,14 @@ export class userEntity {
         }
     }
 
-    // Create new user in admin
-    async createUser(newUserObj) {
-        const result = await firebase.createUserByAdmin(newUserObj);
-        return result;
-    }
+    
 
     // Searching for user by email (Admin)
     async searchUser(searchEmail) {
         try {
-            const userList = await firebase.searchUser(searchEmail);  // Fetch from FirebaseAuth
-            if (!userList || userList.length === 0) {
-                console.warn("No user found with email:", searchEmail);
-                return null;  // Ensure it returns null if no user is found
-            }
+            const found = await firebase.searchUser(searchEmail);  // Fetch from FirebaseAuth
+            return found;  // Return the first matched user
 
-            console.log("User found:", userList[0]);  // Debugging log
-            return userList[0];  // Return the first matched user
         } catch (err) {
             console.error("Error in userEntity searchUser:", err);
             throw new Error("Error in userEntity searchUser: " + err.message);
@@ -126,23 +122,13 @@ export class userEntity {
         
 
         try {
-            // const searched = await firebase.searchServiceListing(searchListing);
-            // return searched;
             const message = await firebase.suspendUser(userEmail);
             return message;
+
         } catch (error) {
             console.error("Error searching for category:", error);
             return { status: "error", message: error.message };
         }
-
-            // .then(result => {
-            //     console.log(`User with email ${userEmail} has been successfully deleted.`);
-            //     return result;
-            // })
-            // .catch(error => {
-            //     console.error(`Failed to delete user with email ${userEmail}:`, error);
-            //     throw error;  // Pass error upwards
-            // });
     }
               
 

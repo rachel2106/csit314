@@ -126,7 +126,7 @@
                         <td>${userData.userType}</td>
                         <td>${userData.firstName}</td>
                         <td>${userData.lastName}</td>
-                        <td><a href="userDetails.html?email=${userData.email}">${userData.email}</a></td>
+                        <td>${userData.email}</a></td>
                         <td>${userData.status}</td>
                         <td>
                             <button class="update-account-icon" value="${userData.email}">Update</button>
@@ -324,11 +324,11 @@
                         <td>${user.userType}</td>
                         <td>${user.firstName}</td>
                         <td>${user.lastName}</td>
-                        <td><a href="userDetails.html?email=${user.email}">${user.email}</a></td>
+                        <td>${user.email}</a></td>
                         <td>${user.userStatus}</td>
                         <td>
                             <button class="update-account-icon" value="${user.email}">Update</button>
-                            <button class="suspend-account-icon" value="${userData.email}">Suspend/Unsuspend</button>
+                            <button class="suspend-account-icon" value="${user.email}">Suspend/Unsuspend</button>
                         </td>
                     </tr>`;
                     table.innerHTML = row;
