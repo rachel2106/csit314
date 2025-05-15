@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Cleaning Service Listing</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="cleaner-page">
+    <div class="cleanerHeaderBanner">
+        <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img">
+        <a href="cleanerPage.html" class="backBtn">Back to Listing List</a>
+        <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
+    </div>
+    
+    <main id="createListing-main">
+        <div class="cleaner-history">
+            <h2>Listing Booking History</h2>
+            <input type="text" id="search-history" placeholder="Service Listing" />
+            <button class="cleanerBtn" id="cleaner-search-history-button">Search</button>
+            <p id="reset-instruction">clear out the input and click search to reset</p>
+        </div>
+
+        <div id="viewServiceListingHistory" class="listinghistory-viewtable">
+            <table id="cleanerHistory-table">
+                <thead id="cleanerHistory-tableheader">
+                    <tr id="cleanerHistory-rowheader">
+                        <th>Cleaning Service Listing</th>
+                        <th>Cleaning Service Category</th>
+                        <th>Listing Booking Count</th>
+                    </tr>
+                </thead>
+                <tbody id="data-table"></tbody>
+            </table>
+        </div>
+    
+    </main>
+    <script type="module">
+        import { cleanerViewHistoryController } from './js/cleanerViewHistoryController.js';
+        // import { cleanerSearchHistoryController } from './js/cleanerSearchListingController.js';
+
+        class HistoryPage {
+
+            async getHistoryList(cleanerEmail) {
+                const controller = new cleanerViewHistoryController();
+                return await controller.getHistoryList(cleanerEmail);
+            }
+
+            displayHistoryList(historyList) {
+                // console.log("DEBUG: listingList =", listingList);
+                const container = document.getElementById("data-table");
+                container.innerHTML = ""; // Clear any existing content
+
+                // If there is no data existed in the database
+                if (!historyList || historyList.length === 0) {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `<td colspan="4">No listing found.</td>`;
+                    container.appendChild(row);
+                    return;
+                }
+
+                // when data exist in the database
+                historyList.forEach((historyData) => {
+                    const row = document.createElement("tr");
+                    
+                    row.innerHTML = `
+                        <td>${historyData.serviceId}</td> 
+                        <td>${historyData.category}</td>
+                        <td>${historyData.cleanerEmail}</td>
+                    `;
+                    container.appendChild(row);
+                });
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", async () => {
+            const page = new HistoryPage();
+
+            // Get the logged-in cleaner's email
+            const loggedInUserEmail = localStorage.getItem("loggedInUserEmail");
+
+            if (!loggedInUserEmail) {
+                window.location.href = "loginPage.html"; // Redirect if not logged in
+                return;
+            }
+
+            //Displays the list from the firebase
+            const listing = await page.getHistoryList(loggedInUserEmail); // Wait for listing to load
+            page.displayHistoryList(listing);
+        });
+
+        // Log Out
+        document.getElementById("logout").addEventListener("click", () => {
+            localStorage.removeItem("loggedInUserEmail");
+            window.location.href = "loginPage.html";
+        });
+    </script>
+
+
+</body>
+</html>

@@ -12,7 +12,7 @@
             <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img" />
         </a>
         <a href="userAdminViewAccs.html" id="adminViewAccs">View Users Accounts</a>
-        <a href="userAdminPageProfiles.html" id="adminProfilePage">View Profiles</a>
+        <a href="userAdminViewProfiles.html" id="adminProfilePage">View Profiles</a>
         <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
     </div>
 
@@ -149,9 +149,9 @@
     <!-- Modal Logic & Update Form -->
     <script type="module">
     import { userAdminViewAllAccController } from './js/userAdminViewAllAccController.js';
-    import { userAdminUpdateAccController } from './js/userAdminUpdateAccController.js';
+    import { userAdminUpdateUserController } from './js/userAdminUpdateUserController.js';
 
-    class AdminPage {
+    class AdminPageUpdate {
         async getUserList() {
             const controller = new userAdminViewAllAccController();
             return await controller.getUserList();
@@ -188,7 +188,7 @@
                     <td>${userData.userType}</td>
                     <td>${userData.firstName}</td>
                     <td>${userData.lastName}</td>
-                    <td><a href="userDetails.html?email=${userData.email}">${userData.email}</a></td>
+                    <td>${userData.email}</td>
                     <td>${userData.status}</td>
                     <td>
                         <button class="update-account-icon" value="${userData.email}">Update</button>
@@ -200,7 +200,7 @@
     }
 
     window.addEventListener("DOMContentLoaded", async () => {
-        const admin = new AdminPage();
+        const admin = new AdminPageUpdate();
         const users = await admin.getUserList();
         admin.displayUserList(users);
 
@@ -211,16 +211,24 @@
 
         document.getElementById("data-table").addEventListener("click", async (e) => {
             if (e.target.classList.contains("update-account-icon")) {
+                
                 const userEmail = e.target.value;
-                modal.style.display = "block";
+                const userList = await admin.getUserList();
+                const selected = userList.find(user => user.email === userEmail);
+                // const categories = await admin.getUserList();
+                // const selected = categories.find(cat => cat.id === userEmail);
 
-                const userData = await fetchUserData(userEmail);
-                document.getElementById("first-name").value = userData.firstName;
-                document.getElementById("last-name").value = userData.lastName;
-                document.getElementById("email").value = userData.email;
-                document.getElementById("password").value = "";
+                if (selected) {
+                        document.getElementById("first-name").value = selected.firstName;
+                        document.getElementById("last-name").value = selected.lastName;
+                        document.getElementById("email").value = selected.email;
+                        document.getElementById("password").value = "";
+                        
+                        // updateForm.dataset.categoryId = selected.id;
+                        updateForm.dataset.originalEmail = selected.email;
 
-                updateForm.dataset.originalEmail = userEmail;
+                        updateModal.style.display = "block"; //opens the modal
+                }
             }
         });
 
@@ -247,9 +255,10 @@
                 return;
             }
 
-            const controller = new userAdminUpdateAccController();
+            const controller = new userAdminUpdateUserController();
             try {
-                const message = await controller.updateUserAccount({
+                console.log(originalEmail);
+                const message = await controller.updateUserInFirestore({
                     originalEmail,
                     firstName,
                     lastName,
@@ -259,13 +268,13 @@
                 // alert("User account updated!");
                 modal.style.display = "none";
 
-                if(message === "success"){
+                if(message){
                     // 🔥 Refresh the user list using same admin instance!
-                    alert(message);
+                    alert("success");
                     const users = await admin.getUserList();
                     admin.displayUserList(users);
                 } else{
-                    alert(message);
+                    alert("fail");
                 }
 
                 
@@ -274,11 +283,11 @@
             }
         });
 
-        async function fetchUserData(userEmail) {
-            const controller = new userAdminViewAllAccController();
-            const userList = await controller.getUserList();
-            return userList.find(user => user.email === userEmail);
-        }
+        // async function fetchUserData(userEmail) {
+        //     const controller = new userAdminViewAllAccController();
+        //     const userList = await controller.getUserList();
+        //     return userList.find(user => user.email === userEmail);
+        // }
     });
 </script>
 

@@ -63,6 +63,17 @@ export class serviceListingEntity {
         }
     }
 
+    async getHistoryList(cleanerEmail) {
+        try {
+            const listingList = await firebase.getHistoryList(cleanerEmail);
+            return listingList;
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+            return [];
+            // return { status: "error", message: error.message };
+        }
+    }
+
 }
 
 export default serviceListingEntity;

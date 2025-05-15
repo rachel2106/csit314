@@ -137,10 +137,10 @@ import {getAuth,
           });
         });
   
-        return userList;
+        return userList; //array
       } catch (error) {
         console.error("Error fetching user data:", error);
-        return [];
+        return []; //array
       }
     }
 
@@ -493,69 +493,58 @@ import {getAuth,
         // Create new profile in Firestore
         async createNewProfile(newUser) {
             try {
-        // Define valid user types
-        const validTypes = ["userAdmin", "platformManager", "cleaners", "homeowners"];
-        const userTypeFormatted = newUser.userType.trim().toLowerCase(); // Ensure lowercase type
+                // Define valid user types
+                const validTypes = ["userAdmin", "platformManager", "cleaners", "homeowners"];
+                const userTypeFormatted = newUser.userType.trim().toLowerCase(); // Ensure lowercase type
 
-        // Check if the userType is valid
-        if (!validTypes.includes(userTypeFormatted)) {
-            return {
-                status: "error",
-                message: `Invalid userType provided: ${newUser.userType}`
-            };
+                // Check if the userType is valid
+                if (!validTypes.includes(userTypeFormatted)) {
+                    return {
+                        status: "error",
+                        message: `Invalid userType provided: ${newUser.userType}`
+                    };
+                }
+
+                // Check if user already exists in Firestore based on email
+                const userCollectionRef = collection(this.db, "csit314/AllUsers/UserData");
+                const q = query(userCollectionRef, where("email", "==", newUser.userEmail));
+                const querySnapshot = await getDocs(q);
+
+                // If user already exists, return an error
+                if (!querySnapshot.empty) {
+                    return {
+                        status: "error",
+                        message: "A user with this email already exists."
+                    };
+                }
+
+                // If email doesn't exist, create the user profile in Firestore
+                const userDocRef = doc(userCollectionRef, newUser.userEmail);
+                await setDoc(userDocRef, {
+                    firstName: newUser.firstName,
+                    lastName: newUser.lastName,
+                    email: newUser.userEmail,
+                    password: newUser.userPass, // Consider hashing passwords in production
+                    userType: userTypeFormatted,
+                    userStatus: "Active"
+                });
+
+                return {
+                    status: "success",
+                    message: "Profile created successfully",
+                    userEmail: newUser.userEmail
+                };
+            } catch (error) {
+                console.error("Error creating new profile in Firestore:", error);
+                return {
+                    status: "error",
+                    message: error.message
+                };
+            }
         }
-
-        // Check if user already exists in Firestore based on email
-        const userCollectionRef = collection(this.db, "csit314/AllUsers/UserData");
-        const q = query(userCollectionRef, where("email", "==", newUser.userEmail));
-        const querySnapshot = await getDocs(q);
-
-        // If user already exists, return an error
-        if (!querySnapshot.empty) {
-            return {
-                status: "error",
-                message: "A user with this email already exists."
-            };
-        }
-
-        // If email doesn't exist, create the user profile in Firestore
-        const userDocRef = doc(userCollectionRef, newUser.userEmail);
-        await setDoc(userDocRef, {
-            firstName: newUser.firstName,
-            lastName: newUser.lastName,
-            email: newUser.userEmail,
-            password: newUser.userPass, // Consider hashing passwords in production
-            userType: userTypeFormatted,
-            userStatus: "Active"
-        });
-
-        return {
-            status: "success",
-            message: "Profile created successfully",
-            userEmail: newUser.userEmail
-        };
-    } catch (error) {
-        console.error("Error creating new profile in Firestore:", error);
-        return {
-            status: "error",
-            message: error.message
-        };
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
 
         // Update user account by admin (Firestore update)
-        async updateUserInFirestore(originalEmail, firstName, lastName, newEmail, password) {
+        async updateUserInFirestore({originalEmail, firstName, lastName, newEmail, password}) {
             const cleanedEmail = originalEmail.trim().toLowerCase();  
             const userCollection = collection(db, "csit314/AllUsers/UserData"); 
             let message = "";
@@ -568,7 +557,9 @@ import {getAuth,
             // }
         
             // Query Firestore by email instead of assuming it's the document ID
+            // const q = query(userCollection, where("email", "==", originalEmail));
             const q = query(userCollection, where("email", "==", cleanedEmail));
+
             const querySnapshot = await getDocs(q);
         
             if (querySnapshot.empty) {
@@ -593,9 +584,9 @@ import {getAuth,
         
                 await updateDoc(userRef, updatedData);
                 console.log("User updated successfully in Firestore");
-                message = "success"
+                message = true;
 
-                return message;
+                return message; //bool
                 // return { status: "success", message: "User updated successfully." };
             } catch (error) {
                 console.error("Error updating Firestore user:", error);
@@ -603,41 +594,41 @@ import {getAuth,
             }
         }
 
-        // inside Firebase class
-        async updateUserAcc(updatedUser) {
-            const { originalEmail, firstName, lastName, newEmail, password } = updatedUser;
+        // // inside Firebase class
+        // async updateUserAcc(updatedUser) {
+        //     const { originalEmail, firstName, lastName, newEmail, password } = updatedUser;
         
-            // Validate that the required fields are provided
-            if (!originalEmail || !firstName || !lastName || !newEmail || !password) {
-                console.error("Error: Missing required fields for user update.");
-                return { success: false, message: "Missing required fields." };
-            }
+        //     // Validate that the required fields are provided
+        //     if (!originalEmail || !firstName || !lastName || !newEmail || !password) {
+        //         console.error("Error: Missing required fields for user update.");
+        //         return { success: false, message: "Missing required fields." };
+        //     }
         
-            try {
-                console.log("Updating user data in Firestore:", updatedUser);
+        //     try {
+        //         console.log("Updating user data in Firestore:", updatedUser);
         
-                // Reference to the Firestore document for the user
-                const userRef = doc(this.db, "csit314/AllUsers/UserData", originalEmail);
+        //         // Reference to the Firestore document for the user
+        //         const userRef = doc(this.db, "csit314/AllUsers/UserData", originalEmail);
                 
-                // Update only Firestore data (not Firebase Authentication)
-                await updateDoc(userRef, {
-                    firstName: firstName,
-                    lastName: lastName,
-                    email: newEmail,
-                    password: password, // You may want to hash the password if storing it in Firestore
-                });
+        //         // Update only Firestore data (not Firebase Authentication)
+        //         await updateDoc(userRef, {
+        //             firstName: firstName,
+        //             lastName: lastName,
+        //             email: newEmail,
+        //             password: password, // You may want to hash the password if storing it in Firestore
+        //         });
         
-                console.log("User data successfully updated in Firestore.");  
+        //         console.log("User data successfully updated in Firestore.");  
         
-                // Refresh the page after the update
-                window.location.reload();
+        //         // Refresh the page after the update
+        //         window.location.reload();
         
-                return { success: true, message: "User updated successfully in Firestore." };
-            } catch (error) {
-                console.error("Error updating Firestore user:", error);
-                return { success: false, message: `Error updating Firestore user: ${error.message}` };
-            }
-        }
+        //         return { success: true, message: "User updated successfully in Firestore." };
+        //     } catch (error) {
+        //         console.error("Error updating Firestore user:", error);
+        //         return { success: false, message: `Error updating Firestore user: ${error.message}` };
+        //     }
+        // }
         
 
 
@@ -1256,98 +1247,102 @@ import {getAuth,
         }
     }
 
+    //View Booking History List
+
+
+
 
 //Homeowner
 // Fetch all service listings from all categories
-async fetchAllServiceListings() {
-  const basePath = "csit314/AllServiceCategory/CleaningServiceData";
-  const categoriesCol = collection(this.db, basePath);
-  const categoryDocs = await getDocs(categoriesCol);
+    async fetchAllServiceListings() {
+    const basePath = "csit314/AllServiceCategory/CleaningServiceData";
+    const categoriesCol = collection(this.db, basePath);
+    const categoryDocs = await getDocs(categoriesCol);
 
-  const allServices = [];
+    const allServices = [];
 
-  for (const categoryDoc of categoryDocs.docs) {
-    const categoryName = categoryDoc.id;
-    const listingsPath = `${basePath}/${categoryName}/serviceListings`;
-    const listingsCol = collection(this.db, listingsPath);
-    const listingsSnap = await getDocs(listingsCol);
+    for (const categoryDoc of categoryDocs.docs) {
+        const categoryName = categoryDoc.id;
+        const listingsPath = `${basePath}/${categoryName}/serviceListings`;
+        const listingsCol = collection(this.db, listingsPath);
+        const listingsSnap = await getDocs(listingsCol);
 
-    listingsSnap.forEach(doc => {
-      allServices.push({
-        id: doc.id,
-        ...doc.data(),
-        serviceCategory: categoryName,
-      });
-    });
-  }
+        listingsSnap.forEach(doc => {
+        allServices.push({
+            id: doc.id,
+            ...doc.data(),
+            serviceCategory: categoryName,
+        });
+        });
+    }
 
-  return allServices;
-}
+    return allServices;
+    }
 
-// Fetch filtered cleaning services
-async getFilteredCleaningServices({ category, price, status }) {
-  const basePath = "csit314/AllServiceCategory/CleaningServiceData";
-  const categoriesCol = collection(this.db, basePath);
-  const categoryDocs = await getDocs(categoriesCol);
+    // Fetch filtered cleaning services
+    async getFilteredCleaningServices({ category, price, status }) {
+        const basePath = "csit314/AllServiceCategory/CleaningServiceData";
+        const categoriesCol = collection(this.db, basePath);
+        const categoryDocs = await getDocs(categoriesCol);
 
-  const allServices = [];
+        const allServices = [];
 
-  for (const categoryDoc of categoryDocs.docs) {
-    const categoryName = categoryDoc.id;
+        for (const categoryDoc of categoryDocs.docs) {
+            const categoryName = categoryDoc.id;
 
-    if (category && category !== categoryName) continue;
+            if (category && category !== categoryName) continue;
 
-    const listingsPath = `${basePath}/${categoryName}/serviceListings`;
-    const listingsCol = collection(this.db, listingsPath);
-    const listingsSnap = await getDocs(listingsCol);
+            const listingsPath = `${basePath}/${categoryName}/serviceListings`;
+            const listingsCol = collection(this.db, listingsPath);
+            const listingsSnap = await getDocs(listingsCol);
 
-    listingsSnap.forEach(doc => {
-      const data = doc.data();
+            listingsSnap.forEach(doc => {
+            const data = doc.data();
 
-      if (status && data.listStatus?.toLowerCase() !== status.toLowerCase()) return;
+            if (status && data.listStatus?.toLowerCase() !== status.toLowerCase()) return;
 
-      if (price) {
-        const [min, max] = price.split("-").map(Number);
-        const fee = typeof data.fee === "number" ? data.fee : parseFloat(data.fee);
-        if (isNaN(fee) || fee < min || fee > max) return;
-      }
+            if (price) {
+                const [min, max] = price.split("-").map(Number);
+                const fee = typeof data.fee === "number" ? data.fee : parseFloat(data.fee);
+                if (isNaN(fee) || fee < min || fee > max) return;
+            }
 
-      allServices.push({
-        id: doc.id,
-        ...data,
-        serviceCategory: categoryName,
-      });
-    });
-  }
+            allServices.push({
+                id: doc.id,
+                ...data,
+                serviceCategory: categoryName,
+            });
+            });
+        }
 
-  return allServices;
-}
+    return allServices;
+    }
 
-// Increment view count
-async incrementViewCount(categoryName, serviceId) {
-  if (!categoryName || !serviceId) return;
+    // Increment view count
+    async incrementViewCount(categoryName, serviceId) {
+        if (!categoryName || !serviceId) return;
 
-  const docRef = doc(this.db, `csit314/AllServiceCategory/CleaningServiceData/${categoryName}/serviceListings/${serviceId}`);
-  const docSnap = await getDoc(docRef);
+        const docRef = doc(this.db, `csit314/AllServiceCategory/CleaningServiceData/${categoryName}/serviceListings/${serviceId}`);
+        const docSnap = await getDoc(docRef);
 
-  if (docSnap.exists()) {
-    const current = docSnap.data().viewCount || 0;
-    await updateDoc(docRef, { viewCount: current + 1 });
-  }
-}
+        if (docSnap.exists()) {
+            const current = docSnap.data().viewCount || 0;
+            await updateDoc(docRef, { viewCount: current + 1 });
+        }
+    }
 
-// Increment shortlist count
-async incrementShortlistCount(categoryName, serviceId) {
-  if (!categoryName || !serviceId) return;
+    // Increment shortlist count
+    async incrementShortlistCount(categoryName, serviceId) {
+        if (!categoryName || !serviceId) return;
 
-  const docRef = doc(this.db, `csit314/AllServiceCategory/CleaningServiceData/${categoryName}/serviceListings/${serviceId}`);
-  const docSnap = await getDoc(docRef);
+        const docRef = doc(this.db, `csit314/AllServiceCategory/CleaningServiceData/${categoryName}/serviceListings/${serviceId}`);
+        const docSnap = await getDoc(docRef);
 
-  if (docSnap.exists()) {
-    const current = docSnap.data().viewShortlisted || 0;
-    await updateDoc(docRef, { viewShortlisted: current + 1 });
-  }
-}
+        if (docSnap.exists()) {
+            const current = docSnap.data().viewShortlisted || 0;
+            await updateDoc(docRef, { viewShortlisted: current + 1 });
+        }
+    }
 
  // Fetch all service listings
   async fetchAllServiceListings() {
@@ -1378,34 +1373,34 @@ async incrementShortlistCount(categoryName, serviceId) {
 
   //create a booking
   async createBooking(serviceId, cleanerId, bookingDetails) {
-  const user = this.auth.currentUser;
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
+        const user = this.auth.currentUser;
+        if (!user) {
+            throw new Error("User not authenticated");
+        }
 
-  const homeownerEmail = user.email;
+        const homeownerEmail = user.email;
 
-  // Get service details
-  const allServices = await this.fetchAllServiceListings();
-  const selectedService = allServices.find(service => service.id === serviceId);
-  if (!selectedService) {
-    throw new Error("Service not found");
-  }
+        // Get service details
+        const allServices = await this.fetchAllServiceListings();
+        const selectedService = allServices.find(service => service.id === serviceId);
+        if (!selectedService) {
+            throw new Error("Service not found");
+        }
 
-  // Reference the subcollection for bookings under the homeowner's email
-  const bookingsColRef = collection(this.db, `csit314/AllBookings/Bookings/${homeownerEmail}`);
+        // Reference the subcollection for bookings under the homeowner's email
+        const bookingsColRef = collection(this.db, `csit314/AllBookings/Bookings/${homeownerEmail}`);
 
-  // Create a new booking document
-  await addDoc(bookingsColRef, {
-    serviceId,
-    cleanerId,
-    selectedService,
-    ...bookingDetails,
-    timestamp: new Date(),
-  });
+        // Create a new booking document
+        await addDoc(bookingsColRef, {
+            serviceId,
+            cleanerId,
+            selectedService,
+            ...bookingDetails,
+            timestamp: new Date(),
+        });
 
-  console.log("Booking created successfully");
-}
+        console.log("Booking created successfully");
+    }
 }
 
 

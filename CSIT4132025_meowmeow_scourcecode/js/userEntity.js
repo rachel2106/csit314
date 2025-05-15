@@ -80,7 +80,7 @@ export class userEntity {
     async getUserList() {
         try {
             const userList = await firebase.getUserList();  // Using the existing instance of Firebase
-            return userList;
+            return userList; //array
         } catch (error) {
             console.error("Error fetching user list:", error);
             return [];  // Return empty list in case of error
@@ -88,9 +88,9 @@ export class userEntity {
     }
 
     // Update user from admin
-    async updateUserDetails(updatedUser) {
+    async updateUserInFirestore(originalEmail, firstName, lastName, newEmail, password) {
         try {
-            const response = await firebase.updateUserAcc(updatedUser);
+            const response = await firebase.updateUserInFirestore(originalEmail, firstName, lastName, newEmail, password);
             return response;  // Return the response directly
         } catch (error) {
             console.error("Error updating user:", error);
