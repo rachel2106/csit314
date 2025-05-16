@@ -3,23 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Homeowners Favourites</title>
+  <title>Homeowners Shortlisted Cleaning Services</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body class="homeowners-page">
   <div class="homeownersHeaderBanner">
-    <a href="homeownersPage.html">
-      <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img" />
-    </a>
-    <a href="HMViewALLCS.html" class="services-menu">All Cleaning Services</a>
+    <a href="homeownersPage.html"><img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img"/></a>
+    <a href="HMViewAllCS.html" class="services-menu">All Cleaning Services</a>
     <a href="HMViewBKHistory.html" class="services-menu">Booking History</a>
-    <a href="HMFavourites.html" class="services-menu">Favourites</a>
+    <a href="HMShortlisted.html" class="services-menu">Favourites</a>
     <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
   </div>
 
   <main>
     <div class="view-CS">
       <div class="CS">
+        <!-- Filters -->
         <select id="categoryFilter">
           <option value="">All Categories</option>
           <option value="Deep Cleaning">Deep Cleaning</option>
@@ -45,56 +44,105 @@
           <option value="201-500">$201 - $500</option>
         </select>
 
-        <button onclick="applyFilters()">Search</button>
+        <button id="searchBtn">Search</button>
       </div>
     </div>
 
-    <div id="favouritesContainer" class="services-container"></div>
+    <!-- Display Shortlisted Services -->
+    <div id="favourites" class="services-container"></div>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="modal">
+      <div class="modal-content">
+        <h2>Confirm Booking</h2>
+        <p id="modalDetails"></p>
+        <button id="confirmBookingBtn" class="confirm-btn">Confirm Booking</button>
+        <button id="cancelBookingBtn" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
   </main>
 
   <script type="module">
-    import { HMSaveCSController } from './js/HMSaveCSController.js';
+    import { HomeownersEntity } from "./js/homeownersEntity.js";
 
-    const controller = new HMSaveCSController();
+    const container = document.getElementById('favourites');
+    const modal = document.getElementById('bookingModal');
+    const modalDetails = document.getElementById('modalDetails');
+    const confirmBookingBtn = document.getElementById('confirmBookingBtn');
+    const cancelBookingBtn = document.getElementById('cancelBookingBtn');
+    let selectedService = null;
 
-    async function loadFavourites() {
+    async function displayShortlistedServices() {
+      const userEmail = localStorage.getItem('loggedInUserEmail');
+      if (!userEmail) {
+        container.innerHTML = "<p>Please log in to view your shortlisted services.</p>";
+        return;
+      }
+
       try {
-        const favourites = await controller.getFavourites();
-        const container = document.getElementById("favouritesContainer");
-        container.innerHTML = "";
+        const homeownersEntity = new HomeownersEntity();
+        const favourites = await homeownersEntity.getFavourites(userEmail);
 
         if (!favourites || favourites.length === 0) {
-          container.innerHTML = "<p>No favourites found.</p>";
+          container.innerHTML = "<p>You have no shortlisted services.</p>";
           return;
         }
 
-        favourites.forEach(service => {
-          const div = document.createElement("div");
-          div.classList.add("service-item");
-          div.innerHTML = `
-            <p><strong>Category:</strong> ${service.serviceCategory}</p>
-            <p><strong>Status:</strong> ${service.listStatus}</p>
-            <p><strong>Price:</strong> $${service.fee}</p>
-            <p><strong>Created By:</strong> ${service.createdBy}</p>
-          `;
-          container.appendChild(div);
-        });
+        container.innerHTML = favourites.map((service, index) => `
+          <div class="service-item" data-index="${index}">
+            <h3>${service.serviceName || 'No Service Name'}</h3>
+            <p>Category: ${service.category || 'N/A'}</p>
+            <p>Price: $${service.price ?? 'N/A'}</p>
+            <button class="book-btn" data-index="${index}">Book Now</button>
+            <button class="remove-btn" data-id="${service.id}">Remove</button>
+          </div>
+        `).join('');
+
+        // Store services for access in handlers
+        container.dataset.services = JSON.stringify(favourites);
+
       } catch (error) {
-        console.error("Error loading favourites:", error);
-        document.getElementById("favouritesContainer").innerHTML = "<p>Failed to load favourites.</p>";
+        console.error("Error loading services or favorites:", error);
+        container.innerHTML = "<p>Failed to load shortlisted services. Please try again later.</p>";
       }
     }
 
-    window.addEventListener("DOMContentLoaded", loadFavourites);
+    // Event delegation for Book and Remove buttons
+    container.addEventListener('click', async (e) => {
+      const services = JSON.parse(container.dataset.services || '[]');
+      const index = e.target.dataset.index;
 
-    document.getElementById("logout").addEventListener("click", () => {
-      window.location.href = "loginPage.html";
+      if (e.target.classList.contains('book-btn')) {
+        selectedService = services[index];
+        modalDetails.textContent = `Do you want to book "${selectedService.serviceName}" for $${selectedService.price}?`;
+        modal.style.display = "block";
+
+      } else if (e.target.classList.contains('remove-btn')) {
+        const serviceId = e.target.dataset.id;
+        const userEmail = localStorage.getItem('loggedInUserEmail');
+        const homeownersEntity = new HomeownersEntity();
+        await homeownersEntity.removeShortlistedService(userEmail, serviceId);
+        await displayShortlistedServices(); // Refresh after removal
+      }
     });
 
-    function applyFilters() {
-      // Optional filter implementation
-      alert("Filtering favourites is not yet implemented.");
-    }
+    // Modal confirmation buttons
+    confirmBookingBtn.addEventListener('click', async () => {
+      const userEmail = localStorage.getItem('loggedInUserEmail');
+      const homeownersEntity = new HomeownersEntity();
+      if (selectedService && userEmail) {
+        await homeownersEntity.bookService(userEmail, selectedService);
+        modal.style.display = "none";
+        alert("Booking confirmed!");
+      }
+    });
+
+    cancelBookingBtn.addEventListener('click', () => {
+      modal.style.display = "none";
+    });
+
+    // Init on load
+    window.addEventListener('DOMContentLoaded', displayShortlistedServices);
   </script>
 </body>
 </html>
