@@ -1214,6 +1214,42 @@ import {getAuth,
             return [];
         }
     }
+    // // View all service categories
+    // async getListingDetails(cleanerEmail, listing) {
+    //     try {
+    //         const categoriesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
+    //         const categorySnapshots = await getDocs(categoriesRef);
+    
+    //         const cleanerListings = [];
+    
+    //         for (const categoryDoc of categorySnapshots.docs) {
+    //             const categoryId = categoryDoc.id;
+    
+    //             const listingsRef = collection(
+    //                 db,
+    //                 `csit314/AllServiceCategory/CleaningServiceData/${categoryId}/serviceListings` // 🔁 Fixed here
+    //             );
+    //             const listingSnapshots = await getDocs(listingsRef);
+    
+    //             listingSnapshots.forEach(listingDoc => {
+    //                 const data = listingDoc.data();
+    //                 if (data.createdBy === cleanerEmail && data.listingName === listing) {
+    //                     cleanerListings.push({
+    //                         id: listingDoc.id,
+    //                         category: categoryId,
+    //                         ...data
+    //                     });
+    //                 }
+    //             });
+    //         }
+    
+    //         return cleanerListings; //array
+    
+    //     } catch (error) {
+    //         console.error("Error fetching listings by cleaner email:", error);
+    //         return [];
+    //     }
+    // }
 
     async updateServiceListing(updatedListingData){ 
         const {listingId, serviceCategory, listingName, listingFrequency, fee,  details, listStatus, createdBy } = updatedListingData;
@@ -1344,7 +1380,7 @@ import {getAuth,
 
 //Homeowner
 // Fetch all service listings from all categories
-    async fetchAllServiceListings() {
+    async fetchAllCleaningServices() {
     const basePath = "csit314/AllServiceCategory/CleaningServiceData";
     const categoriesCol = collection(this.db, basePath);
     const categoryDocs = await getDocs(categoriesCol);
@@ -1369,8 +1405,52 @@ import {getAuth,
     return allServices;
     }
 
-    // Fetch filtered cleaning services
-    async getFilteredCleaningServices({ category, price, status }) {
+    // Increment view count
+    async addCountView(countData) {
+        const { category, listingName, cleaner } = countData;
+    
+        if (!category || !listingName || !cleaner) return;
+    
+        const listingId = listingName.toLowerCase().replace(/\s+/g, "_");
+    
+        const listingRef = doc(
+            this.db,
+            `csit314/AllServiceCategory/CleaningServiceData/${category}/serviceListings`,
+            listingId
+        );
+    
+        try {
+            const listingSnap = await getDoc(listingRef);
+    
+            if (!listingSnap.exists()) {
+                console.log("Listing does not exist.");
+                return;
+            }
+    
+            const listingData = listingSnap.data();
+    
+            if (listingData.createdBy !== cleaner) {
+                console.log("Cleaner mismatch.");
+                return;
+            }
+    
+            const currentCount = listingData.viewCount || 0;
+    
+            await updateDoc(listingRef, {
+                viewCount: currentCount + 1,
+            });
+
+            return; //no
+    
+        } catch (error) {
+            console.error("Error incrementing view count:", error);
+        }
+    }
+    
+
+    // Fetch filtered cleaning services (Search)
+    async fetchCleaningServices(filters) {
+        const { category, price, status } = filters;
         const basePath = "csit314/AllServiceCategory/CleaningServiceData";
         const categoriesCol = collection(this.db, basePath);
         const categoryDocs = await getDocs(categoriesCol);
@@ -1408,19 +1488,9 @@ import {getAuth,
     return allServices;
     }
 
-    // Increment view count
-    async incrementViewCount(categoryName, serviceId) {
-        if (!categoryName || !serviceId) return;
+    
 
-        const docRef = doc(this.db, `csit314/AllServiceCategory/CleaningServiceData/${categoryName}/serviceListings/${serviceId}`);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-            const current = docSnap.data().viewCount || 0;
-            await updateDoc(docRef, { viewCount: current + 1 });
-        }
-    }
-
+    // NOT IN USE
     // Increment shortlist count
     async incrementShortlistCount(categoryName, serviceId) {
         if (!categoryName || !serviceId) return;
@@ -1434,113 +1504,112 @@ import {getAuth,
         }
     }
 
- // Fetch all service listings
-  async fetchAllServiceListings() {
-    const basePath = "csit314/AllServiceCategory/CleaningServiceData";
-    const categoriesCol = collection(this.db, basePath);
-    const categoryDocs = await getDocs(categoriesCol);
+    //Create Booking
+    async createBooking(serviceId, cleanerEmail, userEmail, details) {
+        try {
+            
+            if (!userEmail) {
+                throw new Error("User email not found. User might not be logged in.");
+            }
+            const safeEmail = userEmail.replace(/[@.]/g, "_");
 
-    const allServices = [];
 
-    for (const categoryDoc of categoryDocs.docs) {
-      const categoryName = categoryDoc.id;
-      const listingsPath = `${basePath}/${categoryName}/serviceListings`;
-      const listingsCol = collection(this.db, listingsPath);
-      const listingsSnap = await getDocs(listingsCol);
+            const userBookingPath = collection(
+                db,
+                "csit314",
+                "AllBookings",
+                "Bookings",
+                safeEmail,
+                "Bookings"
+            );
 
-      listingsSnap.forEach(doc => {
-        allServices.push({
-          id: doc.id,
-          ...doc.data(),
-          serviceCategory: categoryName,
-        });
-      });
+            const bookingData = {
+                ...details,  // directly merge fields from 'details'
+                serviceId,
+                cleanerEmail,
+                createdAt: serverTimestamp(),
+            };
+
+            await addDoc(userBookingPath, bookingData);
+            return true;
+
+        } catch (error) {
+            console.error("Error creating booking:", error);
+            return false;
+        }
     }
 
-    return allServices;
-  }
 
+    // 🔵 Fetch bookings for logged-in user (View booking)
+    async getUserBookings(userEmail) {
+        try {
 
-  //create a booking
- async createBooking(serviceId, cleanerEmail, bookingDetails) {
-  try {
-    //reads current user's email from localstorage
-    const userEmail = localStorage.getItem("loggedInUserEmail");
-    if (!userEmail) {
-      throw new Error("User email not found. User might not be logged in.");
+            //logging in with user-email
+            if (!userEmail) {
+                throw new Error("User email not found. User might not be logged in.");
+            }
+
+            //generate user if
+            const userId = userEmail.replace(/[@.]/g, "_");
+
+            //build firestore collection reference path
+            const userBookingsRef = collection(
+                db,
+                "csit314",
+                "AllBookings",
+                "Bookings",
+                userId,
+                "Bookings"
+            );
+
+            //fetching documents from firestore
+            const snapshot = await getDocs(userBookingsRef);
+                return snapshot.docs.map(doc => {
+                //process fetched documents
+                const data = doc.data();
+            
+                // Handle both old and new data structures
+                if (data.details && data.details.details) {
+                    // Double-nested case - return the inner details
+                    return data.details.details;
+                } else if (data.details) {
+                    // Single-nested case - return the details
+                    return data.details;
+                } else {
+                    // New flat structure - return as is
+                    return data;
+                }
+            });
+    } catch (error) {
+        console.error("Error fetching user bookings:", error);
+        throw error;
     }
-
-    //generate user id and transform into a firestore-compatible user id with "_"
-    const userId = userEmail.replace(/[@.]/g, "_");
-
-    //build firestore collection path
-    const userBookingPath = collection(
-      db,
-      "csit314",
-      "AllBookings",
-      "Bookings",
-      userId,
-      "Bookings"
-    );
-
-    // Merge the details directly with the booking data
-    //add a new booking document
-    await addDoc(userBookingPath, {
-      ...bookingDetails, // Spread the details directly
-      serviceId,
-      cleanerEmail,
-    });
-  } catch (error) {
-    console.error("Error creating booking:", error);
-    throw error;
-  }
 }
 
-  // 🔵 Fetch bookings for logged-in user
-  async getUserBookings() {
-  try {
-    //logging in with user-email
-    const userEmail = localStorage.getItem("loggedInUserEmail");
-    if (!userEmail) {
-      throw new Error("User email not found. User might not be logged in.");
+    //Search bookings
+    async searchBookings(userEmail, category) {
+        try {
+        if (!userEmail) throw new Error("User email not found.");
+        const userId = userEmail.replace(/[@.]/g, "_");
+    
+        const userBookingsRef = collection(
+            db,
+            "csit314",
+            "AllBookings",
+            "Bookings",
+            userId,
+            "Bookings"
+        );
+    
+        const q = query(userBookingsRef, where("categoryName", "==", category));
+        const snapshot = await getDocs(q);
+    
+        return snapshot.docs.map(doc => doc.data());
+        } catch (error) {
+        console.error("Error filtering bookings by category:", error);
+        throw error;
+        }
     }
-
-    //generate user if
-    const userId = userEmail.replace(/[@.]/g, "_");
-
-    //build firestore collection reference path
-    const userBookingsRef = collection(
-      db,
-      "csit314",
-      "AllBookings",
-      "Bookings",
-      userId,
-      "Bookings"
-    );
-
-    //fetching documents from firestore
-    const snapshot = await getDocs(userBookingsRef);
-    return snapshot.docs.map(doc => {
-        //process fetched documents
-      const data = doc.data();
-      
-      // Handle both old and new data structures
-      if (data.details && data.details.details) {
-        // Double-nested case - return the inner details
-        return data.details.details;
-      } else if (data.details) {
-        // Single-nested case - return the details
-        return data.details;
-      } else {
-        // New flat structure - return as is
-        return data;
-      }
-    });
-  } catch (error) {
-    console.error("Error fetching user bookings:", error);
-    throw error;
-  }
-}
 
 
 

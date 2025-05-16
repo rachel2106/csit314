@@ -12,8 +12,9 @@
       <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img" />
     </a>
     <a href="HMViewALLCS.html" class="services-menu">All Cleaning Services</a>
-    <a href="HMViewBKHistory.html" class="services-menu">Booking History</a>
-    <a href="HMShortlisted.html" class="services-menu">Favourites</a>
+    <a href="hmViewAllListing.html" class="services-menu">All Cleaning Services2</a>
+    <a href="hmViewBKHistory.html" class="services-menu">Booking History</a>
+    <a href="HMFavourites.html" class="services-menu">Favourites</a>
     <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
   </div>
 
@@ -59,19 +60,23 @@
   </main>
 
   <script type="module">
-  import { HMViewBKHistoryController } from "./js/HMViewBKHistoryController.js";
-import { HMSearchBKHistoryController } from "./js/HMSearchBKHistoryController.js";
+    import { hmViewBookListingController } from './js/hmViewBookListingController.js';
+    import { hmSearchBookListingController } from "./js/hmSearchBookListingController.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const controller = new HMViewBKHistoryController();
-  const searchController = new HMSearchBKHistoryController();
+
+  const controller = new hmViewBookListingController();
+  const searchController = new hmSearchBookListingController();
   const container = document.getElementById("bookingContainer");
   const noBookingsMessage = document.getElementById("noBookingsMessage");
+  const userEmail = localStorage.getItem("loggedInUserEmail");
 
   let allBookings = [];
 
   try {
-    const bookings = await controller.fetchBookingsForCurrentUser();
+    
+
+    const bookings = await controller.getUserBookings(userEmail);
 
     allBookings = bookings.map(booking => {
       if (booking.details && booking.details.details) return booking.details.details;
@@ -119,15 +124,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  document.getElementById("searchBtn").addEventListener("click", async () => {
-  const category = document.getElementById("categoryFilter").value;
-  const status = document.getElementById("statusFilter").value;
-  const price = document.getElementById("priceFilter").value;
+    document.getElementById("searchBtn").addEventListener("click", async () => {
+    const category = document.getElementById("categoryFilter").value;
 
-  const filters = { category, status, price };
-  const services = await searchController.getFilteredCleaningServices(filters);
-  displayBookings(services); // Not displayServices
-});
+    const bookingList = await searchController.searchBookings(userEmail, category);
+    displayBookings(bookingList);
+    // const status = document.getElementById("statusFilter").value;
+    // const price = document.getElementById("priceFilter").value;
+
+    // const filters = { category, status, price };
+    // const services = await searchController.getFilteredCleaningServices(filters);
+    // displayBookings(services); // Not displayServices
+    });
 
   });
 

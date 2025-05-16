@@ -8,6 +8,12 @@ export class serviceListingEntity {
         this.db = db;
     }
 
+
+    //Increment for view Count
+    async addCountView(countData){
+        return await firebase.addCountView(countData);
+      }
+
     // Create a new service category
     async createServiceListing(listingObj) {
         try {

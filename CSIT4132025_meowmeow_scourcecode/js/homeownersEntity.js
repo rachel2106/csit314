@@ -3,40 +3,45 @@ import Firebase from "./firebaseAuth.js"; // Import Firebase class
 
 const firebase = new Firebase(); // Initialize Firebase instance
 
-export class HomeownersEntity {
+export class homeownerEntity {
   constructor() {
     this.db = db;
   }
 
   // ==================== Cleaning Services ====================
 
-  // Fetch all services without filters
+  // Fetch all services without filters (View)
   async fetchAllCleaningServices() {
-    return await firebase.fetchAllServiceListings();
+    const services = await firebase.fetchAllCleaningServices();
+    return  services;
   }
 
-  // Fetch services with filters: category, price, status
-  async getFilteredCleaningServices(filters) {
-    return await firebase.getFilteredCleaningServices(filters);
-  }
 
-  // Increment view count
-  async incrementViewCount(categoryName, serviceId) {
-    return await firebase.incrementViewCount(categoryName, serviceId);
+  // Fetch services with filters: category, price, status (search)
+  async fetchCleaningServices(filters) {
+    const allServices = await firebase.fetchCleaningServices(filters);
+    return allServices;
   }
 
   // ==================== Booking ====================
 
-  // Book a service
-  async createBooking(serviceId, cleanerEmail, details) {
-    return await firebase.createBooking(serviceId, cleanerEmail, details);
+  // Book a service (To book)
+  async createBooking(serviceId, cleanerEmail,userEmail, details) {
+    const created = await firebase.createBooking(serviceId, cleanerEmail,userEmail, details);
+    return created;
   }
 
-
-
-  // Fetch user bookings
+  // Fetch user bookings (View)
   async getUserBookings(userEmail) {
-    return await firebase.getUserBookings(userEmail);
+    const result = await firebase.getUserBookings(userEmail);
+    return result;
+  }
+
+  //Search user booking (Search)
+  async searchBookings(userEmail, category){
+    const bookingList = await firebase.searchBookings(userEmail, category);
+    return bookingList;
+
   }
 
   // ==================== Favourites ====================
