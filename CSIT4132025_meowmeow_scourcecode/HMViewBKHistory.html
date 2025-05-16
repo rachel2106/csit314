@@ -1,63 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Homeowners Booking History</title>
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <title>Booking History</title>
+  <link rel="stylesheet" href="css/style.css" />
+  
 </head>
 <body class="homeowners-page">
-    <div class="homeownersHeaderBanner">
-        <a href="homeownersPage.html">
-        <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img">
-        </a>
-                <a href="HMViewAllCS.html" class="services-menu">All Cleaning Services</a>
-                <a href="HMViewBKHistory.html" class="services-menu">Booking History</a>
-        <a href="HMFavourites.html" class="services-menu">Favourites</a>
-        <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
-        
+  <div class="homeownersHeaderBanner">
+    <a href="homeownersPage.html">
+      <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img" />
+    </a>
+    <a href="HMViewALLCS.html" class="services-menu">All Cleaning Services</a>
+    <a href="HMViewBKHistory.html" class="services-menu">Booking History</a>
+    <a href="HMShortlisted.html" class="services-menu">Favourites</a>
+    <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
+  </div>
+
+  <main>
+    <h2 style="text-align: center; font-size: 25px; margin-bottom: 20px;">Your Booking History</h2>
+     
+    <div class="view-CSBookingHistory">
+      <div class="CS-bookingHistory">
+        <!-- Filters -->
+        <select id="categoryFilter">
+          <option value="">All Categories</option>
+          <option value="Deep Cleaning">Deep Cleaning</option>
+          <option value="General House Cleaning">General House Cleaning</option>
+          <option value="Move In or Out Cleaning">Move In or Out Cleaning</option>
+          <option value="Office & Commercial Cleaning">Office & Commercial Cleaning</option>
+          <option value="Pet-Friendly Cleaning">Pet-Friendly Cleaning</option>
+          <option value="Post-Construction Cleaning">Post-Construction Cleaning</option>
+          <option value="Specialized Cleaning">Specialized Cleaning</option>
+        </select>
+
+        <select id="statusFilter">
+          <option value="">All Status</option>
+          <option value="available">Available</option>
+          <option value="unavailable">Unavailable</option>
+        </select>
+
+        <select id="priceFilter">
+          <option value="">All Prices</option>
+          <option value="0-50">$0 - $50</option>
+          <option value="51-100">$51 - $100</option>
+          <option value="101-200">$101 - $200</option>
+          <option value="201-500">$201 - $500</option>
+        </select>
+
+        <button id="searchBtn">Search</button>
+      </div>
+
+    <div id="noBookingsMessage" style="display: none;">
+      <p>No bookings found.</p>
     </div>
-    
-    <main>
-        <div class="view-CS">
-            <div class="CS">
-                    <select id="categoryFilter">
-                    <option value="">All Categories</option>
-                    <option value="Deep Cleaning">Deep Cleaning</option>
-                    <option value="General House Cleaning">General House Cleaning</option>
-                    <option value="Move In or Out Cleaning">Move In or Out Cleaning</option>
-                    <option value="Office & Commercial Cleaning">Office & Commercial Cleaning</option>
-                    <option value="Pet-Friendly Cleaning">Pet-Friendly Cleaning</option>
-                    <option value="Post-Construction Cleaning">Post-Construction Cleaning</option>
-                    <option value="Specialized Cleaning">Specialized Cleaning</option>
-                </select>
 
-                <select id="statusFilter">
-                <option value="">All Status</option>
-                <option value="available">Available</option>
-                <option value="unavailable">Unavailable</option>
-                </select>
+    <div id="bookingContainer" class="servicesBookingHistory-container"></div>
+  </main>
 
-                <select id="priceFilter">
-                <option value="">All Prices</option>
-                <option value="0-50">$0 - $50</option>
-                <option value="51-100">$51 - $100</option>
-                <option value="101-200">$101 - $500</option>
-                </select>
+  <script type="module">
+  import { HMViewBKHistoryController } from "./js/HMViewBKHistoryController.js";
+import { HMSearchBKHistoryController } from "./js/HMSearchBKHistoryController.js";
 
-                    <button onclick="applyFilters()">Search</button>
-            </div>
-        </div>
+document.addEventListener("DOMContentLoaded", async () => {
+  const controller = new HMViewBKHistoryController();
+  const searchController = new HMSearchBKHistoryController();
+  const container = document.getElementById("bookingContainer");
+  const noBookingsMessage = document.getElementById("noBookingsMessage");
 
-    
+  let allBookings = [];
 
-    </main>
+  try {
+    const bookings = await controller.fetchBookingsForCurrentUser();
+
+    allBookings = bookings.map(booking => {
+      if (booking.details && booking.details.details) return booking.details.details;
+      else if (booking.details) return booking.details;
+      else return booking;
+    });
+
+    if (!allBookings || allBookings.length === 0) {
+      noBookingsMessage.style.display = "block";
+    } else {
+      noBookingsMessage.style.display = "none";
+      displayBookings(allBookings);
+    }
+  } catch (error) {
+    console.error("[ERROR] Failed to load bookings:", error);
+    container.innerHTML = `<p class="error-message">Error loading bookings. Please try again later.</p>`;
+  }
+
+  function displayBookings(bookings) {
+    container.innerHTML = "";
+    if (!bookings || !Array.isArray(bookings) || bookings.length === 0) {
+      noBookingsMessage.style.display = "block";
+      return;
+    }
+
+    bookings.forEach((booking) => {
+      const bookingDiv = document.createElement("div");
+      bookingDiv.classList.add("booking-item");
+
+      const category = booking?.categoryName || "N/A";
+      const service = booking?.listingName || "N/A";
+      const cleaner = booking?.cleanerEmail || "N/A";
+      const price = (booking?.price !== undefined && booking?.price !== null) 
+        ? `$${booking.price.toFixed(2)}` 
+        : "N/A";
+
+      bookingDiv.innerHTML = `
+        <p><strong>Category:</strong> ${category}</p>
+        <p><strong>Service:</strong> ${service}</p>
+        <p><strong>Cleaner:</strong> ${cleaner}</p>
+        <p><strong>Price:</strong> ${price}</p>
+        <hr style="border-top: 1px solid #eee; margin: 15px 0;"/>
+      `;
+      container.appendChild(bookingDiv);
+    });
+  }
+
+  document.getElementById("searchBtn").addEventListener("click", async () => {
+  const category = document.getElementById("categoryFilter").value;
+  const status = document.getElementById("statusFilter").value;
+  const price = document.getElementById("priceFilter").value;
+
+  const filters = { category, status, price };
+  const services = await searchController.getFilteredCleaningServices(filters);
+  displayBookings(services); // Not displayServices
+});
+
+  });
 
 
-    <!--action for logout button-->
-<script>
-    document.getElementById("logout").addEventListener("click", function logOut() {
-        console.log("Logout link has been clicked");
-        window.location.href = "loginPage.html";
-        });
-    </script>
+  </script>
+</body>
+</html>
