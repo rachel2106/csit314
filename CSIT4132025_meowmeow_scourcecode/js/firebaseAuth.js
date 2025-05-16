@@ -1373,40 +1373,8 @@ import {getAuth,
         }
     }
 
-    //View Booking History List
-
-
-
-
-//Homeowner
-// Fetch all service listings from all categories
-    async fetchAllCleaningServices() {
-    const basePath = "csit314/AllServiceCategory/CleaningServiceData";
-    const categoriesCol = collection(this.db, basePath);
-    const categoryDocs = await getDocs(categoriesCol);
-
-    const allServices = [];
-
-    for (const categoryDoc of categoryDocs.docs) {
-        const categoryName = categoryDoc.id;
-        const listingsPath = `${basePath}/${categoryName}/serviceListings`;
-        const listingsCol = collection(this.db, listingsPath);
-        const listingsSnap = await getDocs(listingsCol);
-
-        listingsSnap.forEach(doc => {
-        allServices.push({
-            id: doc.id,
-            ...doc.data(),
-            serviceCategory: categoryName,
-        });
-        });
-    }
-
-    return allServices;
-    }
-
-    // Increment view count
-    async addCountView(countData) {
+     // Increment view count
+     async addCountView(countData) {
         const { category, listingName, cleaner } = countData;
     
         if (!category || !listingName || !cleaner) return;
@@ -1440,12 +1408,44 @@ import {getAuth,
                 viewCount: currentCount + 1,
             });
 
-            return; //no
+            return; //nothing is returned
     
         } catch (error) {
             console.error("Error incrementing view count:", error);
         }
     }
+
+
+
+
+//Homeowner
+// Fetch all service listings from all categories
+    async fetchAllCleaningServices() {
+    const basePath = "csit314/AllServiceCategory/CleaningServiceData";
+    const categoriesCol = collection(this.db, basePath);
+    const categoryDocs = await getDocs(categoriesCol);
+
+    const allServices = [];
+
+    for (const categoryDoc of categoryDocs.docs) {
+        const categoryName = categoryDoc.id;
+        const listingsPath = `${basePath}/${categoryName}/serviceListings`;
+        const listingsCol = collection(this.db, listingsPath);
+        const listingsSnap = await getDocs(listingsCol);
+
+        listingsSnap.forEach(doc => {
+        allServices.push({
+            id: doc.id,
+            ...doc.data(),
+            serviceCategory: categoryName,
+        });
+        });
+    }
+
+    return allServices; //array
+    }
+
+   
     
 
     // Fetch filtered cleaning services (Search)
@@ -1485,7 +1485,7 @@ import {getAuth,
             });
         }
 
-    return allServices;
+    return allServices; //array
     }
 
     
@@ -1531,11 +1531,11 @@ import {getAuth,
             };
 
             await addDoc(userBookingPath, bookingData);
-            return true;
+            return true; //boolean
 
         } catch (error) {
             console.error("Error creating booking:", error);
-            return false;
+            return false; //boolean
         }
     }
 
@@ -1543,16 +1543,12 @@ import {getAuth,
     // 🔵 Fetch bookings for logged-in user (View booking)
     async getUserBookings(userEmail) {
         try {
-
-            //logging in with user-email
             if (!userEmail) {
                 throw new Error("User email not found. User might not be logged in.");
             }
-
-            //generate user if
+    
             const userId = userEmail.replace(/[@.]/g, "_");
-
-            //build firestore collection reference path
+    
             const userBookingsRef = collection(
                 db,
                 "csit314",
@@ -1561,31 +1557,41 @@ import {getAuth,
                 userId,
                 "Bookings"
             );
-
-            //fetching documents from firestore
+    
             const snapshot = await getDocs(userBookingsRef);
-                return snapshot.docs.map(doc => {
-                //process fetched documents
-                const data = doc.data();
-            
-                // Handle both old and new data structures
-                if (data.details && data.details.details) {
-                    // Double-nested case - return the inner details
-                    return data.details.details;
-                } else if (data.details) {
-                    // Single-nested case - return the details
-                    return data.details;
+            const bookings = [];
+    
+            snapshot.forEach(doc => {
+                const rawData = doc.data();
+                const id = doc.id;
+    
+                // Normalize all formats to flat object
+                let flatData = {};
+                if (rawData.details && rawData.details.details) {
+                    flatData = { ...rawData.details.details };
+                } else if (rawData.details) {
+                    flatData = { ...rawData.details };
                 } else {
-                    // New flat structure - return as is
-                    return data;
+                    flatData = { ...rawData };
                 }
+    
+                bookings.push({
+                    id,
+                    ...flatData,
+                    serviceId: rawData.serviceId || null,
+                    cleanerEmail: rawData.cleanerEmail || null,
+                    createdAt: rawData.createdAt || null,
+                });
             });
-    } catch (error) {
-        console.error("Error fetching user bookings:", error);
-        throw error;
+    
+            return bookings; //array of booking objects 
+    
+        } catch (error) {
+            console.error("Error fetching user bookings:", error);
+            throw error;
+        }
     }
-}
-
+    
     //Search bookings
     async searchBookings(userEmail, category) {
         try {
@@ -1603,8 +1609,13 @@ import {getAuth,
     
         const q = query(userBookingsRef, where("categoryName", "==", category));
         const snapshot = await getDocs(q);
+
+        const bookingList = [];
+        snapshot.forEach(doc => {
+            bookingList.push(doc.data());
+        });
     
-        return snapshot.docs.map(doc => doc.data());
+        return bookingList; //array
         } catch (error) {
         console.error("Error filtering bookings by category:", error);
         throw error;
