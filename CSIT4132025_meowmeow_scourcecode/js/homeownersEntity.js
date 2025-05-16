@@ -32,10 +32,7 @@ export class HomeownersEntity {
     return await firebase.createBooking(serviceId, cleanerEmail, details);
   }
 
-  // Filtered bookings
-async getFilteredBookings(filters) {
-  return await firebase.getFilteredBookings(filters); // assumes it's implemented in firebaseAuth.js
-}
+
 
   // Fetch user bookings
   async getUserBookings(userEmail) {
