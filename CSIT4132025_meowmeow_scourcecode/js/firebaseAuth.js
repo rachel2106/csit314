@@ -1462,35 +1462,192 @@ import {getAuth,
 
 
   //create a booking
-  async createBooking(serviceId, cleanerId, bookingDetails) {
-        const user = this.auth.currentUser;
-        if (!user) {
-            throw new Error("User not authenticated");
-        }
-
-        const homeownerEmail = user.email;
-
-        // Get service details
-        const allServices = await this.fetchAllServiceListings();
-        const selectedService = allServices.find(service => service.id === serviceId);
-        if (!selectedService) {
-            throw new Error("Service not found");
-        }
-
-        // Reference the subcollection for bookings under the homeowner's email
-        const bookingsColRef = collection(this.db, `csit314/AllBookings/Bookings/${homeownerEmail}`);
-
-        // Create a new booking document
-        await addDoc(bookingsColRef, {
-            serviceId,
-            cleanerId,
-            selectedService,
-            ...bookingDetails,
-            timestamp: new Date(),
-        });
-
-        console.log("Booking created successfully");
+ async createBooking(serviceId, cleanerEmail, bookingDetails) {
+  try {
+    //reads current user's email from localstorage
+    const userEmail = localStorage.getItem("loggedInUserEmail");
+    if (!userEmail) {
+      throw new Error("User email not found. User might not be logged in.");
     }
+
+    //generate user id and transform into a firestore-compatible user id with "_"
+    const userId = userEmail.replace(/[@.]/g, "_");
+
+    //build firestore collection path
+    const userBookingPath = collection(
+      db,
+      "csit314",
+      "AllBookings",
+      "Bookings",
+      userId,
+      "Bookings"
+    );
+
+    // Merge the details directly with the booking data
+    //add a new booking document
+    await addDoc(userBookingPath, {
+      ...bookingDetails, // Spread the details directly
+      serviceId,
+      cleanerEmail,
+    });
+  } catch (error) {
+    console.error("Error creating booking:", error);
+    throw error;
+  }
+}
+
+  // 🔵 Fetch bookings for logged-in user
+  async getUserBookings() {
+  try {
+    //logging in with user-email
+    const userEmail = localStorage.getItem("loggedInUserEmail");
+    if (!userEmail) {
+      throw new Error("User email not found. User might not be logged in.");
+    }
+
+    //generate user if
+    const userId = userEmail.replace(/[@.]/g, "_");
+
+    //build firestore collection reference path
+    const userBookingsRef = collection(
+      db,
+      "csit314",
+      "AllBookings",
+      "Bookings",
+      userId,
+      "Bookings"
+    );
+
+    //fetching documents from firestore
+    const snapshot = await getDocs(userBookingsRef);
+    return snapshot.docs.map(doc => {
+        //process fetched documents
+      const data = doc.data();
+      
+      // Handle both old and new data structures
+      if (data.details && data.details.details) {
+        // Double-nested case - return the inner details
+        return data.details.details;
+      } else if (data.details) {
+        // Single-nested case - return the details
+        return data.details;
+      } else {
+        // New flat structure - return as is
+        return data;
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching user bookings:", error);
+    throw error;
+  }
+}
+
+
+
+// Add a service to favourites (shortlist)
+ // Add to favourites
+ async addToFavourites(serviceData) {
+  try {
+    // Get currently logged-in user's email from localStorage
+    const userEmail = localStorage.getItem("loggedInUserEmail");
+    if (!userEmail) {
+      throw new Error("User email not found. User might not be logged in.");
+    }
+
+    // Replace dots and @ symbols to form a valid Firestore path segment
+    const userId = userEmail.replace(/[@.]/g, "_");
+
+    // Reference to the Firestore collection for this user's shortlisted services
+    const favouritesRef = collection(
+      db,
+      "csit314",
+      "AllBookings",
+      "Shortlisted",
+      userId,
+      "Shortlisted"
+    );
+
+    // Add the full service object to the user's shortlisted collection
+    await addDoc(favouritesRef, serviceData);
+
+    console.log("Service added to favourites!");
+  } catch (error) {
+    console.error("Error adding to favourites:", error);
+    throw error; // Re-throw for upstream handling if needed
+  }
+}
+
+//removing a specific cleaning services from a user's fav
+async removeFromFavourites(userEmail, serviceId) {
+    //check to see if useremail and serviceid valid
+  try {
+    if (!userEmail || typeof userEmail !== "string") {
+      throw new Error("User not authenticated or invalid userEmail");
+    }
+    if (!serviceId) {
+      throw new Error("Invalid serviceId");
+    }
+
+    //build a reference to the user's shortlisted collection in firestore
+    const favRef = collection(db, `csit314/AllBookings/Shortlisted/${userEmail}/Shortlisted`);
+    const serviceQuery = query(favRef, where("serviceId", "==", serviceId));
+    const querySnapshot = await getDocs(serviceQuery);
+
+    if (querySnapshot.empty) {
+      throw new Error("Service not found in favourites");
+    }
+
+    //if found, deletes all matching documents
+    const deletionPromises = querySnapshot.docs.map((doc) => deleteDoc(doc.ref));
+    await Promise.all(deletionPromises);
+  } catch (error) {
+    console.error("Error removing from favourites:", error);
+    throw error;
+  }
+}
+
+//check if a specific cleaning service is already a favourited by the user
+async isServiceFavourited(userEmail, serviceId) {
+    //validate email and service
+  try {
+    if (!userEmail || typeof userEmail !== "string") return false;
+    if (!serviceId) return false;
+
+    const favRef = collection(db, `csit314/AllBookings/Shortlisted/${userEmail}/Shortlisted`);
+
+    //queries for documents where "serviceid" matches the target serviceID
+    const checkQuery = query(favRef, where("serviceId", "==", serviceId));
+    const snapshot = await getDocs(checkQuery);
+
+    //returns true if any document is found
+    return !snapshot.empty;
+  } catch (error) {
+    console.error("Error checking favourite status:", error);
+    return false;
+  }
+}
+
+//retrieves all favourited services for a specific user
+async getFavourites(userEmail) {
+    try {
+       
+      const userId = userEmail.split('@')[0]; // e.g., HM1 from HM1@gmail.com
+      const shortlistRef = collection(db, `csit314/AllBookings/Shortlisted/${userId}/Shortlisted`);
+      const snapshot = await getDocs(shortlistRef);
+
+      //fetches all documents in that collection
+      const services = [];
+      snapshot.forEach(doc => {
+        services.push(doc.data());
+      });
+
+      //returns the document
+      return services;
+    } catch (error) {
+      console.error("Error fetching favourites:", error);
+      return [];
+    }
+  }
 }
 
 
