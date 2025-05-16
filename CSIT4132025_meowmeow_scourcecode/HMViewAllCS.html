@@ -13,14 +13,13 @@
     </a>
     <a href="HMViewAllCS.html" class="services-menu">All Cleaning Services</a>
     <a href="HMViewBKHistory.html" class="services-menu">Booking History</a>
-    <a href="HMFavourites.html" class="services-menu">Favourites</a>
+    <a href="HMShortlisted.html" class="services-menu">Favourites</a>
     <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
   </div>
 
   <main>
     <div class="view-CS">
       <div class="CS">
-        <!-- Filters -->
         <select id="categoryFilter">
           <option value="">All Categories</option>
           <option value="Deep Cleaning">Deep Cleaning</option>
@@ -62,142 +61,150 @@
       </div>
     </div>
   </main>
+<script type="module">
+  import { HMViewAllCSController } from './js/HMViewAllCSController.js';
 
-  <script type="module">
-    import { HMViewAllCSController } from './js/HMViewAllCSController.js';
+  const controller = new HMViewAllCSController();
+  const servicesContainer = document.getElementById("servicesContainer");
+  const modal = document.getElementById("bookingModal");
+  const cancelBookingBtn = document.getElementById("cancelBookingBtn");
+  const confirmBookingBtn = document.getElementById("confirmBookingBtn");
 
-    const controller = new HMViewAllCSController();
+  let selectedService = {};
 
-    const servicesContainer = document.getElementById("servicesContainer");
-    const modal = document.getElementById("bookingModal");
-    const cancelBookingBtn = document.getElementById("cancelBookingBtn");
-    const confirmBookingBtn = document.getElementById("confirmBookingBtn");
-
-    let selectedService = {};
-
-    // Show booking modal
-    function showBookingModal(service) {
-      selectedService = service;
-      const serviceName = service.listingName || "Unnamed Service";
-      const serviceCategory = service.serviceCategory || "Unspecified Category";
-      const serviceFee = service.fee !== undefined ? `$${service.fee}` : "No Price";
-
-      document.getElementById("modalDetails").textContent =
-        `You are about to book the service: ${serviceName} for ${serviceCategory}. Price: ${serviceFee}`;
-
-      modal.style.display = "block";
-    }
-
-    // Cancel the modal
-    cancelBookingBtn.addEventListener("click", () => {
-      modal.style.display = "none";
-    }); 
-
-    // Confirm booking (simplified version)
-    confirmBookingBtn.addEventListener("click", async () => {
-      const bookingData = {
-        serviceId: selectedService.id,
-        listingName: selectedService.listingName || "Unnamed Service",
-        categoryName: selectedService.serviceCategory || "Unspecified Category",
-      };
-
-      // Just display the booking confirmation message (no extra checks)
-      alert(`Booking confirmed for: ${selectedService.listingName}`);
-      modal.style.display = "none"; // Close the modal
-    });
-
-    // Display the services in the container
-    function displayServices(services) {
-  servicesContainer.innerHTML = "";
-
-  if (services.length === 0) {
-    servicesContainer.innerHTML = `<p>No listings found.</p>`;
-    return;
-  }
-
-  // Group services by category
-  const grouped = {};
-  services.forEach(service => {
-    const category = service.serviceCategory || "Uncategorized";
-    if (!grouped[category]) {
-      grouped[category] = [];
-    }
-    grouped[category].push(service);
+  // Load services immediately on page load
+  window.addEventListener("DOMContentLoaded", async () => {
+    const services = await controller.fetchAllCleaningServices();
+    displayServices(services);
   });
 
-  // For each category, create a section
-  for (const [category, listings] of Object.entries(grouped)) {
-    const categorySection = document.createElement("div");
-    categorySection.classList.add("category-section");
+  document.getElementById("searchBtn").addEventListener("click", async () => {
+    const category = document.getElementById("categoryFilter").value;
+    const status = document.getElementById("statusFilter").value;
+    const price = document.getElementById("priceFilter").value;
 
-    const title = document.createElement("h2");
-    title.style.fontSize = "30px";
-    title.style.textDecoration = "underline"
-    title.textContent = category;
-    categorySection.appendChild(title);
+    const filters = { category, status, price };
+    const services = await controller.getFilteredCleaningServices(filters);
+    displayServices(services);
+  });
 
-    listings.forEach(service => {
-      const serviceDiv = document.createElement("div");
-      serviceDiv.classList.add("service-item");
-      serviceDiv.innerHTML = `
-         <p><strong>Category:</strong> ${service.serviceCategory}</p>
+  cancelBookingBtn.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+
+  confirmBookingBtn.addEventListener("click", async () => {
+    const bookingData = {
+      listingName: selectedService.listingName,
+      categoryName: selectedService.serviceCategory,
+      price: selectedService.fee,
+      cleanerEmail: selectedService.createdBy,
+      serviceId: selectedService.id
+    };
+
+    try {
+      await controller.createBooking(selectedService.id, selectedService.createdBy, bookingData);
+      alert(`Booking confirmed for: ${selectedService.listingName}`);
+      modal.style.display = "none";
+      window.location.href = "HMViewBKHistory.html";
+    } catch (err) {
+      console.error("Booking failed:", err);
+      alert("Booking failed. Please try again.");
+    }
+  });
+
+  function showBookingModal(service) {
+    selectedService = service;
+    document.getElementById("modalDetails").textContent =
+      `You are about to book the service: ${service.listingName} for ${service.serviceCategory}. Price: $${service.fee}`;
+    modal.style.display = "block";
+  }
+
+  function displayServices(services) {
+    servicesContainer.innerHTML = "";
+
+    if (services.length === 0) {
+      servicesContainer.innerHTML = `<p>No listings found.</p>`;
+      return;
+    }
+
+    const grouped = {};
+    services.forEach(service => {
+      const category = service.serviceCategory || "Uncategorized";
+      if (!grouped[category]) grouped[category] = [];
+      grouped[category].push(service);
+    });
+
+    for (const [category, listings] of Object.entries(grouped)) {
+      const categorySection = document.createElement("div");
+      categorySection.classList.add("category-section");
+
+      const title = document.createElement("h2");
+      title.style.fontSize = "30px";
+      title.style.textDecoration = "underline";
+      title.textContent = category;
+      categorySection.appendChild(title);
+
+      listings.forEach(service => {
+        const serviceDiv = document.createElement("div");
+        serviceDiv.classList.add("service-item");
+        serviceDiv.innerHTML = `
+          <p><strong>Category:</strong> ${service.serviceCategory}</p>
           <p><strong>Price:</strong> $${service.fee}</p>
           <p><strong>Views:</strong> ${service.viewCount || 0}</p>
           <p><strong>Shortlisted:</strong> ${service.viewShortlisted || 0}</p>
           <p><strong>Created By:</strong> ${service.createdBy || "Unknown"}</p>
           <button class="book-btn" data-id="${service.id}">Book Now</button>
           <button class="fav-btn" data-id="${service.id}">Add to Favourites</button>
-      `;
-      categorySection.appendChild(serviceDiv);
-    });
+        `;
+        categorySection.appendChild(serviceDiv);
+      });
 
-    servicesContainer.appendChild(categorySection);
-  }
-
-  // Add event listener for each 'Book Now' button
-  document.querySelectorAll(".book-btn").forEach(button => {
-    button.addEventListener("click", (e) => {
-      const serviceId = e.target.dataset.id;
-      const selected = services.find(service => service.id === serviceId);
-      showBookingModal(selected);
-    });
-  });
-}
-
-    // Search button click handler
-document.getElementById("searchBtn").addEventListener("click", async () => {
-  const category = document.getElementById("categoryFilter").value;
-  const status = document.getElementById("statusFilter").value;
-  const price = document.getElementById("priceFilter").value;
-
-  const filters = { category, status, price };
-
-  const services = await controller.getFilteredCleaningServices(filters);
-  displayServices(services);
-});
-
-
-    // Fetch all services on page load
-    window.addEventListener("DOMContentLoaded", async () => {
-      const services = await controller.fetchAllCleaningServices();
-      displayServices(services);
-    });
-
-    document.querySelectorAll(".fav-btn").forEach(button => {
-  button.addEventListener("click", async (e) => {
-    const serviceId = e.target.dataset.id;
-    const service = services.find(s => s.id === serviceId);
-    if (!service) return;
-
-    try {
-      await controller.addToFavourites(service);
-      alert("Added to favourites!");
-    } catch (err) {
-      console.error("Failed to add to favourites:", err);
-      alert("Failed to add to favourites.");
+      servicesContainer.appendChild(categorySection);
     }
-  });
-});
-  </script>
+
+    // Book Now button handlers
+    document.querySelectorAll(".book-btn").forEach(button => {
+      button.addEventListener("click", (e) => {
+        const serviceId = e.target.dataset.id;
+        const selected = services.find(service => service.id === serviceId);
+        showBookingModal(selected);
+      });
+    });
+
+    // Add to Favourites button handlers
+    document.querySelectorAll(".fav-btn").forEach(button => {
+      button.addEventListener("click", async (e) => {
+        const serviceId = e.target.dataset.id;
+        const service = services.find(s => s.id === serviceId);
+
+        // Get the logged-in user email directly from localStorage here for safety
+        const userEmail = localStorage.getItem("loggedInUserEmail");
+        if (!userEmail) {
+          alert("You must be logged in to add to favourites.");
+          return;
+        }
+
+        // Prepare data object to send to Firestore
+        const favData = {
+          listingName: service.listingName,
+          serviceCategory: service.serviceCategory,
+          fee: service.fee,
+          createdBy: service.createdBy,
+          serviceId: service.id,
+          userEmail: userEmail  // include userEmail as a field, NOT the entire data
+        };
+
+        try {
+          await controller.addToFavourites(favData);
+          alert(`Added to Favourites: ${favData.listingName}`);
+        } catch (err) {
+          console.error("Add to favourites failed:", err);
+          alert("Failed to add to favourites.");
+        }
+      });
+    });
+  }
+</script>
+
 </body>
 </html>
