@@ -10,59 +10,57 @@ export class homeownerEntity {
 
   // ==================== Cleaning Services ====================
 
-  // Fetch all services without filters (View)
   async fetchAllCleaningServices() {
-    const services = await firebase.fetchAllCleaningServices();
-    return  services;
+    return await firebase.fetchAllCleaningServices();
   }
 
-
-  // Fetch services with filters: category, price, status (search)
   async fetchCleaningServices(filters) {
-    const allServices = await firebase.fetchCleaningServices(filters);
-    return allServices;
+    return await firebase.fetchCleaningServices(filters);
   }
 
   // ==================== Booking ====================
 
-  // Book a service (To book)
-  async createBooking(serviceId, cleanerEmail,userEmail, details) {
-    const created = await firebase.createBooking(serviceId, cleanerEmail,userEmail, details);
-    return created;
+  async createBooking(serviceId, cleanerEmail, userEmail, details) {
+    return await firebase.createBooking(serviceId, cleanerEmail, userEmail, details);
   }
 
-  // Fetch user bookings (View)
   async getUserBookings(userEmail) {
-    const result = await firebase.getUserBookings(userEmail);
-    return result;
+    return await firebase.getUserBookings(userEmail);
   }
 
-  //Search user booking (Search)
-  async searchBookings(userEmail, category){
-    const bookingList = await firebase.searchBookings(userEmail, category);
-    return bookingList;
-
+  async searchBookings(userEmail, category) {
+    return await firebase.searchBookings(userEmail, category);
   }
 
   // ==================== Favourites ====================
 
-  // Check if service is already favourited
   async isServiceFavourited(userEmail, serviceId) {
     return await firebase.isServiceFavourited(userEmail, serviceId);
   }
 
-  // Add service to favourites
-  async addToFavourites(userEmail, serviceData) {
-    return await firebase.addToFavourites(userEmail, serviceData);
+  async addToFavourites(serviceData) {
+    // ❗️No userEmail needed — retrieved inside firebaseAuth.js
+    return await firebase.addToFavourites(serviceData);
   }
 
-  // Remove service from favourites
   async removeFromFavourites(userEmail, serviceId) {
     return await firebase.removeFromFavourites(userEmail, serviceId);
   }
 
-  // Get all favourited services
   async getFavourites(userEmail) {
     return await firebase.getFavourites(userEmail);
+  }
+
+  // ==================== Booking via shortlist ====================
+
+  async createBookingShortlist(serviceId, cleanerEmail, userEmail, details) {
+    return await firebase.createBookingShortlist(serviceId, cleanerEmail, userEmail, details);
+  }
+
+  // ==================== New: Increment numOfShortlisted ====================
+  
+  async incrementNumOfShortlisted(countData) {
+    // Delegates to Firebase class method that increments numOfShortlisted
+    return await firebase.incrementNumOfShortlisted(countData);
   }
 }
