@@ -6,7 +6,6 @@ export class hmViewBookListingController {
         const userEmail = localStorage.getItem('loggedInUserEmail');
 
         if (!userEmail || typeof userEmail !== 'string') {
-            console.error("User email not found or invalid. User might not be logged in.");
             return false;
         }
 
@@ -16,27 +15,24 @@ export class hmViewBookListingController {
     }
 
     // Use this to add a service to shortlist/favourites
-  async createBookingShortlist(serviceId, cleanerEmail, userEmail, details) {
-    if (!userEmail || typeof userEmail !== 'string') {
-      console.error("User email not found or invalid. User might not be logged in.");
-      return false;
-    }
+    async createBookingShortlist(serviceId, cleanerEmail, userEmail, details) {
+        if (!userEmail || typeof userEmail !== 'string') {
+            return false;
+        }
 
-    const hmEntity = new homeownerEntity();
-    try {
-      const created = await hmEntity.createBookingShortlist(serviceId, cleanerEmail, userEmail, details);
-      return created;
-    } catch (error) {
-      console.error("Shortlist creation error:", error);
-      return false;
+        const hmEntity = new homeownerEntity();
+        try {
+            const created = await hmEntity.createBookingShortlist(serviceId, cleanerEmail, userEmail, details);
+            return created;
+        } catch (error) {
+            return false;
+        }
     }
-  }
 
     async getUserBookings() {
         const userEmail = localStorage.getItem('loggedInUserEmail');
 
         if (!userEmail || typeof userEmail !== 'string') {
-            console.error("User email not found or invalid.");
             return [];
         }
 
@@ -44,5 +40,4 @@ export class hmViewBookListingController {
         const result = await hmEntity.getUserBookings(userEmail);
         return result;
     }
-
 }
