@@ -4,17 +4,15 @@
   <meta charset="UTF-8" />
   <title>Booking History</title>
   <link rel="stylesheet" href="css/style.css" />
-  
 </head>
 <body class="homeowners-page">
   <div class="homeownersHeaderBanner">
     <a href="homeownersPage.html">
       <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img" />
     </a>
-    <a href="HMViewALLCS.html" class="services-menu">All Cleaning Services</a>
-    <a href="hmViewAllListing.html" class="services-menu">All Cleaning Services2</a>
+    <a href="hmViewAllListing.html" class="services-menu">All Cleaning Services</a>
     <a href="hmViewBKHistory.html" class="services-menu">Booking History</a>
-    <a href="HMFavourites.html" class="services-menu">Favourites</a>
+    <a href="HMShortlisted.html" class="services-menu">Favourites</a>
     <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
   </div>
 
@@ -23,7 +21,7 @@
      
     <div class="view-CSBookingHistory">
       <div class="CS-bookingHistory">
-        <!-- Filters -->
+        <!-- dropdown for category -->
         <select id="categoryFilter">
           <option value="">All Categories</option>
           <option value="Deep Cleaning">Deep Cleaning</option>
@@ -36,12 +34,14 @@
         </select>
 
         <select id="statusFilter">
+          <!--dropdown for status-->
           <option value="">All Status</option>
           <option value="available">Available</option>
           <option value="unavailable">Unavailable</option>
         </select>
 
         <select id="priceFilter">
+          <!--dropdown for price range-->
           <option value="">All Prices</option>
           <option value="0-50">$0 - $50</option>
           <option value="51-100">$51 - $100</option>
@@ -52,94 +52,113 @@
         <button id="searchBtn">Search</button>
       </div>
 
-    <div id="noBookingsMessage" style="display: none;">
-      <p>No bookings found.</p>
-    </div>
+      <div id="noBookingsMessage" style="display: none;">
+        <p>No bookings found.</p>
+      </div>
 
-    <div id="bookingContainer" class="servicesBookingHistory-container"></div>
+      <div id="bookingContainer" class="servicesBookingHistory-container"></div>
+    </div>
   </main>
 
   <script type="module">
     import { hmViewBookListingController } from './js/hmViewBookListingController.js';
     import { hmSearchBookListingController } from "./js/hmSearchBookListingController.js";
 
-document.addEventListener("DOMContentLoaded", async () => {
+    //retrieves logged in user's email, fetches bookings, displays "no bookings" message
+    document.addEventListener("DOMContentLoaded", async () => {
+      const controller = new hmViewBookListingController();
+      const searchController = new hmSearchBookListingController();
+      const container = document.getElementById("bookingContainer");
+      const noBookingsMessage = document.getElementById("noBookingsMessage");
+      const userEmail = localStorage.getItem("loggedInUserEmail");
 
-  const controller = new hmViewBookListingController();
-  const searchController = new hmSearchBookListingController();
-  const container = document.getElementById("bookingContainer");
-  const noBookingsMessage = document.getElementById("noBookingsMessage");
-  const userEmail = localStorage.getItem("loggedInUserEmail");
+      try {
+        // Load all bookings initially
+        const allBookings = await controller.getUserBookings(userEmail);
+        
+        //checks if the result is empty and displays a message if so
+        if (!allBookings || allBookings.length === 0) {
+          noBookingsMessage.style.display = "block";
+        } else {
+          noBookingsMessage.style.display = "none";
+          displayBookings(allBookings);
+        }
 
-  let allBookings = [];
+        // Set up search functionality
+        //gets value from category, status and price filter range
+        //fetches filtered bookings
+        
+        document.getElementById("searchBtn").addEventListener("click", async () => {
+          const category = document.getElementById("categoryFilter").value;
+          const status = document.getElementById("statusFilter").value;
+          const priceRange = document.getElementById("priceFilter").value;
+          
+          // Get filtered bookings from server
+          const filteredBookings = await searchController.searchBookings(userEmail, category);
+          
+          // Apply additional client-side filters
+          const finalFiltered = applyClientSideFilters(filteredBookings, status, priceRange);
+          displayBookings(finalFiltered);
+        });
 
-  try {
-    
+      } catch (error) {
+        console.error("[ERROR] Failed to load bookings:", error);
+        container.innerHTML = `<p class="error-message">Error loading bookings. Please try again later.</p>`;
+      }
 
-    const bookings = await controller.getUserBookings(userEmail);
+      function applyClientSideFilters(bookings, status, priceRange) {
+        return bookings.filter(booking => {
+          // Status filter (client-side only as it's not in Firebase)
+          if (status && status !== "") {
+            // Add your status logic here if needed
+            // Currently just a placeholder as status isn't in your data structure
+            // You might want to add a status field to your booking data
+          }
+          
+          // Price range filter
+          if (priceRange && priceRange !== "") {
+            const [min, max] = priceRange.split('-').map(Number);
+            const price = booking.price || 0;
+            return price >= min && price <= max;
+          }
+          
+          return true;
+        });
+      }
 
-    allBookings = bookings.map(booking => {
-      if (booking.details && booking.details.details) return booking.details.details;
-      else if (booking.details) return booking.details;
-      else return booking;
+      //clears the exisiting booking list
+      //loops thru each booking a createa a styled <div> with details
+      function displayBookings(bookings) {
+        container.innerHTML = "";
+        
+      
+        if (!bookings || bookings.length === 0) {
+          noBookingsMessage.style.display = "block";
+          return;
+        }
+
+        bookings.forEach((booking) => {
+          const bookingDiv = document.createElement("div");
+          bookingDiv.classList.add("booking-item");
+
+          // Directly access properties (no more nested details)
+          const category = booking?.categoryName || "N/A";
+          const service = booking?.listingName || "N/A";
+          const cleaner = booking?.cleanerEmail || "N/A";
+          const price = booking?.price !== undefined ? `$${booking.price.toFixed(2)}` : "N/A";
+         
+
+          bookingDiv.innerHTML = `
+            <p><strong>Category:</strong> ${category}</p>
+            <p><strong>Service:</strong> ${service}</p>
+            <p><strong>Cleaner:</strong> ${cleaner}</p>
+            <p><strong>Price:</strong> ${price}</p>
+            <hr style="border-top: 1px solid #eee; margin: 15px 0;"/>
+          `;
+          container.appendChild(bookingDiv);
+        });
+      }
     });
-
-    if (!allBookings || allBookings.length === 0) {
-      noBookingsMessage.style.display = "block";
-    } else {
-      noBookingsMessage.style.display = "none";
-      displayBookings(allBookings);
-    }
-  } catch (error) {
-    console.error("[ERROR] Failed to load bookings:", error);
-    container.innerHTML = `<p class="error-message">Error loading bookings. Please try again later.</p>`;
-  }
-
-  function displayBookings(bookings) {
-    container.innerHTML = "";
-    if (!bookings || !Array.isArray(bookings) || bookings.length === 0) {
-      noBookingsMessage.style.display = "block";
-      return;
-    }
-
-    bookings.forEach((booking) => {
-      const bookingDiv = document.createElement("div");
-      bookingDiv.classList.add("booking-item");
-
-      const category = booking?.categoryName || "N/A";
-      const service = booking?.listingName || "N/A";
-      const cleaner = booking?.cleanerEmail || "N/A";
-      const price = (booking?.price !== undefined && booking?.price !== null) 
-        ? `$${booking.price.toFixed(2)}` 
-        : "N/A";
-
-      bookingDiv.innerHTML = `
-        <p><strong>Category:</strong> ${category}</p>
-        <p><strong>Service:</strong> ${service}</p>
-        <p><strong>Cleaner:</strong> ${cleaner}</p>
-        <p><strong>Price:</strong> ${price}</p>
-        <hr style="border-top: 1px solid #eee; margin: 15px 0;"/>
-      `;
-      container.appendChild(bookingDiv);
-    });
-  }
-
-    document.getElementById("searchBtn").addEventListener("click", async () => {
-    const category = document.getElementById("categoryFilter").value;
-
-    const bookingList = await searchController.searchBookings(userEmail, category);
-    displayBookings(bookingList);
-    // const status = document.getElementById("statusFilter").value;
-    // const price = document.getElementById("priceFilter").value;
-
-    // const filters = { category, status, price };
-    // const services = await searchController.getFilteredCleaningServices(filters);
-    // displayBookings(services); // Not displayServices
-    });
-
-  });
-
-
   </script>
 </body>
 </html>
