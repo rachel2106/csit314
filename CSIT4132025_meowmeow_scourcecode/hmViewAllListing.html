@@ -1,269 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <title>Homeowners All Cleaning Services</title>
-        <link rel="stylesheet" href="css/style.css" />
-    </head>
-    <body class="homeowners-page">
-        <div class="homeownersHeaderBanner">
-            <a href="homeownersPage.html">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Homeowners All Cleaning Services</title>
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="homeowners-page">
+    <div class="homeownersHeaderBanner">
+        <a href="homeownersPage.html">
             <img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img"/>
-            </a>
-            <a href="HMViewAllCS.html" class="services-menu">All Cleaning Services</a>
-            <a href="hmViewAllListing.html" class="services-menu">All Cleaning Services2</a>
-            <a href="hmViewBKHistory.html" class="services-menu">Booking History</a>
-            <a href="HMFavourites.html" class="services-menu">Favourites</a>
-            <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
-        </div>
+        </a>
+        <a href="hmViewAllListing.html" class="services-menu">All Cleaning Services</a>
+        <a href="hmViewBKHistory.html" class="services-menu">Booking History</a>
+        <a href="HMShortlisted.html" class="services-menu">Favourites</a>
+        <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
+    </div>
 
-        <main>
-            <div class="view-CS">
+    <main>
+        <div class="view-CS">
             <div class="CS">
                 <select id="categoryFilter">
-                <option value="">All Categories</option>
-                <option value="Deep Cleaning">Deep Cleaning</option>
-                <option value="General House Cleaning">General House Cleaning</option>
-                <option value="Move In or Out Cleaning">Move In or Out Cleaning</option>
-                <option value="Office & Commercial Cleaning">Office & Commercial Cleaning</option>
-                <option value="Pet-Friendly Cleaning">Pet-Friendly Cleaning</option>
-                <option value="Post-Construction Cleaning">Post-Construction Cleaning</option>
-                <option value="Specialized Cleaning">Specialized Cleaning</option>
+                    <!--dropdown for category-->
+                    <option value="">All Categories</option>
+                    <option value="Deep Cleaning">Deep Cleaning</option>
+                    <option value="General House Cleaning">General House Cleaning</option>
+                    <option value="Move In or Out Cleaning">Move In or Out Cleaning</option>
+                    <option value="Office & Commercial Cleaning">Office & Commercial Cleaning</option>
+                    <option value="Pet-Friendly Cleaning">Pet-Friendly Cleaning</option>
+                    <option value="Post-Construction Cleaning">Post-Construction Cleaning</option>
+                    <option value="Specialized Cleaning">Specialized Cleaning</option>
                 </select>
 
                 <select id="statusFilter">
-                <option value="">All Status</option>
-                <option value="available">Available</option>
-                <option value="unavailable">Unavailable</option>
+                    <!--dropwon for status-->
+                    <option value="">All Status</option>
+                    <option value="available">Available</option>
+                    <option value="unavailable">Unavailable</option>
                 </select>
 
+
                 <select id="priceFilter">
-                <option value="">All Prices</option>
-                <option value="0-50">$0 - $50</option>
-                <option value="51-100">$51 - $100</option>
-                <option value="101-200">$101 - $200</option>
-                <option value="201-500">$201 - $500</option>
+                    <!--dropdwon for price range-->
+                    <option value="">All Prices</option>
+                    <option value="0-50">$0 - $50</option>
+                    <option value="51-100">$51 - $100</option>
+                    <option value="101-200">$101 - $200</option>
+                    <option value="201-500">$201 - $500</option>
                 </select>
 
                 <button id="searchBtn">Search</button>
             </div>
-            </div>
+        </div>
 
-            <div id="servicesContainer" class="services-container"></div>
+        <div id="servicesContainer" class="services-container"></div>
 
-            <!-- Modal for updating service category -->
-            <!-- Update Modal -->
-            <div id="detailsModal" class="modal" style="display:none;">
-                <div class="modal-content">
+        <!-- Details Modal -->
+        <div id="detailsModal" class="modal-details" style="display:none;">
+            <div class="modal-content">
                 <span class="close-btn" id="closeModalBtn-details">&times;</span>
-                <h3>Details of the service</h3>
-                <form id="details-form">
-
-                    <label for="details-service-category">Service Category:<span id="details-service-category"></span></label>
-                    <label for="details-service-name">Service Name:<span id="details-service-name"></span></label>
-                    <label for="details-service-fee">Fee:<span id="details-service-fee"></span></label>
-                    <label for="details-service-frequency">Frequency:<span id="details-service-frequency"></span></label>
-                    <label for="details-service-details">Details:<span id="details-service-details"></span></label>
-                    <label for="details-service-cleaner">Cleaner:<span id="details-service-cleaner"></span></label>
-                   
+                <h3>Details of the Service</h3>
+                <form>
+                    <div class="details-row"><label>Service Category:</label> <span id="details-service-category"></span></div>
+                    <div class="details-row"><label>Service Name:</label> <span id="details-service-name"></span></div>
+                    <div class="details-row"><label>Fee:</label> <span id="details-service-fee"></span></div>
+                    <div class="details-row"><label>Frequency:</label> <span id="details-service-frequency"></span></div>
+                    <div class="details-row"><label>Details:</label> <span id="details-service-details"></span></div>
+                    <div class="details-row"><label>Cleaner:</label> <span id="details-service-cleaner"></span></div>
                 </form>
-                </div>
             </div>
+        </div>
 
-
-            <!-- Modal for Booking -->
-            <div id="bookingModal" class="modal">
+        <!-- Booking Modal -->
+        <div id="bookingModal" class="modal" style="display:none;">
             <div class="modal-content">
                 <h2>Confirm Booking</h2>
                 <p id="modalDetails"></p>
                 <button id="confirmBookingBtn" class="confirm-btn">Confirm Booking</button>
                 <button id="cancelBookingBtn" class="cancel-btn">Cancel</button>
             </div>
-            </div>
-        </main>
+        </div>
+    </main>
 
-        <script type="module">
-            import { hmViewAllCSController } from './js/hmViewAllCSController.js';
-            import { cleanerViewCountController } from './js/cleanerViewCountController.js';
-            import { hmSearchAllCSController } from './js/hmSearchAllCSController.js';
-            import { hmViewBookListingController } from './js/hmViewBookListingController.js';
+    <script type="module">
+import { hmViewAllCSController } from './js/hmViewAllCSController.js';
+import { cleanerViewCountController } from './js/cleanerViewCountController.js';
+import { hmSearchAllCSController } from './js/hmSearchAllCSController.js';
+import { hmViewBookListingController } from './js/hmViewBookListingController.js';
+import { HMFavouritesCSController } from './js/HMFavouritesCSController.js';
 
-            class HomeOwnerAllCSPage{
+class HomeOwnerAllCSPage {
+    constructor() { //initializes an empty list to store all the fetched cleaning services
+        this.services = [];
+    }
 
-                async getAllServices(){
-                    const controller = new hmViewAllCSController();
-                    return await controller.fetchAllCleaningServices();
-                }
+    //uses the controller to fetch all services from firestore
+    //calls and then displays on the page
+    async fetchAndDisplayAllServices() {
+        const controller = new hmViewAllCSController();
+        this.services = await controller.fetchAllCleaningServices();
+        this.displayServices(this.services);
+    }
 
-                displayServices(services){
-                    servicesContainer.innerHTML = "";
+    //groups services by serviceCategory
+    //each cat, creates a new section and adds service items inside
+    //each service is shown category, name, creator, buttons
+    displayServices(services) {
+        const servicesContainer = document.getElementById("servicesContainer");
+        servicesContainer.innerHTML = "";
 
-                    if (services.length === 0) {
-                        servicesContainer.innerHTML = `<p>No listings found.</p>`;
-                        return;
-                    }
+        if (!services || services.length === 0) {
+            servicesContainer.innerHTML = `<p>No listings found.</p>`;
+            return;
+        }
 
-                    const grouped = {};
-                    services.forEach(service => {
-                        const category = service.serviceCategory || "Uncategorized";
-                        if (!grouped[category]) grouped[category] = [];
-                        grouped[category].push(service);
-                    });
+        const grouped = {};
+        services.forEach(service => {
+            const category = service.serviceCategory || "Uncategorized";
+            if (!grouped[category]) grouped[category] = [];
+            grouped[category].push(service);
+        });
 
-                    for (const [category, listings] of Object.entries(grouped)) {
-                        const categorySection = document.createElement("div");
-                        categorySection.classList.add("category-section");
+        for (const [category, listings] of Object.entries(grouped)) {
+            const categorySection = document.createElement("div");
+            categorySection.classList.add("category-section");
 
-                        const title = document.createElement("h2");
-                        title.style.fontSize = "30px";
-                        title.style.textDecoration = "underline";
-                        title.textContent = category;
-                        categorySection.appendChild(title);
+            const title = document.createElement("h2");
+            title.style.fontSize = "30px";
+            title.style.textDecoration = "underline";
+            title.textContent = category;
+            categorySection.appendChild(title);
 
-                        listings.forEach(service => {
-                            const serviceDiv = document.createElement("div");
-                            serviceDiv.classList.add("service-item");
-                            serviceDiv.innerHTML = `
-                            <p><strong>Category:</strong> ${service.serviceCategory}</p>
-                            <p><strong>Service:</strong> ${service.listingName}</p>
-                            <p><strong>Created By:</strong> ${service.createdBy || "Unknown"}</p>
-                            <button class="details-btn" data-id="${service.id}">Details</button>
-                            <button class="book-btn" data-id="${service.id}">Book Now</button>
-                            <button class="fav-btn" data-id="${service.id}">Add to Favourites</button>
-                            `;
-                            categorySection.appendChild(serviceDiv);
-                        });
-
-                    servicesContainer.appendChild(categorySection);
-                    }
-                }
-            }
-
-
-
-            // Load services immediately on page load
-            window.addEventListener("DOMContentLoaded", async () => {
-                const page = new HomeOwnerAllCSPage();
-                const services = await page.getAllServices();
-                page.displayServices(services);
-
-                // Modal Setup
-                const detailsModal = document.getElementById("detailsModal");
-                const closeDetails = document.getElementById("closeModalBtn-details");
-
-                // booking confirmation
-                const bookingModal = document.getElementById("bookingModal");
-                const cancelBookingBtn = document.getElementById("cancelBookingBtn");
-                const confirmBookingBtn = document.getElementById("confirmBookingBtn");
-
-
-
-                // Close modal
-                closeDetails.addEventListener("click", () => detailsModal.style.display = "none");
-                cancelBookingBtn.addEventListener("click", () => bookingModal.style.display = "none");
-
-                document.getElementById("servicesContainer").addEventListener("click", async (e) => {
-
-                    if (e.target.classList.contains("details-btn")) {
-                        const listingId = e.target.dataset.id;
-
-                        const services = await page.getAllServices();
-                        const selected = services.find(serv => serv.id === listingId);
-
-                        if(selected){
-                            document.getElementById("details-service-category").textContent = selected.serviceCategory;
-                            document.getElementById("details-service-name").textContent = selected.listingName;
-                            document.getElementById("details-service-fee").textContent = selected.fee;
-                            document.getElementById("details-service-frequency").textContent = selected.listingFrequency;
-                            document.getElementById("details-service-details").textContent = selected.details;
-                            document.getElementById("details-service-cleaner").textContent = selected.createdBy;
-
-                            detailsModal.style.display = "block";
-                            const countData = {
-                                category : selected.serviceCategory,
-                                listingName : selected.listingName,
-                                cleaner :selected.createdBy
-
-                            }
-                            const countviewController = new cleanerViewCountController();
-                            await countviewController.addCountView(countData);
-                        }
-
-                    }
-
-                 
-                });
-
-                document.getElementById("searchBtn").addEventListener("click", async () => {
-                    const category = document.getElementById("categoryFilter").value;
-                    const status = document.getElementById("statusFilter").value;
-                    const price = document.getElementById("priceFilter").value;
-                    const controller = new hmSearchAllCSController();
-
-                    const filters = { category, status, price };
-                    const allServices = await controller.fetchCleaningServices(filters);
-                    page.displayServices(allServices);
-                });
-
-                function showBookingModal(service) {
-                    selectedService = service;
-                    document.getElementById("modalDetails").textContent =
-                    `You are about to book the service: ${service.listingName} for ${service.serviceCategory}. Price: $${service.fee}`;
-                    bookingModal.style.display = "block";
-                }
-
-                document.getElementById("servicesContainer").addEventListener("click", async (e) => {
-
-                    if (e.target.classList.contains("book-btn")) {
-                        const listingId = e.target.dataset.id;
-                        const services = await page.getAllServices();
-                        const selected = services.find(serv => serv.id === listingId);
-
-                        if(selected){
-                            document.getElementById("modalDetails").textContent =
-                            `You are about to book the service: ${selected.listingName} for ${selected.serviceCategory}. Price: $${selected.fee}`;
-
-                            bookingModal.style.display = "block";
-                        }
-
-                        confirmBookingBtn.addEventListener("click", async () => {
-                            const bookingData = {
-                                listingName: selected.listingName,
-                                categoryName: selected.serviceCategory,
-                                price: selected.fee,
-                                cleanerEmail: selected.createdBy,
-                                serviceId: selected.id
-                            };
-
-                            try {
-                                const userEmail = localStorage.getItem("loggedInUserEmail");
-                                console.log(userEmail);
-                                const bookController = new hmViewBookListingController();
-                                await bookController.createBooking(selected.id, selected.createdBy, userEmail, bookingData);
-                                alert(`Booking confirmed for: ${selected.listingName}`);
-                                bookingModal.style.display = "none";
-                                // window.location.href = "HMViewBKHistory.html";
-                            } catch (err) {
-                                console.error("Booking failed:", err);
-                                alert("Booking failed. Please try again.");
-                            }
-                        });
-
-                    }
-      
-                });
-
-
-
-
-
-
+            listings.forEach(service => {
+                const serviceDiv = document.createElement("div");
+                serviceDiv.classList.add("service-item");
+                serviceDiv.innerHTML = `
+                    <p><strong>Category:</strong> ${service.serviceCategory}</p>
+                    <p><strong>Service:</strong> ${service.listingName}</p>
+                    <p><strong>Created By:</strong> ${service.createdBy || "Unknown"}</p>
+                    <button class="details-btn" data-id="${service.id}">Details</button>
+                    <button class="book-btn" data-id="${service.id}">Book Now</button>
+                    <button class="fav-btn" data-id="${service.id}">${service.isFavourite ? "Remove from Favourites" : "Add to Favourites"}</button>
+                `;
+                categorySection.appendChild(serviceDiv);
             });
 
+            servicesContainer.appendChild(categorySection);
+        }
+    }
+}
 
+//when page loads, 
+//creates a new instance and loads all services
+//stores modal and button references for booking and details
+//handle all button clicks within the service container
+window.addEventListener("DOMContentLoaded", async () => {
+    const page = new HomeOwnerAllCSPage();
+    await page.fetchAndDisplayAllServices();
 
+    const detailsModal = document.getElementById("detailsModal");
+    const bookingModal = document.getElementById("bookingModal");
+    const closeDetails = document.getElementById("closeModalBtn-details");
+    const cancelBookingBtn = document.getElementById("cancelBookingBtn");
+    const confirmBookingBtn = document.getElementById("confirmBookingBtn");
+    let selectedService = null;
 
-        </script>
-    </body>
+    closeDetails.addEventListener("click", () => detailsModal.style.display = "none");
+    cancelBookingBtn.addEventListener("click", () => bookingModal.style.display = "none");
+
+    document.getElementById("servicesContainer").addEventListener("click", async (e) => {
+        const listingId = e.target.dataset.id;
+        if (!listingId) return;
+
+        const selected = page.services.find(serv => serv.id === listingId);
+        if (!selected) return;
+
+        //fills the detiails modeal with the service ata
+        //opens the modal
+        //adds a new count using cleanerViewCountController
+        if (e.target.classList.contains("details-btn")) {
+            document.getElementById("details-service-category").textContent = selected.serviceCategory;
+            document.getElementById("details-service-name").textContent = selected.listingName;
+            document.getElementById("details-service-fee").textContent = selected.fee;
+            document.getElementById("details-service-frequency").textContent = selected.listingFrequency;
+            document.getElementById("details-service-details").textContent = selected.details;
+            document.getElementById("details-service-cleaner").textContent = selected.createdBy;
+            detailsModal.style.display = "block";
+
+            const countController = new cleanerViewCountController();
+            await countController.addCountView({
+                category: selected.serviceCategory,
+                listingName: selected.listingName,
+                cleaner: selected.createdBy
+            });
+        }
+
+        //stores the selected services in a variable for booking ltr
+        //shows the confirmation modal
+        if (e.target.classList.contains("book-btn")) {
+            selectedService = selected;
+            document.getElementById("modalDetails").textContent =
+                `You are about to book the service: ${selected.listingName} for ${selected.serviceCategory}. Price: $${selected.fee}`;
+            bookingModal.style.display = "block";
+        }
+
+        //uses the HMFavouritesCSCnotroller to add the service from their favs
+        //updates the button text
+        if (e.target.classList.contains("fav-btn")) {
+            const userEmail = localStorage.getItem("loggedInUserEmail");
+            if (!userEmail) {
+                alert("Please login first to manage favourites.");
+                return;
+            }
+
+            const favData = {
+                listingName: selected.listingName,
+                serviceCategory: selected.serviceCategory,
+                fee: selected.fee,
+                listingFrequency: selected.listingFrequency,
+                details: selected.details,
+                createdBy: selected.createdBy,
+                id: selected.id
+            };
+
+            try {
+                const favController = new HMFavouritesCSController(userEmail);
+                const added = await favController.toggleFavourite(favData);
+                e.target.textContent = added ? "Remove from Favourites" : "Add to Favourites";
+                alert(added ? `"${selected.listingName}" added to shortlist!` : `"${selected.listingName}" removed from shortlist!`);
+            } catch (err) {
+                console.error("Failed to toggle favourite:", err);
+                alert("Failed to update shortlist. Please try again.");
+            }
+        }
+    });
+
+    //uses hmViewBookListingController to save  booking document in firestore
+    //closes modal and shows confirmation message
+    confirmBookingBtn.addEventListener("click", async () => {
+        if (!selectedService) return;
+
+        const userEmail = localStorage.getItem("loggedInUserEmail");
+        if (!userEmail) {
+            alert("Please login first to book a service.");
+            return;
+        }
+
+        const bookingData = {
+            listingName: selectedService.listingName,
+            categoryName: selectedService.serviceCategory,
+            price: selectedService.fee,
+            frequency: selectedService.listingFrequency,
+            cleaner: selectedService.createdBy,
+            details: selectedService.details
+        };
+
+        try {
+            const controller = new hmViewBookListingController();
+            await controller.createBooking(userEmail, selectedService.id, bookingData);
+            alert("Service booked successfully!");
+            bookingModal.style.display = "none";
+        } catch (err) {
+            console.error("Booking failed:", err);
+            alert("Failed to book service. Please try again.");
+        }
+    });
+
+    //gets value from filter dropdown
+    //uses hmSearchAllCSController to fetch services matching the filter
+    //displays the filtered services 
+    document.getElementById("searchBtn").addEventListener("click", async () => {
+        const filters = {
+            category: document.getElementById("categoryFilter").value,
+            status: document.getElementById("statusFilter").value,
+            priceRange: document.getElementById("priceFilter").value
+        };
+
+        const searchController = new hmSearchAllCSController();
+        const results = await searchController.fetchCleaningServices(filters);
+        page.displayServices(results);
+    });
+});
+</script>
+
+</body>
 </html>
