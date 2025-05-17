@@ -1,9 +1,9 @@
-import { HomeownersEntity } from "./homeownersEntity.js";
+import { homeownerEntity } from "./homeownersEntity.js";
 
 export class HMFavouritesCSController {
   constructor(userEmail) {
-    this.userEmail = userEmail;
-    this.entity = new HomeownersEntity();
+    this.userEmail = userEmail; // This is still useful for non-firebaseAuth methods
+    this.entity = new homeownerEntity();
   }
 
   async isServiceFavourited(serviceId) {
@@ -11,7 +11,7 @@ export class HMFavouritesCSController {
   }
 
   async addToFavourites(serviceData) {
-    return this.entity.addToFavourites(this.userEmail, serviceData);
+    return this.entity.addToFavourites(serviceData); // 🔥 Removed userEmail argument
   }
 
   async removeFromFavourites(serviceId) {
@@ -31,5 +31,9 @@ export class HMFavouritesCSController {
       await this.addToFavourites(serviceData);
       return true;
     }
+  }
+
+  async incrementShortlistCount(countData) {
+    return this.entity.incrementShortlistCount(countData);
   }
 }
