@@ -1,20 +1,48 @@
 import { homeownerEntity } from "./homeownersEntity.js";
 
+export class hmViewBookListingController {
 
-export class hmViewBookListingController{
+    async createBooking(serviceId, cleanerEmail, details) {
+        const userEmail = localStorage.getItem('loggedInUserEmail');
 
-    async createBooking(serviceId, cleanerEmail, userEmail, details) {
+        if (!userEmail || typeof userEmail !== 'string') {
+            console.error("User email not found or invalid. User might not be logged in.");
+            return false;
+        }
+
         const hmEntity = new homeownerEntity();
-        const created = hmEntity.createBooking(serviceId, cleanerEmail,userEmail, details);
+        const created = await hmEntity.createBooking(serviceId, cleanerEmail, userEmail, details);
         return created;
-      }
+    }
 
-    async getUserBookings(userEmail) {
-        // const userEmail = 'user@example.com'; // Use the actual user email from your authentication system
+    // Use this to add a service to shortlist/favourites
+  async createBookingShortlist(serviceId, cleanerEmail, userEmail, details) {
+    if (!userEmail || typeof userEmail !== 'string') {
+      console.error("User email not found or invalid. User might not be logged in.");
+      return false;
+    }
+
+    const hmEntity = new homeownerEntity();
+    try {
+      const created = await hmEntity.createBookingShortlist(serviceId, cleanerEmail, userEmail, details);
+      return created;
+    } catch (error) {
+      console.error("Shortlist creation error:", error);
+      return false;
+    }
+  }
+
+    async getUserBookings() {
+        const userEmail = localStorage.getItem('loggedInUserEmail');
+
+        if (!userEmail || typeof userEmail !== 'string') {
+            console.error("User email not found or invalid.");
+            return [];
+        }
+
         const hmEntity = new homeownerEntity();
-        const result = hmEntity.getUserBookings(userEmail);
+        const result = await hmEntity.getUserBookings(userEmail);
         return result;
     }
 
-    
 }
