@@ -1419,30 +1419,88 @@ import {getAuth,
 
 
 //Homeowner
+// Increment numOfShortlisted count
+async incrementNumOfShortlisted(shortlistData) {
+    const { category, listingName, cleaner } = shortlistData;
+
+    if (!category || !listingName || !cleaner) return;
+
+    // Use the same normalized listingId format
+    const listingId = listingName.toLowerCase().replace(/\s+/g, "_");
+
+    // Reference path same as your addCountView but for service listing document
+    const listingRef = doc(
+        this.db,
+        `csit314/AllServiceCategory/CleaningServiceData/${category}/serviceListings`,
+        listingId
+    );
+
+    try {
+        const listingSnap = await getDoc(listingRef);
+
+        if (!listingSnap.exists()) {
+            console.log("Listing does not exist.");
+            return;
+        }
+
+        const listingData = listingSnap.data();
+
+        if (listingData.createdBy !== cleaner) {
+            console.log("Cleaner mismatch.");
+            return;
+        }
+
+        const currentCount = listingData.numOfShortlisted || 0;
+
+        await updateDoc(listingRef, {
+            numOfShortlisted: currentCount + 1,
+        });
+
+        return; // nothing specific to return
+
+    } catch (error) {
+        console.error("Error incrementing numOfShortlisted:", error);
+    }
+}
+
+
+
+
+
+
+
 // Fetch all service listings from all categories
     async fetchAllCleaningServices() {
+    //root path where categories of cleaning services are stored in firestore
     const basePath = "csit314/AllServiceCategory/CleaningServiceData";
     const categoriesCol = collection(this.db, basePath);
+    //fetches are all doc in this categories collection || await is used cause is asynchronous
     const categoryDocs = await getDocs(categoriesCol);
 
     const allServices = [];
 
+    //code is in a loop 
     for (const categoryDoc of categoryDocs.docs) {
         const categoryName = categoryDoc.id;
+        //listingPath is constructed by appending "serviceListings" to the path of the category document
+        //points to a subcollection under each category that hols the actual service listings
         const listingsPath = `${basePath}/${categoryName}/serviceListings`;
+        //reference to the subcollection
         const listingsCol = collection(this.db, listingsPath);
+        //fetches all documents from this subcollection 
         const listingsSnap = await getDocs(listingsCol);
 
+        //fetches all documents from this subcollection (all individual service in the listing)
         listingsSnap.forEach(doc => {
-        allServices.push({
+        allServices.push({ //pushes an object into here
             id: doc.id,
             ...doc.data(),
-            serviceCategory: categoryName,
+            serviceCategory: categoryName, //new property is set to the current category name to keep track of which category the service belongs to
         });
         });
     }
 
-    return allServices; //array
+    return allServices; //loops thru all categories and listings and then the function returns it
     }
 
    
@@ -1450,33 +1508,60 @@ import {getAuth,
 
     // Fetch filtered cleaning services (Search)
     async fetchCleaningServices(filters) {
-        const { category, price, status } = filters;
-        const basePath = "csit314/AllServiceCategory/CleaningServiceData";
+        const { category, price, status } = filters; //takes an object filters 
+        //reads all service categeory doc from firestore
+        const basePath = "csit314/AllServiceCategory/CleaningServiceData"; 
         const categoriesCol = collection(this.db, basePath);
         const categoryDocs = await getDocs(categoriesCol);
 
+        //to collect all matching service listings across categories
         const allServices = [];
 
+        //loop through each category document fetched
+        //each category doc ID is stored as categoryName
         for (const categoryDoc of categoryDocs.docs) {
             const categoryName = categoryDoc.id;
 
+            //if the user specified a category filter:
+                //skips the loop iteration unless the category matches
+                //only the matching category's listings will be fetched
             if (category && category !== categoryName) continue;
 
+
+            //build the path to the subcollection serviceListings under the current category
+            //fetch all service listings docs inside this subcollection async
             const listingsPath = `${basePath}/${categoryName}/serviceListings`;
             const listingsCol = collection(this.db, listingsPath);
             const listingsSnap = await getDocs(listingsCol);
 
+
+            //for each service listing, retrieves its data as an object
             listingsSnap.forEach(doc => {
             const data = doc.data();
 
+
+            //filter provided:
+                //check if service lisitngs matches the filter status
+                //if doesnt match, skips the listing
             if (status && data.listStatus?.toLowerCase() !== status.toLowerCase()) return;
 
+
+            //if price filter is provieded
+                //spilt the string into mini and max price
+                //convert the string no. to actual no.
+                //convert the listing fee field to a no. if stored in a string
+                //skip listing when fee is not a valid no. or when fee is outside the price range
             if (price) {
                 const [min, max] = price.split("-").map(Number);
                 const fee = typeof data.fee === "number" ? data.fee : parseFloat(data.fee);
                 if (isNaN(fee) || fee < min || fee > max) return;
             }
 
+
+            //listings that pass all filters, add an object that contains
+                //firestore doc ID
+                //all fields in the service listings
+                //service category it belongs to
             allServices.push({
                 id: doc.id,
                 ...data,
@@ -1485,221 +1570,183 @@ import {getAuth,
             });
         }
 
-    return allServices; //array
-    }
-
-    
-
-    // NOT IN USE
-    // Increment shortlist count
-    async incrementShortlistCount(categoryName, serviceId) {
-        if (!categoryName || !serviceId) return;
-
-        const docRef = doc(this.db, `csit314/AllServiceCategory/CleaningServiceData/${categoryName}/serviceListings/${serviceId}`);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-            const current = docSnap.data().viewShortlisted || 0;
-            await updateDoc(docRef, { viewShortlisted: current + 1 });
-        }
-    }
-
-    //Create Booking
-    async createBooking(serviceId, cleanerEmail, userEmail, details) {
-        try {
-            
-            if (!userEmail) {
-                throw new Error("User email not found. User might not be logged in.");
-            }
-            const safeEmail = userEmail.replace(/[@.]/g, "_");
-
-
-            const userBookingPath = collection(
-                db,
-                "csit314",
-                "AllBookings",
-                "Bookings",
-                safeEmail,
-                "Bookings"
-            );
-
-            const bookingData = {
-                ...details,  // directly merge fields from 'details'
-                serviceId,
-                cleanerEmail,
-                createdAt: serverTimestamp(),
-            };
-
-            await addDoc(userBookingPath, bookingData);
-            return true; //boolean
-
-        } catch (error) {
-            console.error("Error creating booking:", error);
-            return false; //boolean
-        }
+    return allServices; //processing all categories and listings of matching service listings
     }
 
 
-    // 🔵 Fetch bookings for logged-in user (View booking)
-    async getUserBookings(userEmail) {
-        try {
-            if (!userEmail) {
-                throw new Error("User email not found. User might not be logged in.");
-            }
-    
-            const userId = userEmail.replace(/[@.]/g, "_");
-    
-            const userBookingsRef = collection(
-                db,
-                "csit314",
-                "AllBookings",
-                "Bookings",
-                userId,
-                "Bookings"
-            );
-    
-            const snapshot = await getDocs(userBookingsRef);
-            const bookings = [];
-    
-            snapshot.forEach(doc => {
-                const rawData = doc.data();
-                const id = doc.id;
-    
-                // Normalize all formats to flat object
-                let flatData = {};
-                if (rawData.details && rawData.details.details) {
-                    flatData = { ...rawData.details.details };
-                } else if (rawData.details) {
-                    flatData = { ...rawData.details };
-                } else {
-                    flatData = { ...rawData };
-                }
-    
-                bookings.push({
-                    id,
-                    ...flatData,
-                    serviceId: rawData.serviceId || null,
-                    cleanerEmail: rawData.cleanerEmail || null,
-                    createdAt: rawData.createdAt || null,
-                });
-            });
-    
-            return bookings; //array of booking objects 
-    
-        } catch (error) {
-            console.error("Error fetching user bookings:", error);
-            throw error;
-        }
-    }
-    
-    //Search bookings
-    async searchBookings(userEmail, category) {
-        try {
-        if (!userEmail) throw new Error("User email not found.");
-        const userId = userEmail.replace(/[@.]/g, "_");
-    
-        const userBookingsRef = collection(
-            db,
-            "csit314",
-            "AllBookings",
-            "Bookings",
-            userId,
-            "Bookings"
-        );
-    
-        const q = query(userBookingsRef, where("categoryName", "==", category));
-        const snapshot = await getDocs(q);
 
-        const bookingList = [];
-        snapshot.forEach(doc => {
-            bookingList.push(doc.data());
-        });
+
+
     
-        return bookingList; //array
-        } catch (error) {
-        console.error("Error filtering bookings by category:", error);
-        throw error;
-        }
+   // Create a new booking
+
+async createBooking(serviceId, cleanerEmail, userEmail, details) {
+  try {
+    //ensures that the booking is tied to a valid userEmail
+    //throws an error if the email is missing or not a string
+    if (!userEmail || typeof userEmail !== 'string') {
+      throw new Error("User email not found or invalid. User might not be logged in or email is not a string.");
     }
+
+    // Sanitize email by replacing '@' and '.' with '_'
+    const safeEmail = userEmail.replace(/[@.]/g, "_");
+
+    //defines the path, with own subcollection 
+    const userBookingPath = collection(
+      db,
+      "csit314",
+      "AllBookings",
+      "Bookings",
+      safeEmail,
+      "Bookings"
+    );
+
+    //combines all booking data
+    const bookingData = {
+      cleanerEmail,
+      ...details,  // Spread details directly into the main object
+      serviceId,
+      createdAt: serverTimestamp(),
+    };
+
+    //adds a new doc to the homeowner's booking subcollection, firestore auto-gen the doc ID
+    await addDoc(userBookingPath, bookingData);
+    return true;
+
+    //if an error occurs, log it and retun false
+  } catch (error) {
+    console.error("Error creating booking:", error);
+    return false;
+  }
+}
+
+//  Fetch bookings for logged-in user (View booking)
+async getUserBookings(userEmail) {
+  try {
+    //checks if the userEmail is provided
+    if (!userEmail) {
+      throw new Error("User email not found. User might not be logged in.");
+    }
+
+    //names cannot contain @ or . so it uses underscore
+    const userId = userEmail.replace(/[@.]/g, "_");
+
+    //constructs a reference to the user's personal bookings subcollection
+    const userBookingsRef = collection(
+      db,
+      "csit314",
+      "AllBookings",
+      "Bookings",
+      userId,
+      "Bookings"
+    );
+
+    //async retrieves all docs under the user's bookings subcollection
+    const snapshot = await getDocs(userBookingsRef);
+    return snapshot.docs.map(doc => ({ //what each element includes
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    //catches any errors
+    //logs them and rethrows the error to let the caller handle
+  } catch (error) {
+    console.error("Error fetching user bookings:", error);
+    throw error;
+  }
+}
+
+// Search bookings by category (with empty category = no filter)
+
+async  searchBookings(userEmail, category) {
+  try {
+    //ensures the user is logged in and their email exists
+    if (!userEmail) throw new Error("User email not found.");
+
+    const userId = userEmail.replace(/[@.]/g, "_");
+
+    //points to the firestore path
+    const userBookingsRef = collection(
+      db,
+      "csit314",
+      "AllBookings",
+      "Bookings",
+      userId,
+      "Bookings"
+    );
+
+    let q;
+    //if category is provided, it applies a filter,
+    //if its empty or not provided, it fetches all bookings for the user without filtering
+    if (category && category.trim() !== "") {
+      q = query(userBookingsRef, where("categoryName", "==", category));
+    } else {
+      q = query(userBookingsRef);
+    }
+
+    //converts each doc to a plain object
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+
+    // catches and logs any error during the fetch or query
+  } catch (error) {
+    console.error("Error filtering bookings by category:", error);
+    throw error;
+  }
+}
+
 
 
 
 // Add a service to favourites (shortlist)
  // Add to favourites
- async addToFavourites(serviceData) {
+async addToFavourites(serviceData) {
   try {
-    // Get currently logged-in user's email from localStorage
+
+    //retrieves the logged-in user's email from local storage
     const userEmail = localStorage.getItem("loggedInUserEmail");
+
+    //prevents unauthenticated users from using this function
+    //ensures the feature is restricted to homeowners
     if (!userEmail) {
-      throw new Error("User email not found. User might not be logged in.");
+      throw new Error("Only homeowners can add to favourites. Please ensure a homeowner is logged in.");
     }
 
-    // Replace dots and @ symbols to form a valid Firestore path segment
+    //ensures serviceData is an object
+    //contains expected info like service name, category
+    if (typeof serviceData !== "object" || serviceData === null || Array.isArray(serviceData)) {
+      throw new Error("Invalid serviceData. Expected a non-null object.");
+    }
+
+    
     const userId = userEmail.replace(/[@.]/g, "_");
+    const favouritesRef = collection(db, "csit314", "AllBookings", "Shortlisted", userId, "Shortlisted");
 
-    // Reference to the Firestore collection for this user's shortlisted services
-    const favouritesRef = collection(
-      db,
-      "csit314",
-      "AllBookings",
-      "Shortlisted",
-      userId,
-      "Shortlisted"
-    );
-
-    // Add the full service object to the user's shortlisted collection
+    //creates a new doc with serviceData in the user's shortlisted subcollection
     await addDoc(favouritesRef, serviceData);
-
     console.log("Service added to favourites!");
   } catch (error) {
-    console.error("Error adding to favourites:", error);
-    throw error; // Re-throw for upstream handling if needed
-  }
-}
-
-//removing a specific cleaning services from a user's fav
-async removeFromFavourites(userEmail, serviceId) {
-    //check to see if useremail and serviceid valid
-  try {
-    if (!userEmail || typeof userEmail !== "string") {
-      throw new Error("User not authenticated or invalid userEmail");
-    }
-    if (!serviceId) {
-      throw new Error("Invalid serviceId");
-    }
-
-    //build a reference to the user's shortlisted collection in firestore
-    const favRef = collection(db, `csit314/AllBookings/Shortlisted/${userEmail}/Shortlisted`);
-    const serviceQuery = query(favRef, where("serviceId", "==", serviceId));
-    const querySnapshot = await getDocs(serviceQuery);
-
-    if (querySnapshot.empty) {
-      throw new Error("Service not found in favourites");
-    }
-
-    //if found, deletes all matching documents
-    const deletionPromises = querySnapshot.docs.map((doc) => deleteDoc(doc.ref));
-    await Promise.all(deletionPromises);
-  } catch (error) {
-    console.error("Error removing from favourites:", error);
+    console.error("Error adding to favourites:", error.message);
     throw error;
   }
 }
 
-//check if a specific cleaning service is already a favourited by the user
+
+// Check if service is favourited
 async isServiceFavourited(userEmail, serviceId) {
-    //validate email and service
   try {
     if (!userEmail || typeof userEmail !== "string") return false;
     if (!serviceId) return false;
 
-    const favRef = collection(db, `csit314/AllBookings/Shortlisted/${userEmail}/Shortlisted`);
-
-    //queries for documents where "serviceid" matches the target serviceID
+    const userId = userEmail.replace(/[@.]/g, "_");
+    const favRef = collection(db, `csit314/AllBookings/Shortlisted/${userId}/Shortlisted`);
     const checkQuery = query(favRef, where("serviceId", "==", serviceId));
     const snapshot = await getDocs(checkQuery);
 
-    //returns true if any document is found
     return !snapshot.empty;
   } catch (error) {
     console.error("Error checking favourite status:", error);
@@ -1707,27 +1754,68 @@ async isServiceFavourited(userEmail, serviceId) {
   }
 }
 
-//retrieves all favourited services for a specific user
+// Get all favourites
 async getFavourites(userEmail) {
-    try {
-       
-      const userId = userEmail.split('@')[0]; // e.g., HM1 from HM1@gmail.com
-      const shortlistRef = collection(db, `csit314/AllBookings/Shortlisted/${userId}/Shortlisted`);
-      const snapshot = await getDocs(shortlistRef);
+  try {
+    const userId = userEmail.replace(/[@.]/g, "_");
+    const shortlistRef = collection(db, `csit314/AllBookings/Shortlisted/${userId}/Shortlisted`);
+    const snapshot = await getDocs(shortlistRef);
 
-      //fetches all documents in that collection
-      const services = [];
-      snapshot.forEach(doc => {
-        services.push(doc.data());
+    const services = [];
+    snapshot.forEach(doc => {
+      services.push({
+        id: doc.id,
+        ...doc.data()
       });
+    });
 
-      //returns the document
-      return services;
-    } catch (error) {
-      console.error("Error fetching favourites:", error);
-      return [];
-    }
+    console.log("Fetched favourites:", services);
+    return services;
+  } catch (error) {
+    console.error("Error fetching favourites:", error);
+    return [];
   }
+}
+
+//creates a booking for shortlisted service
+ async createBookingShortlist(serviceId, cleanerEmail, userEmail, details) {
+    try {
+        if (!userEmail) throw new Error("User email is required for booking.");
+        if (!serviceId) throw new Error("Service ID is required for booking.");
+
+        const userId = userEmail.replace(/[@.]/g, "_");
+
+        //creates a new doc with the booking data in the user's bookings collection
+        const bookingsRef = collection(
+            db,
+            "csit314",
+            "AllBookings",
+            "Bookings",
+            userId,
+            "Bookings"
+        );
+
+        // Transform the booking data to match your desired structure
+        const bookingData = {
+            cleanerEmail,
+                ...details,  // Spread details directly into the main object
+            serviceId,
+            createdAt: serverTimestamp(),
+        };
+
+        await addDoc(bookingsRef, bookingData);
+
+        console.log("Booking created successfully!");
+        return true;
+    } catch (error) {
+        console.error("Booking creation failed:", error);
+        throw error;
+    }
+}
+
+
+
+
 }
 
 
