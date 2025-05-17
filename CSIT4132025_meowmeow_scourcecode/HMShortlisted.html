@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Homeowners Shortlisted Cleaning Services</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="homeowners-page">
+  <div class="homeownersHeaderBanner">
+    <a href="homeownersPage.html"><img src="C2Ccleaningservicelogo.png" alt="logo" class="logo-img"/></a>
+    <a href="hmViewAllListing.html" class="services-menu">All Cleaning Services</a>
+    <a href="HMViewBKHistory.html" class="services-menu">Booking History</a>
+    <a href="HMShortlisted.html" class="services-menu active">Favourites</a>
+    <a href="loginPage.html" class="logoutBtn" id="logout">Logout</a>
+  </div>
+
+  <main>
+    <div class="view-CS">
+      <div class="CS">
+        <select id="categoryFilter">
+          <!--dropdown for categories-->
+          <option value="">All Categories</option>
+          <option value="Deep Cleaning">Deep Cleaning</option>
+          <option value="General House Cleaning">General House Cleaning</option>
+          <option value="Move In or Out Cleaning">Move In or Out Cleaning</option>
+          <option value="Office & Commercial Cleaning">Office & Commercial Cleaning</option>
+          <option value="Pet-Friendly Cleaning">Pet-Friendly Cleaning</option>
+          <option value="Post-Construction Cleaning">Post-Construction Cleaning</option>
+          <option value="Specialized Cleaning">Specialized Cleaning</option>
+        </select>
+
+        <select id="statusFilter">
+          <!--dropdown for status-->
+          <option value="">All Status</option>
+          <option value="available">Available</option>
+          <option value="unavailable">Unavailable</option>
+        </select>
+
+        <select id="priceFilter">
+          <!--dropdown for price range-->
+          <option value="">All Prices</option>
+          <option value="0-50">$0 - $50</option>
+          <option value="51-100">$51 - $100</option>
+          <option value="101-200">$101 - $200</option>
+          <option value="201-500">$201 - $500</option>
+        </select>
+
+        <button id="searchBtn">Search</button>
+      </div>
+    </div>
+
+    <div id="favourites" class="services-container"></div>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="modal" style="display:none;">
+      <div class="modal-content">
+        <h2>Confirm Booking</h2>
+        <p id="modalDetails"></p>
+        <button id="confirmBookingBtn" class="confirm-btn">Confirm Booking</button>
+        <button id="cancelBookingBtn" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { homeownerEntity } from "./js/homeownersEntity.js";
+    import { hmViewBookListingController } from './js/hmViewBookListingController.js';
+
+    const container = document.getElementById('favourites');
+    const modal = document.getElementById('bookingModal');
+    const modalDetails = document.getElementById('modalDetails');
+    const confirmBookingBtn = document.getElementById('confirmBookingBtn');
+    const cancelBookingBtn = document.getElementById('cancelBookingBtn');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const priceFilter = document.getElementById('priceFilter');
+    const searchBtn = document.getElementById('searchBtn');
+
+
+    
+    let selectedService = null; //keeps track of which service the user is booking
+    let allFavourites = []; //stores all the users shortlisted services fetched from firestore
+
+    // Load favourites from Firestore for logged-in user
+    async function loadFavourites() {
+      const userEmail = localStorage.getItem('loggedInUserEmail');
+      if (!userEmail) {
+        container.innerHTML = "<p>Please log in to view your shortlisted services.</p>";
+        return; //calls to show on the page
+      }
+
+
+      //calls the entity class to retrieve the list of shortlisted services from firestore
+      //normalizes the data into a consistent object formate and store it in allFavourites
+      try {
+        const homeowners = new homeownerEntity();
+        const favourites = await homeowners.getFavourites(userEmail);
+
+        allFavourites = favourites.map(fav => ({
+          id: fav.id,
+          serviceId: fav.id,
+          listingName: fav.listingName,
+          price: fav.fee || fav.price || 'N/A',
+          cleanerEmail: fav.createdBy || fav.cleanerEmail || 'N/A',
+          details: fav.details || '',
+          frequency: fav.listingFrequency || 'once',
+          categoryName: fav.serviceCategory || fav.categoryName || 'N/A',
+          status: fav.status || 'available'  // If you want to filter by availability later
+        }));
+
+        displayShortlistedServices();
+      } catch (error) {
+        console.error("Error loading favourites:", error);
+        container.innerHTML = "<p>Failed to load shortlisted services. Please try again later.</p>";
+      }
+    }
+
+    // Render shortlist cards/buttons
+    //includes a "book now" button with a data-index to identify which card was clicked
+    function displayShortlistedServices(filteredList = null) {
+      const list = filteredList || allFavourites;
+      if (!list.length) {
+        container.innerHTML = "<p>You have no shortlisted services.</p>";
+        return;
+      }
+
+      container.innerHTML = list.map((service, index) => `
+        <div class="service-item">
+          <h3>${service.listingName}</h3>
+          <p><strong>Category:</strong> ${service.categoryName}</p>
+          <p><strong>Cleaner:</strong> ${service.cleanerEmail}</p>
+          <p><strong>Price:</strong> $${service.price}</p>
+          <p><strong>Details:</strong> ${service.details}</p>
+          <button class="book-btn" data-index="${index}">Book Now</button>
+        </div>
+      `).join('');
+    }
+
+    // Apply filtering by category, price, and status
+    //reads the current values of the filter dropdowns
+    //displays only rhe filtered services
+    function applyFilters() {
+      const category = categoryFilter.value;
+      const status = statusFilter.value;
+      const priceRange = priceFilter.value;
+
+      const filtered = allFavourites.filter(service => {
+        if (category && service.categoryName !== category) return false;
+        if (status && service.status !== status) return false;
+
+        if (priceRange) {
+          const [min, max] = priceRange.split('-').map(Number);
+          const price = Number(service.price);
+          if (isNaN(price) || price < min || price > max) return false;
+        }
+
+        return true;
+      });
+
+      displayShortlistedServices(filtered);
+    }
+
+    // Click event delegation to open booking modal
+    //uses data-index to retrieve the selected services
+    //fills modal with the selected service's info
+    //shows the booking modal
+    container.addEventListener('click', e => {
+      if (!e.target.classList.contains('book-btn')) return;
+
+      const index = e.target.dataset.index;
+      selectedService = allFavourites[index];
+
+      modalDetails.textContent = `You are about to book: ${selectedService.listingName} (${selectedService.categoryName}) for $${selectedService.price}`;
+      modal.style.display = 'block';
+    });
+
+    // Confirm booking button logic
+    //retrieves the logged-in user's email
+    //calls the shortlist via the controller tos store booking in firestore
+    //redirects to the booking history page if successful
+    confirmBookingBtn.addEventListener('click', async () => {
+      const userEmail = localStorage.getItem('loggedInUserEmail');
+      if (!selectedService || !userEmail) return;
+
+      try {
+        const bookingController = new hmViewBookListingController();
+        const success = await bookingController.createBookingShortlist(
+          selectedService.serviceId,
+          selectedService.cleanerEmail,
+          userEmail,
+          selectedService
+        );
+
+        if (success) {
+          alert("Booking confirmed!");
+          modal.style.display = 'none';
+          // Redirect to Booking History page to show updated bookings
+          window.location.href = 'HMViewBKHistory.html';
+        } else {
+          throw new Error("Booking not successful.");
+        }
+      } catch (error) {
+        console.error("Booking error:", error);
+        alert("Booking failed. Try again later.");
+      }
+    });
+
+    // Cancel booking modal button
+    cancelBookingBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    // Search button triggers filters
+    searchBtn.addEventListener('click', applyFilters);
+
+    // Load favourites on page load
+    window.addEventListener('DOMContentLoaded', loadFavourites);
+  </script>
+</body>
+</html>
