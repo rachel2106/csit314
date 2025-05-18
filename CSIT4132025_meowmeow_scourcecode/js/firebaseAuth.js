@@ -913,6 +913,77 @@ import {getAuth,
     }
 
     // Cleaner Functions
+    // View Counts
+    async viewCounts(cleanerEmail) {
+        try {
+            const categoriesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
+            const categorySnapshots = await getDocs(categoriesRef);
+    
+            const cleanerViewCounts = [];
+    
+            for (const categoryDoc of categorySnapshots.docs) {
+                const categoryId = categoryDoc.id;
+    
+                const listingsRef = collection(
+                    db,
+                    `csit314/AllServiceCategory/CleaningServiceData/${categoryId}/serviceListings` // 🔁 Fixed here
+                );
+                const listingSnapshots = await getDocs(listingsRef);
+    
+                listingSnapshots.forEach(listingDoc => {
+                    const data = listingDoc.data();
+                    if (data.createdBy === cleanerEmail) {
+                      cleanerViewCounts.push({
+                        listingId: listingDoc.id,
+                        viewCount: data.viewCount || 0
+                      });
+                    }
+                  });
+            }
+    
+            return cleanerViewCounts; //array
+    
+        } catch (error) {
+            console.error("Error fetching listings by cleaner email:", error);
+            return [];
+        }
+    }
+
+    //Shortlisted Counts
+    async shortlistedCounts(cleanerEmail) {
+        try {
+            const categoriesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
+            const categorySnapshots = await getDocs(categoriesRef);
+    
+            const cleanerShortlistedCounts = [];
+    
+            for (const categoryDoc of categorySnapshots.docs) {
+                const categoryId = categoryDoc.id;
+    
+                const listingsRef = collection(
+                    db,
+                    `csit314/AllServiceCategory/CleaningServiceData/${categoryId}/serviceListings` // 🔁 Fixed here
+                );
+                const listingSnapshots = await getDocs(listingsRef);
+    
+                listingSnapshots.forEach(listingDoc => {
+                    const data = listingDoc.data();
+                    if (data.createdBy === cleanerEmail) {
+                        cleanerShortlistedCounts.push({
+                        listingId: listingDoc.id,
+                        viewShortlisted: data.viewShortlisted || 0
+                      });
+                    }
+                  });
+            }
+    
+            return cleanerShortlistedCounts; //array
+    
+        } catch (error) {
+            console.error("Error fetching listings by cleaner email:", error);
+            return [];
+        }
+    }
     // Create a new service listing (used by Cleaner)
     async createServiceListing(listingData) {
         try {
@@ -980,10 +1051,6 @@ import {getAuth,
             // Update the category document
             await updateDoc(categoryDocRef, updateData);
 
-
-            // console.log("Service listing successfully created!");
-
-
             return {
                 status: "success", //string
                 message: "Listing created!" //string
@@ -998,78 +1065,7 @@ import {getAuth,
         }
     }
 
-    // View Counts
-    async viewCounts(cleanerEmail) {
-        try {
-            const categoriesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
-            const categorySnapshots = await getDocs(categoriesRef);
     
-            const cleanerViewCounts = [];
-    
-            for (const categoryDoc of categorySnapshots.docs) {
-                const categoryId = categoryDoc.id;
-    
-                const listingsRef = collection(
-                    db,
-                    `csit314/AllServiceCategory/CleaningServiceData/${categoryId}/serviceListings` // 🔁 Fixed here
-                );
-                const listingSnapshots = await getDocs(listingsRef);
-    
-                listingSnapshots.forEach(listingDoc => {
-                    const data = listingDoc.data();
-                    if (data.createdBy === cleanerEmail) {
-                      cleanerViewCounts.push({
-                        listingId: listingDoc.id,
-                        viewCount: data.viewCount || 0
-                      });
-                    }
-                  });
-            }
-    
-            return cleanerViewCounts; //array
-    
-        } catch (error) {
-            console.error("Error fetching listings by cleaner email:", error);
-            return [];
-        }
-    }
-
-    //Shortlisted Counts
-
-    async shortlistedCounts(cleanerEmail) {
-        try {
-            const categoriesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
-            const categorySnapshots = await getDocs(categoriesRef);
-    
-            const cleanerShortlistedCounts = [];
-    
-            for (const categoryDoc of categorySnapshots.docs) {
-                const categoryId = categoryDoc.id;
-    
-                const listingsRef = collection(
-                    db,
-                    `csit314/AllServiceCategory/CleaningServiceData/${categoryId}/serviceListings` // 🔁 Fixed here
-                );
-                const listingSnapshots = await getDocs(listingsRef);
-    
-                listingSnapshots.forEach(listingDoc => {
-                    const data = listingDoc.data();
-                    if (data.createdBy === cleanerEmail) {
-                        cleanerShortlistedCounts.push({
-                        listingId: listingDoc.id,
-                        viewShortlisted: data.viewShortlisted || 0
-                      });
-                    }
-                  });
-            }
-    
-            return cleanerShortlistedCounts; //array
-    
-        } catch (error) {
-            console.error("Error fetching listings by cleaner email:", error);
-            return [];
-        }
-    }
 
     // View all service categories
     async getListingList(cleanerEmail) {
@@ -1107,42 +1103,6 @@ import {getAuth,
             return [];
         }
     }
-    // // View all service categories
-    // async getListingDetails(cleanerEmail, listing) {
-    //     try {
-    //         const categoriesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
-    //         const categorySnapshots = await getDocs(categoriesRef);
-    
-    //         const cleanerListings = [];
-    
-    //         for (const categoryDoc of categorySnapshots.docs) {
-    //             const categoryId = categoryDoc.id;
-    
-    //             const listingsRef = collection(
-    //                 db,
-    //                 `csit314/AllServiceCategory/CleaningServiceData/${categoryId}/serviceListings` // 🔁 Fixed here
-    //             );
-    //             const listingSnapshots = await getDocs(listingsRef);
-    
-    //             listingSnapshots.forEach(listingDoc => {
-    //                 const data = listingDoc.data();
-    //                 if (data.createdBy === cleanerEmail && data.listingName === listing) {
-    //                     cleanerListings.push({
-    //                         id: listingDoc.id,
-    //                         category: categoryId,
-    //                         ...data
-    //                     });
-    //                 }
-    //             });
-    //         }
-    
-    //         return cleanerListings; //array
-    
-    //     } catch (error) {
-    //         console.error("Error fetching listings by cleaner email:", error);
-    //         return [];
-    //     }
-    // }
 
     async updateServiceListing(updatedListingData){ 
         const {listingId, serviceCategory, listingName, listingFrequency, fee,  details, listStatus, createdBy } = updatedListingData;
@@ -1155,27 +1115,28 @@ import {getAuth,
         console.log("status", listStatus);
         console.log("details:", details);
 
+        //ALTERNATE FLOW
         if (!listingId || !serviceCategory || !listingName || !listingFrequency || !fee || !listStatus || !details) {
-            console.error("Error: Missing required fields for user update."); 
+            // console.error("Error: Missing required fields for user update."); 
             return {success: false, message: "Missing required fields!"};
 
         }
 
         try{
-            console.log("Updating service data in Firestore:", updatedListingData);
+            // console.log("Updating service data in Firestore:", updatedListingData);
 
             // Reference to the Firestore document for the user
             const listingRef = doc(this.db, `csit314/AllServiceCategory/CleaningServiceData/${serviceCategory}/serviceListings`, listingId);
             const listingSnap = await getDoc(listingRef);
 
-            if (!listingSnap.exists()) {
-                return { success: false, message: "Listing not found." };
-            }
+            // if (!listingSnap.exists()) {
+            //     return { success: false, message: "Listing not found." };
+            // }
 
             const listingData = listingSnap.data();
-            if (listingData.createdBy !== createdBy) {
-                return { success: false, message: "Unauthorized: You can only update your own listings." };
-            }
+            // if (listingData.createdBy !== createdBy) {
+            //     return { success: false, message: "Unauthorized: You can only update your own listings." };
+            // }
             // Update only Firestore data (not Firebase Authentication)
 
            
