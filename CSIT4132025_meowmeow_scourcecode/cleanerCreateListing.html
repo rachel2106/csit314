@@ -113,7 +113,7 @@
                     alert(result.message);
                     window.location.href = "cleanerPage.html";
                 } else {
-                    console.error("Creation failed:", result);
+                    // console.error("Creation failed:", result);
                     alert("Error: " + (result.message || "Unknown error"));
                 }
 
@@ -134,14 +134,15 @@
             const currentUserEmail = localStorage.getItem("loggedInUserEmail");
 
 
-            if (!listingName || !listingCategory || !frequency|| !listingFee || !listingStatus ||!listingDetails ) {
-                alert("Please fill in all fields.");
-                return;
-            }
+            // if (!listingName || !listingCategory || !frequency|| !listingFee || !listingStatus ||!listingDetails ) {
+            //     alert("Please fill in all fields.");
+            //     return;
+            // }
 
             // Proceed to check user and create the category
             
-            await createServiceListing(listingName, listingCategory, frequency, listingFee, listingStatus,  listingDetails, currentUserEmail);
+            const result = await createServiceListing(listingName, listingCategory, frequency, listingFee, listingStatus,  listingDetails, currentUserEmail);
+            
 
         });
 

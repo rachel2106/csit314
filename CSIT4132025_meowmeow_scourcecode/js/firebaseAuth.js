@@ -157,12 +157,12 @@ import {getAuth,
             const validTypes = ["userAdmin", "platformManager", "cleaners", "homeowners"];
             const userTypeFormatted = newUser.userType.trim(); // Do not uppercase it
     
-            if (!validTypes.includes(userTypeFormatted)) {
-                return {
-                    status: "error",
-                    message: `Invalid userType provided: ${newUser.userType}`
-                };
-            }
+            // if (!validTypes.includes(userTypeFormatted)) {
+            //     return {
+            //         status: "error",
+            //         message: `Invalid userType provided: ${newUser.userType}`
+            //     };
+            // }
     
             // Check if user already exists in Firestore based on email
             const userCollectionRef = collection(this.db, "csit314/AllUsers/UserData");
@@ -377,11 +377,24 @@ import {getAuth,
         try {
             const {userType, description} = profileData;
 
+            const fixProfile = [ "cleaners", "homeowners", "useradmin", "platformmanager" ]
+            const cleanedProfile = userType.trim().toLowerCase();
+            console.log(cleanedProfile);
+
+
             // Validate profile
             if (!userType || typeof userType !== "string" || userType.trim() === "") {
                 return {
                     status: "error", //string
                     message: "Invalid or missing profile" //string
+                };
+            }
+
+            // ALTERNATE FLOW
+            if (fixProfile.includes(cleanedProfile)) {
+                return {
+                    status: "error",
+                    message: `Profile Existed`
                 };
             }
 
@@ -521,241 +534,6 @@ import {getAuth,
         return message;
     }
     
-    
-
-        // // Update user account by admin
-        // async updateUserAcc(updatedUser) {
-        //     const { originalEmail, firstName, lastName, newEmail, password } = updatedUser;
-        
-        //     // Validate that the required fields are provided
-        //     if (!originalEmail || !firstName || !lastName || !newEmail || !password) {
-        //         console.error("Error: Missing required fields for user update.");
-        //         return { success: false, message: "Missing required fields." };
-        //     }
-        
-        //     try {
-        //         console.log("Updating user data in Firestore:", updatedUser);
-        
-        //         // Reference to the Firestore document for the user
-        //         const userRef = doc(this.db, "csit314/AllUsers/UserData", originalEmail);
-                
-        //         // Update only Firestore data (not Firebase Authentication)
-        //         await updateDoc(userRef, {
-        //             firstName: firstName,
-        //             lastName: lastName,
-        //             email: newEmail,
-        //             password: password, // You may want to hash the password if storing it in Firestore
-        //         });
-        
-        //         console.log("User data successfully updated in Firestore.");
-        
-        //         return { success: true, message: "User updated successfully in Firestore." };
-        //     } catch (error) {
-        //         console.error("Error updating Firestore user:", error);
-        //         return { success: false, message: `Error updating Firestore user: ${error.message}` };
-        //     }
-        // }
-
-
-
-         
-        
-
-
-        
-    
-
-        // //search by usertype for profile admin
-        // async searchProfileByUserType(userType) {
-        //     try {
-        //         const cleanedUserType = userType.trim().toLowerCase();
-        //         const qx = query(
-        //             collection(db, "CSIT314/AllUsers/UserData"), // Correct Firestore path
-        //             where("userType", "==", cleanedUserType) // Search by userType
-        //         );
-        
-        //         const querySnapshot = await getDocs(qx);
-        
-        //         if (querySnapshot.empty) {
-        //             console.warn("No profiles found for userType:", cleanedUserType);
-        //             return [];
-        //         }
-        
-        //         return querySnapshot.docs.map(doc => doc.data()); // Return profile data
-        //     } catch (err) {
-        //         console.error("Firestore error:", err);
-        //         throw new Error("Error searching Firestore by userType: " + err.message);
-        //     }
-        // }
-
-        
-        
-
-        //  async suspendProfile(userType){
-        //     let message = "";
-        //     try{
-        //         // Get user document based on email
-        //         const userRef = doc(this.db, "csit314/AllUsers/UserData", userType);
-                
-                
-        //         const usersCollectionRef = collection(this.db, 'csit314/AllUsers/UserData');
-        //         const q = query(usersCollectionRef, where('userType', '==', userType));
-        //         const querySnapshot = await getDocs(q);
-
-        //         // if (querySnapshot.empty) {
-        //         //     throw new Error("No user found with this email.");
-        //         // }
-
-        //         const userDoc = querySnapshot.docs[0];
-        //         const userData = userDoc.data();
-
-        //         if (!querySnapshot.empty) {
-        //             querySnapshot.forEach(async (docSnapshot) => {
-        //                 if( userData.profileStatus === "Active"){
-        //                     await updateDoc(userRef, {
-        //                         profileStatus: "Inactive"
-        //                     });
-        //                     message = "suspended";
-        //                 }else{
-        //                     await updateDoc(userRef, {
-        //                         profileStatus: "Active"
-        //                     });
-        //                     message = "Unsuspended";
-        //                 }
-        //             });
-        //         }
-
-                
-        //         return message;
-        //     }catch (err){
-        //         message = "Error to suspend";
-        //         return message;
-        //     }
-        // }
-
-
-        // //admin deleting user in admin page
-        // async deleteUser(userEmail) {
-        //     try {
-        //         // Get user document based on email
-        //         const usersCollectionRef = collection(this.db, 'csit314/AllUsers/UserData');
-        //         const q = query(usersCollectionRef, where('email', '==', userEmail));
-        //         const querySnapshot = await getDocs(q);
-        
-        //         if (querySnapshot.empty) {
-        //             throw new Error("No user found with this email.");
-        //         }
-        
-        //         // Correct way: use for...of to await each deleteDoc
-        //         for (const docSnap of querySnapshot.docs) {
-        //             await deleteDoc(docSnap.ref);
-        //             console.log(`Deleted Firestore document for email: ${userEmail}`);
-        //         }
-        
-        //         return { success: true };
-        //     } catch (error) {
-        //         console.error("Error deleting Firestore user:", error);
-        //         throw error;
-        //     }
-        // }
-
-
-        
-        // // Create new profile in Firestore
-        // async createNewProfile(newUser) {
-        //     try {
-        //         // Define valid user types
-        //         const validTypes = ["userAdmin", "platformManager", "cleaners", "homeowners"];
-        //         const userTypeFormatted = newUser.userType.trim().toLowerCase(); // Ensure lowercase type
-
-        //         // Check if the userType is valid
-        //         if (!validTypes.includes(userTypeFormatted)) {
-        //             return {
-        //                 status: "error",
-        //                 message: `Invalid userType provided: ${newUser.userType}`
-        //             };
-        //         }
-
-        //         // Check if user already exists in Firestore based on email
-        //         const userCollectionRef = collection(this.db, "csit314/AllUsers/UserData");
-        //         const q = query(userCollectionRef, where("email", "==", newUser.userEmail));
-        //         const querySnapshot = await getDocs(q);
-
-        //         // If user already exists, return an error
-        //         if (!querySnapshot.empty) {
-        //             return {
-        //                 status: "error",
-        //                 message: "A user with this email already exists."
-        //             };
-        //         }
-
-        //         // If email doesn't exist, create the user profile in Firestore
-        //         const userDocRef = doc(userCollectionRef, newUser.userEmail);
-        //         await setDoc(userDocRef, {
-        //             firstName: newUser.firstName,
-        //             lastName: newUser.lastName,
-        //             email: newUser.userEmail,
-        //             password: newUser.userPass, // Consider hashing passwords in production
-        //             userType: userTypeFormatted,
-        //             userStatus: "Active"
-        //         });
-
-        //         return {
-        //             status: "success",
-        //             message: "Profile created successfully",
-        //             userEmail: newUser.userEmail
-        //         };
-        //     } catch (error) {
-        //         console.error("Error creating new profile in Firestore:", error);
-        //         return {
-        //             status: "error",
-        //             message: error.message
-        //         };
-        //     }
-        // }
-
-        
-
-        // // inside Firebase class
-        // async updateUserAcc(updatedUser) {
-        //     const { originalEmail, firstName, lastName, newEmail, password } = updatedUser;
-        
-        //     // Validate that the required fields are provided
-        //     if (!originalEmail || !firstName || !lastName || !newEmail || !password) {
-        //         console.error("Error: Missing required fields for user update.");
-        //         return { success: false, message: "Missing required fields." };
-        //     }
-        
-        //     try {
-        //         console.log("Updating user data in Firestore:", updatedUser);
-        
-        //         // Reference to the Firestore document for the user
-        //         const userRef = doc(this.db, "csit314/AllUsers/UserData", originalEmail);
-                
-        //         // Update only Firestore data (not Firebase Authentication)
-        //         await updateDoc(userRef, {
-        //             firstName: firstName,
-        //             lastName: lastName,
-        //             email: newEmail,
-        //             password: password, // You may want to hash the password if storing it in Firestore
-        //         });
-        
-        //         console.log("User data successfully updated in Firestore.");  
-        
-        //         // Refresh the page after the update
-        //         window.location.reload();
-        
-        //         return { success: true, message: "User updated successfully in Firestore." };
-        //     } catch (error) {
-        //         console.error("Error updating Firestore user:", error);
-        //         return { success: false, message: `Error updating Firestore user: ${error.message}` };
-        //     }
-        // }
-        
-
-
-
-
     // Platform Manager Functions
     // Generate Report Daily, Weekly, Monthly
     async getDailyReport (dailyData){
@@ -1047,14 +825,14 @@ import {getAuth,
         console.log("serviceCategory:", serviceCategory);
         console.log("description:", description);
 
-        if (!categoryId || !serviceCategory || !description) {
-            console.error("Error: Missing required fields for user update.");
-            return {success: false, message: "Missing required fields!"};
-
-        }
+        // // ALTERNATE FLOW
+        // if (!categoryId || !serviceCategory || !description) {
+        //     // console.error("Error: Missing required fields for user update.");
+        //     return {success: false, message: "Missing required fields!"};
+        // }
 
         try{
-            console.log("Updating service data in Firestore:", updatedCategoryData);
+            // console.log("Updating service data in Firestore:", updatedCategoryData);
 
             // Reference to the Firestore document for the user
             const categoryRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", categoryId);
@@ -1142,26 +920,17 @@ import {getAuth,
             console.log("This is frequency " + frequency)
 
 
+            //ALTERNATE FLOW
             // Validate name
             if (!serviceListing || !serviceCategory || !frequency || !fee || !details || !listStatus || !currentUserEmail) {
                 console.error("Missing required fields:", listingData);
                 return {
                     status: "error",
-                    message: "Missing required fields" + serviceListing + serviceCategory + frequency +fee + listStatus + details + currentUserEmail
+                    message: "Missing required fields!!" 
                  };
             }
 
             const categoryDocRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", serviceCategory);
-
-            // Optional: Check if category already exists
-            const catSnap = await getDoc(categoryDocRef);
-            if (!catSnap.exists()) {
-                console.error(`Category "${serviceCategory}" does not exist.`);
-                return {
-                    status: "error",
-                    message: "Category does not exist"
-                };
-            }
 
             const listingId = serviceListing.toLowerCase().replace(/\s+/g, "_");
 
@@ -1188,6 +957,16 @@ import {getAuth,
             const cleanerTrackerRef = doc(this.db, `csit314/AllServiceCategory/CleaningServiceData/${serviceCategory}/cleanerTrackers/${currentUserEmail}`);
             const cleanerSnap = await getDoc(cleanerTrackerRef);
 
+            //Check if category already exists (NOT alternate flow, just backend check handler)
+            const catSnap = await getDoc(categoryDocRef);
+            if (!catSnap.exists()) {
+                console.error(`Category "${serviceCategory}" does not exist.`);
+                return {
+                    status: "error",
+                    message: "Category does not exist"
+                };
+            }
+
             let updateData = { numOfServices: (catSnap.data().numOfServices || 0) + 1 };
 
             if (!cleanerSnap.exists()) {
@@ -1202,7 +981,7 @@ import {getAuth,
             await updateDoc(categoryDocRef, updateData);
 
 
-            console.log("Service listing successfully created!");
+            // console.log("Service listing successfully created!");
 
 
             return {
