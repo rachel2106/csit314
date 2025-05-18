@@ -84,10 +84,10 @@
 
     <script type="module">
 import { hmViewAllCSController } from './js/hmViewAllCSController.js';
-import { cleanerViewCountController } from './js/cleanerViewCountController.js';
+import { hmCountViewController } from './js/hmCountViewController.js';
 import { hmSearchAllCSController } from './js/hmSearchAllCSController.js';
 import { hmViewBookListingController } from './js/hmViewBookListingController.js';
-import { HMFavouritesCSController } from './js/HMFavouritesCSController.js';
+import { hmFavouritesCSController } from './js/hmFavouritesCSController.js';
 
 class HomeOwnerAllCSPage {
     constructor() { //initializes an empty list to store all the fetched cleaning services
@@ -156,6 +156,7 @@ class HomeOwnerAllCSPage {
 //handle all button clicks within the service container
 window.addEventListener("DOMContentLoaded", async () => {
     const page = new HomeOwnerAllCSPage();
+    //Displays the List
     await page.fetchAndDisplayAllServices();
 
     const detailsModal = document.getElementById("detailsModal");
@@ -187,7 +188,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("details-service-cleaner").textContent = selected.createdBy;
             detailsModal.style.display = "block";
 
-            const countController = new cleanerViewCountController();
+            const countController = new hmCountViewController();
             await countController.addCountView({
                 category: selected.serviceCategory,
                 listingName: selected.listingName,
@@ -224,10 +225,19 @@ window.addEventListener("DOMContentLoaded", async () => {
             };
 
             try {
-                const favController = new HMFavouritesCSController(userEmail);
+                const favController = new hmFavouritesCSController(userEmail);
                 const added = await favController.toggleFavourite(favData);
                 e.target.textContent = added ? "Remove from Favourites" : "Add to Favourites";
                 alert(added ? `"${selected.listingName}" added to shortlist!` : `"${selected.listingName}" removed from shortlist!`);
+            
+
+                // Added shortlist count
+                const countController = new hmCountViewController();
+                await countController.incrementNumOfShortlisted({
+                    category: selected.serviceCategory,
+                    listingName: selected.listingName,
+                    cleaner: selected.createdBy
+                });
             } catch (err) {
                 console.error("Failed to toggle favourite:", err);
                 alert("Failed to update shortlist. Please try again.");

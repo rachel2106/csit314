@@ -16,28 +16,34 @@
     <main id="createListing-main">
         <div class="cleaner-history">
             <h2>Listing Booking History</h2>
-            <input type="text" id="search-history" placeholder="Service Listing" />
+            <input type="text" id="search-category" placeholder="Service Category" />
+            <input type="text" id="search-listing" placeholder="Service Listing" />
+            <input type="text" id="search-hmName" placeholder="Service HomeOwner" />
             <button class="cleanerBtn" id="cleaner-search-history-button">Search</button>
-            <p id="reset-instruction">clear out the input and click search to reset</p>
+            <p id="reset-instruction">clear out the input and click search to reset, only search one field at a time</p>
+            
         </div>
 
         <div id="viewServiceListingHistory" class="listinghistory-viewtable">
             <table id="cleanerHistory-table">
                 <thead id="cleanerHistory-tableheader">
                     <tr id="cleanerHistory-rowheader">
-                        <th>Cleaning Service Listing</th>
                         <th>Cleaning Service Category</th>
-                        <th>Listing Booking Count</th>
+                        <th>Cleaning Service Listing</th>
+                        <th>HomeOwner</th>
+                        <!-- <th>Listing Booking Count</th> -->
                     </tr>
                 </thead>
-                <tbody id="data-table"></tbody>
+                <tbody id="data-table">
+                    
+                </tbody>
             </table>
         </div>
     
     </main>
     <script type="module">
         import { cleanerViewHistoryController } from './js/cleanerViewHistoryController.js';
-        // import { cleanerSearchHistoryController } from './js/cleanerSearchListingController.js';
+        import { cleanerSearchHistoryController } from './js/cleanerSearchHistoryController.js';
 
         class HistoryPage {
 
@@ -64,9 +70,12 @@
                     const row = document.createElement("tr");
                     
                     row.innerHTML = `
-                        <td>${historyData.serviceId}</td> 
-                        <td>${historyData.category}</td>
-                        <td>${historyData.cleanerEmail}</td>
+                        <tr>
+                            
+                            <td>${historyData.categoryName}</td>
+                            <td>${historyData.listingName}</td> 
+                            <td>${historyData.serviceId}</td> 
+                        </tr>
                     `;
                     container.appendChild(row);
                 });
@@ -78,16 +87,81 @@
 
             // Get the logged-in cleaner's email
             const loggedInUserEmail = localStorage.getItem("loggedInUserEmail");
+            console.log(loggedInUserEmail);
 
             if (!loggedInUserEmail) {
                 window.location.href = "loginPage.html"; // Redirect if not logged in
                 return;
             }
 
+            const searchBtn = document.getElementById('cleaner-search-history-button');
+            const searchCat = document.getElementById('search-category');
+            const searchList = document.getElementById('search-listing');
+            const searchHM = document.getElementById('search-hmName');
+
+
+            
+
             //Displays the list from the firebase
             const listing = await page.getHistoryList(loggedInUserEmail); // Wait for listing to load
+            console.log("Returned listing:", listing);
             page.displayHistoryList(listing);
+
+            //Search History Listing
+            searchBtn.addEventListener("click", async () =>{
+                const searchCategory = searchCat.value.trim().toLowerCase();
+                const searchListing = searchList.value.trim().toLowerCase();
+                const searchHomeowner = searchHM.value.trim().toLowerCase();
+                
+                // if(!searchListing && !searchCategory && !searchHomeowner){
+                //     // alert("Please enter a category name to search");
+                //     // page.displayCategoriesList(categories);
+                //     page.displayHistoryList(listing);
+                //     return;
+                // }
+
+                const filledInputs = [searchCategory, searchListing, searchHomeowner].filter(val => val !== "").length;
+
+                if (filledInputs === 0) {
+                    // No inputs filled: show all or alert user
+                    page.displayHistoryList(listing);
+                    return;
+                }
+
+                if (filledInputs > 1) {
+                    alert("Please fill only one search field at a time.");
+                    return; // stop further search
+                }
+
+                const searchController = new cleanerSearchHistoryController();
+
+                try{
+                    const searchData = {
+                        categoryName : searchCategory,
+                        listingName: searchListing,
+                        homeownerName : searchHomeowner,
+                        createdBy: loggedInUserEmail 
+                    };
+
+                    const searchList = await searchController.searchBookingHistory(searchData);
+
+                    if(searchList.length > 0){
+                        page.displayHistoryList(searchList);
+                    } else{
+                        const container = document.getElementById("data-table");
+                        container.innerHTML = `<tr><td colspan="4">No matching categories found.</td></tr>`;
+                    }
+                } catch (err){
+                    console.error ("Search error:", err);
+                    alert("An error occured while searching");
+                }
+            });
+
         });
+
+        
+
+
 
         // Log Out
         document.getElementById("logout").addEventListener("click", () => {

@@ -1,6 +1,6 @@
 import { homeownerEntity } from "./homeownersEntity.js";
 
-export class HMFavouritesCSController {
+export class hmFavouritesCSController {
   constructor(userEmail) {
     this.userEmail = userEmail; // This is still useful for non-firebaseAuth methods
     this.entity = new homeownerEntity();

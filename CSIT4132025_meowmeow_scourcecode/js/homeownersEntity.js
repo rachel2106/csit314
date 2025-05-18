@@ -51,6 +51,10 @@ export class homeownerEntity {
     return await firebase.getFavourites(userEmail);
   }
 
+  async searchFavourite(userEmail, category){
+    return await firebase.searchFavourite(userEmail, category);
+  }
+
   // ==================== Booking via shortlist ====================
 
   async createBookingShortlist(serviceId, cleanerEmail, userEmail, details) {
@@ -63,4 +67,10 @@ export class homeownerEntity {
     // Delegates to Firebase class method that increments numOfShortlisted
     return await firebase.incrementNumOfShortlisted(countData);
   }
+
+  //Increment for view Count
+  async addCountView(countData){
+    return await firebase.addCountView(countData);
+  }
+  
 }

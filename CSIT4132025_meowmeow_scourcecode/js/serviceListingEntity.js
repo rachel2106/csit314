@@ -8,11 +8,30 @@ export class serviceListingEntity {
         this.db = db;
     }
 
+    // View Counts
+    async viewCounts(cleanerEmail){
+        try {
+            const response = await firebase.viewCounts(cleanerEmail);
+            return response;
+        } catch (error) {
+            console.error("Error creating service category:", error);
+            return { status: "error", message: error.message };
+        }
 
-    //Increment for view Count
-    async addCountView(countData){
-        return await firebase.addCountView(countData);
-      }
+    }
+
+    // Shortlisted Counts
+    async shortlistedCounts(cleanerEmail){
+        try {
+            const response = await firebase.shortlistedCounts(cleanerEmail);
+            return response;
+        } catch (error) {
+            console.error("Error creating service category:", error);
+            return { status: "error", message: error.message };
+        }
+
+    }
+
 
     // Create a new service category
     async createServiceListing(listingObj) {
@@ -72,6 +91,17 @@ export class serviceListingEntity {
     async getHistoryList(cleanerEmail) {
         try {
             const listingList = await firebase.getHistoryList(cleanerEmail);
+            return listingList;
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+            return [];
+            // return { status: "error", message: error.message };
+        }
+    }
+
+    async searchBookingHistory(searchData) {
+        try {
+            const listingList = await firebase.searchBookingHistory(searchData);
             return listingList;
         } catch (error) {
             console.error("Error fetching categories:", error);

@@ -114,6 +114,8 @@
         import { cleanerDeleteServicesController } from './js/cleanerDeleteListingController.js';
         import { cleanerSearchServicesController } from './js/cleanerSearchListingController.js';
 
+        import { cleanerViewCountController } from './js/cleanerViewCountController.js';
+        import { cleanerShortlistedCountController } from './js/cleanerShortlistedCountController.js';
 
         class CleanerPage {
 
@@ -122,37 +124,100 @@
                 return await controller.getListingList(cleanerEmail);
             }
 
-            displayListingList(listingList) {
-                // console.log("DEBUG: listingList =", listingList);
-                const container = document.getElementById("data-table");
-                container.innerHTML = ""; // Clear any existing content
+            async displayListingList(listingList) {
+                const loggedInUserEmail = localStorage.getItem("loggedInUserEmail");
+                const countController = new cleanerViewCountController();
+                const shortlistedController = new cleanerShortlistedCountController();
 
-                // If there is no data existed in the database
-                if (!listingList || listingList.length === 0) {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `<td colspan="4">No listing found.</td>`;
-                    container.appendChild(row);
-                    return;
+                try {
+                    const [viewList, shortlistedList] = await Promise.all([
+                        countController.viewCounts(loggedInUserEmail),
+                        shortlistedController.shortlistedCounts(loggedInUserEmail)
+                    ]);
+
+                    const container = document.getElementById("data-table");
+                    container.innerHTML = "";
+
+                    if (!listingList || listingList.length === 0) {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `<td colspan="6">No listing found.</td>`;
+                        container.appendChild(row);
+                        return;
+                    }
+
+                    // Create maps for quick lookup
+                    const viewMap = {};
+                    viewList.forEach(v => {
+                        viewMap[v.listingId] = v.viewCount;
+                    });
+
+                    const shortlistedMap = {};
+                    shortlistedList.forEach(s => {
+                        shortlistedMap[s.listingId] = s.viewShortlisted;
+                    });
+
+                    listingList.forEach((listingData) => {
+                        const viewCount = viewMap[listingData.id] || 0;
+                        const shortlistedCount = shortlistedMap[listingData.id] || 0;
+
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${listingData.listingName}</td>
+                            <td>${listingData.category}</td>
+                            <td>${listingData.listStatus}</td>
+                            <td>${viewCount}</td>
+                            <td>${shortlistedCount}</td>
+                            <td>
+                                <button class="edit-btn" data-id="${listingData.id}" data-category="${listingData.category}">Edit</button>
+                                <button class="delete-btn" data-id="${listingData.id}" data-category="${listingData.category}">Delete</button>
+                            </td>
+                        `;
+                        container.appendChild(row);
+                    });
+                } catch (error) {
+                    console.error("[ERROR] Loading view or shortlist counts:", error);
+                    document.getElementById("data-table").innerHTML = "<tr><td colspan='6'>Failed to load listings.</td></tr>";
                 }
-
-                // when data exist in the database
-                listingList.forEach((listingData) => {
-                    const row = document.createElement("tr");
-                    
-                    row.innerHTML = `
-                        <td>${listingData.listingName}</td>
-                        <td>${listingData.category}</td>
-                        <td>${listingData.listStatus}</td>
-                        <td>${listingData.viewCount}</td>
-                        <td>${listingData.viewShortlisted}</td>
-                        <td>
-                            <button class="edit-btn" data-id="${listingData.id}" data-category="${listingData.category}">Edit</button>
-                            <button class="delete-btn" data-id="${listingData.id}" data-category="${listingData.category}">Delete</button>
-                        </td>
-                    `;
-                    container.appendChild(row);
-                });
             }
+
+
+
+            // displayListingList(listingList) {
+            //     // console.log("DEBUG: listingList =", listingList);
+            //     const loggedInUserEmail = localStorage.getItem("loggedInUserEmail");
+            //     const countController = new cleanerViewCountController();
+            //     const countList = viewCounts(loggedInUserEmail);
+
+            //     const container = document.getElementById("data-table");
+            //     container.innerHTML = ""; // Clear any existing content
+
+            //     // If there is no data existed in the database
+            //     if (!listingList || listingList.length === 0) {
+            //         const row = document.createElement("tr");
+            //         row.innerHTML = `<td colspan="4">No listing found.</td>`;
+            //         container.appendChild(row);
+            //         return;
+            //     }
+
+            //     // when data exist in the database
+            //     listingList.forEach((listingData) => {
+            //         countList.forEach((countListData) => {
+            //         const row = document.createElement("tr");
+                    
+            //         row.innerHTML = `
+            //             <td>${listingData.listingName}</td>
+            //             <td>${listingData.category}</td>
+            //             <td>${listingData.listStatus}</td>
+            //             <td>${countListData.viewCount}</td>
+            //             <td>${listingData.viewShortlisted}</td>
+            //             <td>
+            //                 <button class="edit-btn" data-id="${listingData.id}" data-category="${listingData.category}">Edit</button>
+            //                 <button class="delete-btn" data-id="${listingData.id}" data-category="${listingData.category}">Delete</button>
+            //             </td>
+            //         `;
+            //         container.appendChild(row);
+            //     });
+            // }
         }
     
         // Load listing on page load

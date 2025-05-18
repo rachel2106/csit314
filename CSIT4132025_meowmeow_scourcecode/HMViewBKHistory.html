@@ -144,7 +144,7 @@
           // Directly access properties (no more nested details)
           const category = booking?.categoryName || "N/A";
           const service = booking?.listingName || "N/A";
-          const cleaner = booking?.cleanerEmail || "N/A";
+          const cleaner = booking?.cleaner || "N/A";
           const price = booking?.price !== undefined ? `$${booking.price.toFixed(2)}` : "N/A";
          
 

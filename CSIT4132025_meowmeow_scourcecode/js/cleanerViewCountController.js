@@ -8,9 +8,9 @@ export class cleanerViewCountController {
     //     return listingList;
     // }
 
-    async addCountView(countData){
+    async viewCounts(cleanerEmail){
         const cleanerEntity = new serviceListingEntity();
-        const services = await cleanerEntity.addCountView(countData);
+        const services = await cleanerEntity.viewCounts(cleanerEmail);
         return services;
 
     }

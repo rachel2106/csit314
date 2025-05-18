@@ -18,7 +18,8 @@ import {getAuth,
     deleteDoc,
     query,
     where,
-    serverTimestamp
+    serverTimestamp,
+    collectionGroup
  } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js'
 
 
@@ -1178,6 +1179,79 @@ import {getAuth,
         }
     }
 
+    // View Counts
+    async viewCounts(cleanerEmail) {
+        try {
+            const categoriesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
+            const categorySnapshots = await getDocs(categoriesRef);
+    
+            const cleanerViewCounts = [];
+    
+            for (const categoryDoc of categorySnapshots.docs) {
+                const categoryId = categoryDoc.id;
+    
+                const listingsRef = collection(
+                    db,
+                    `csit314/AllServiceCategory/CleaningServiceData/${categoryId}/serviceListings` // 🔁 Fixed here
+                );
+                const listingSnapshots = await getDocs(listingsRef);
+    
+                listingSnapshots.forEach(listingDoc => {
+                    const data = listingDoc.data();
+                    if (data.createdBy === cleanerEmail) {
+                      cleanerViewCounts.push({
+                        listingId: listingDoc.id,
+                        viewCount: data.viewCount || 0
+                      });
+                    }
+                  });
+            }
+    
+            return cleanerViewCounts; //array
+    
+        } catch (error) {
+            console.error("Error fetching listings by cleaner email:", error);
+            return [];
+        }
+    }
+
+    //Shortlisted Counts
+
+    async shortlistedCounts(cleanerEmail) {
+        try {
+            const categoriesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
+            const categorySnapshots = await getDocs(categoriesRef);
+    
+            const cleanerShortlistedCounts = [];
+    
+            for (const categoryDoc of categorySnapshots.docs) {
+                const categoryId = categoryDoc.id;
+    
+                const listingsRef = collection(
+                    db,
+                    `csit314/AllServiceCategory/CleaningServiceData/${categoryId}/serviceListings` // 🔁 Fixed here
+                );
+                const listingSnapshots = await getDocs(listingsRef);
+    
+                listingSnapshots.forEach(listingDoc => {
+                    const data = listingDoc.data();
+                    if (data.createdBy === cleanerEmail) {
+                        cleanerShortlistedCounts.push({
+                        listingId: listingDoc.id,
+                        viewShortlisted: data.viewShortlisted || 0
+                      });
+                    }
+                  });
+            }
+    
+            return cleanerShortlistedCounts; //array
+    
+        } catch (error) {
+            console.error("Error fetching listings by cleaner email:", error);
+            return [];
+        }
+    }
+
     // View all service categories
     async getListingList(cleanerEmail) {
         try {
@@ -1334,7 +1408,7 @@ import {getAuth,
         try{
             const {listingName, createdBy } = searchListingData;
 
-            const categoriesRef = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
+            const categoriesRef = collection(db, `csit314/AllServiceCategory/CleaningServiceData`);
             const categorySnapshots = await getDocs(categoriesRef);
             const listingList = [];
             
@@ -1372,6 +1446,87 @@ import {getAuth,
             throw error;
         }
     }
+
+    //Display booking history
+    async getHistoryList(cleanerEmail) {
+        try {
+            const results = [];
+
+            const querySnapshot = await getDocs(collectionGroup(db, "Bookings"));
+
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                if (data.cleaner === cleanerEmail){
+                    results.push({
+                        id: doc.id,
+                        ...data
+                      });
+                }
+                
+              });
+
+            return results; 
+      
+      
+        } catch (error) {
+          console.error("Error fetching bookings by cleaner email:", error);
+          throw error;
+        }
+      }
+
+      //Display booking history
+    async searchBookingHistory(searchData) {
+        try {
+            const {categoryName, listingName, homeownerName, createdBy } = searchData;
+            
+            const results = [];
+            const querySnapshot = await getDocs(collectionGroup(db, "Bookings"));
+
+
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                if (data.cleaner === createdBy){
+                    if(categoryName){
+                        if(data.categoryName === categoryName){
+                            results.push({
+                                id: doc.id,
+                                ...data
+                              });
+                        }
+                    }
+                    if(listingName){
+                        if (data.listingName === listingName){
+                            results.push({
+                                id: doc.id,
+                                ...data
+                              });
+                        }
+                    }
+                    if(homeownerName){
+                        if (data.serviceId === homeownerName){
+                            results.push({
+                                id: doc.id,
+                                ...data
+                              });
+                        }
+
+                    } 
+                }
+                
+              });
+
+            return results; 
+      
+      
+        } catch (error) {
+          console.error("Error fetching bookings by cleaner email:", error);
+          throw error;
+        }
+      }
+      
+
 
      // Increment view count
      async addCountView(countData) {
@@ -1450,10 +1605,10 @@ async incrementNumOfShortlisted(shortlistData) {
             return;
         }
 
-        const currentCount = listingData.numOfShortlisted || 0;
+        const currentCount = listingData.viewShortlisted || 0;
 
         await updateDoc(listingRef, {
-            numOfShortlisted: currentCount + 1,
+            viewShortlisted: currentCount + 1,
         });
 
         return; // nothing specific to return
@@ -1499,8 +1654,9 @@ async incrementNumOfShortlisted(shortlistData) {
         });
         });
     }
-
+            
     return allServices; //loops thru all categories and listings and then the function returns it
+        //array
     }
 
    
@@ -1570,7 +1726,8 @@ async incrementNumOfShortlisted(shortlistData) {
             });
         }
 
-    return allServices; //processing all categories and listings of matching service listings
+        return allServices; //processing all categories and listings of matching service listings
+            //array
     }
 
 
@@ -1579,46 +1736,44 @@ async incrementNumOfShortlisted(shortlistData) {
 
     
    // Create a new booking
-
-async createBooking(serviceId, cleanerEmail, userEmail, details) {
-  try {
-    //ensures that the booking is tied to a valid userEmail
-    //throws an error if the email is missing or not a string
-    if (!userEmail || typeof userEmail !== 'string') {
-      throw new Error("User email not found or invalid. User might not be logged in or email is not a string.");
+   async createBooking(serviceId, cleanerEmail, userEmail, details) {
+        try {
+        //ensures that the booking is tied to a valid userEmail
+        //throws an error if the email is missing or not a string
+            if (!userEmail || typeof userEmail !== 'string') {
+                throw new Error("User email not found or invalid. User might not be logged in or email is not a string.");
+            }
+        
+            // Sanitize email by replacing '@' and '.' with '_'
+            const safeEmail = userEmail.replace(/[@.]/g, "_");
+        
+            //defines the path, with own subcollection 
+            const userBookingPath = collection(
+                db,
+                "csit314",
+                "AllBookings",
+                "Bookings",
+                safeEmail,
+                "Bookings"
+            );
+        
+            //combines all booking data
+            const bookingData = {
+                ...details,  // Spread details directly into the main object
+                serviceId,
+                createdAt: serverTimestamp(),
+            };
+        
+            //adds a new doc to the homeowner's booking subcollection, firestore auto-gen the doc ID
+            await addDoc(userBookingPath, bookingData);
+            return true;
+    
+        //if an error occurs, log it and retun false
+        } catch (error) {
+            console.error("Error creating booking:", error);
+            return false;
+        }
     }
-
-    // Sanitize email by replacing '@' and '.' with '_'
-    const safeEmail = userEmail.replace(/[@.]/g, "_");
-
-    //defines the path, with own subcollection 
-    const userBookingPath = collection(
-      db,
-      "csit314",
-      "AllBookings",
-      "Bookings",
-      safeEmail,
-      "Bookings"
-    );
-
-    //combines all booking data
-    const bookingData = {
-      cleanerEmail,
-      ...details,  // Spread details directly into the main object
-      serviceId,
-      createdAt: serverTimestamp(),
-    };
-
-    //adds a new doc to the homeowner's booking subcollection, firestore auto-gen the doc ID
-    await addDoc(userBookingPath, bookingData);
-    return true;
-
-    //if an error occurs, log it and retun false
-  } catch (error) {
-    console.error("Error creating booking:", error);
-    return false;
-  }
-}
 
 //  Fetch bookings for logged-in user (View booking)
 async getUserBookings(userEmail) {
@@ -1812,6 +1967,56 @@ async getFavourites(userEmail) {
         throw error;
     }
 }
+
+async searchFavourite(userEmail, category) {
+    try {
+      //ensures the user is logged in and their email exists
+      if (!userEmail) throw new Error("User email not found.");
+      console.log(userEmail+ " this is category " + category)
+  
+      const userId = userEmail.replace(/[@.]/g, "_");
+      console.log(userId);
+  
+      //points to the firestore path
+      const userFavouriteRef = collection(
+        db,
+        "csit314",
+        "AllBookings",
+        "Shortlisted",
+        userId,
+        "Shortlisted"
+      );
+  
+      let q;
+      //if category is provided, it applies a filter,
+      //if its empty or not provided, it fetches all bookings for the user without filtering
+      if (category && category.trim() !== "") {
+        q = query(userFavouriteRef, where("serviceCategory", "==", category));
+      }
+    //   if (category && category.trim() !== "") {
+    //     q = query(userFavouriteRef, where("serviceCategory", "==", category));
+    //   } else {
+    //     q = query(userFavouriteRef);
+    //   }
+  
+      //converts each doc to a plain object
+        const snapshot = await getDocs(q);
+        const favouriteList = [];
+
+        snapshot.forEach(doc => {
+        favouriteList.push({
+            id: doc.id,
+            ...doc.data()
+        });
+        });
+  
+        return favouriteList;
+      // catches and logs any error during the fetch or query
+    } catch (error) {
+      console.error("Error filtering bookings by category:", error);
+      throw error;
+    }
+  }
 
 
 

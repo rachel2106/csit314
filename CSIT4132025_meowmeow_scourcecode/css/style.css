@@ -1622,8 +1622,6 @@ button.update-btn:hover {
 }
 
 /* styling for cleaner CREATE service category page */
-
-
 #createListing-main {
     display: flex;
     flex-direction: column; /* Stack elements vertically */
@@ -1736,6 +1734,54 @@ button.update-btn:hover {
   
   /* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
   .show {display:block;}
+
+
+/* CLEANER History Listing Table */
+#cleanerHistory-table{
+    width: 100%;
+    margin: auto;
+    margin-top: 3%;
+    border-collapse: collapse;
+    border: 2px solid #433A3F;
+    
+}
+
+#cleanerHistory-tableheader tr th {
+    background-color: #bcd8fa;
+    color: #433A3F;
+    border: 1px solid #686065;
+    padding: 8px;
+}
+
+
+.cleanerHistory-table tr td{
+    border: 1px solid #686065; 
+}
+
+
+#cleanerHistory-table th:nth-child(1),  /* Cleaning Service Category */
+#cleanerHistory-table td:nth-child(1) {
+    width: 35%; /* wider */
+}
+
+#cleanerHistory-table th:nth-child(2),  /* Description */
+#cleanerHistory-table td:nth-child(2) {
+    width: 35%; /* shorter */
+}
+
+#cleanerHistory-table th:nth-child(3),  /* Created At */
+#cleanerHistory-table td:nth-child(3) {
+    width: 30%; /* shorter */
+}
+
+
+
+#cleanerHistory-table th,
+#cleanerHistory-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
 
 
 /* PLATFORM MANAGER generate report page */

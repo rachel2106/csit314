@@ -9,4 +9,11 @@ export class hmCountViewController{
         return services;
 
     }
+
+    async incrementNumOfShortlisted(shortlistData){
+        const hmEntity = new homeownerEntity();
+        const services = await hmEntity.incrementNumOfShortlisted(shortlistData);
+        return services;
+
+    }
 }

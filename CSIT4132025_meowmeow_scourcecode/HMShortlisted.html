@@ -64,18 +64,20 @@
   </main>
 
   <script type="module">
-    import { homeownerEntity } from "./js/homeownersEntity.js";
-    import { hmViewBookListingController } from './js/hmViewBookListingController.js';
+    // import { homeownerEntity } from "./js/homeownersEntity.js";
+    import { hmFavViewAllController } from "./js/hmFavViewAllController.js";
+    import { hmFavSearchController } from './js/hmFavSearchController.js';
 
     const container = document.getElementById('favourites');
     const modal = document.getElementById('bookingModal');
     const modalDetails = document.getElementById('modalDetails');
     const confirmBookingBtn = document.getElementById('confirmBookingBtn');
     const cancelBookingBtn = document.getElementById('cancelBookingBtn');
-    const categoryFilter = document.getElementById('categoryFilter');
+    
     const statusFilter = document.getElementById('statusFilter');
     const priceFilter = document.getElementById('priceFilter');
     const searchBtn = document.getElementById('searchBtn');
+    const userEmail = localStorage.getItem('loggedInUserEmail');
 
 
     
@@ -84,7 +86,7 @@
 
     // Load favourites from Firestore for logged-in user
     async function loadFavourites() {
-      const userEmail = localStorage.getItem('loggedInUserEmail');
+      
       if (!userEmail) {
         container.innerHTML = "<p>Please log in to view your shortlisted services.</p>";
         return; //calls to show on the page
@@ -94,22 +96,10 @@
       //calls the entity class to retrieve the list of shortlisted services from firestore
       //normalizes the data into a consistent object formate and store it in allFavourites
       try {
-        const homeowners = new homeownerEntity();
-        const favourites = await homeowners.getFavourites(userEmail);
+        const controller = new hmFavViewAllController();
+        const favourites = await controller.getFavourites(userEmail);
 
-        allFavourites = favourites.map(fav => ({
-          id: fav.id,
-          serviceId: fav.id,
-          listingName: fav.listingName,
-          price: fav.fee || fav.price || 'N/A',
-          cleanerEmail: fav.createdBy || fav.cleanerEmail || 'N/A',
-          details: fav.details || '',
-          frequency: fav.listingFrequency || 'once',
-          categoryName: fav.serviceCategory || fav.categoryName || 'N/A',
-          status: fav.status || 'available'  // If you want to filter by availability later
-        }));
-
-        displayShortlistedServices();
+        displayShortlistedServices(favourites);
       } catch (error) {
         console.error("Error loading favourites:", error);
         container.innerHTML = "<p>Failed to load shortlisted services. Please try again later.</p>";
@@ -118,48 +108,25 @@
 
     // Render shortlist cards/buttons
     //includes a "book now" button with a data-index to identify which card was clicked
-    function displayShortlistedServices(filteredList = null) {
-      const list = filteredList || allFavourites;
-      if (!list.length) {
+    function displayShortlistedServices(lists) {
+      if (!lists.length) {
         container.innerHTML = "<p>You have no shortlisted services.</p>";
         return;
       }
 
-      container.innerHTML = list.map((service, index) => `
+      container.innerHTML = lists.map((service, index) => `
         <div class="service-item">
-          <h3>${service.listingName}</h3>
-          <p><strong>Category:</strong> ${service.categoryName}</p>
-          <p><strong>Cleaner:</strong> ${service.cleanerEmail}</p>
-          <p><strong>Price:</strong> $${service.price}</p>
-          <p><strong>Details:</strong> ${service.details}</p>
+          <h3>${service.listingName || 'N/A'}</h3>
+          <p><strong>Category:</strong> ${service.serviceCategory || 'N/A'}</p>
+          <p><strong>Cleaner:</strong> ${service.createdBy || 'N/A'}</p>
+          <p><strong>Price:</strong> ${service.fee !== undefined ? `$${Number(service.fee).toFixed(2)}` : 'N/A'}</p>
+          <p><strong>Details:</strong> ${service.details || ''}</p>
           <button class="book-btn" data-index="${index}">Book Now</button>
         </div>
       `).join('');
     }
 
-    // Apply filtering by category, price, and status
-    //reads the current values of the filter dropdowns
-    //displays only rhe filtered services
-    function applyFilters() {
-      const category = categoryFilter.value;
-      const status = statusFilter.value;
-      const priceRange = priceFilter.value;
 
-      const filtered = allFavourites.filter(service => {
-        if (category && service.categoryName !== category) return false;
-        if (status && service.status !== status) return false;
-
-        if (priceRange) {
-          const [min, max] = priceRange.split('-').map(Number);
-          const price = Number(service.price);
-          if (isNaN(price) || price < min || price > max) return false;
-        }
-
-        return true;
-      });
-
-      displayShortlistedServices(filtered);
-    }
 
     // Click event delegation to open booking modal
     //uses data-index to retrieve the selected services
@@ -212,7 +179,50 @@
     });
 
     // Search button triggers filters
-    searchBtn.addEventListener('click', applyFilters);
+    searchBtn.addEventListener('click', async ()=>{
+      const categoryFilter = document.getElementById('categoryFilter').value;
+      // const category = categoryFilter.valu
+
+      const controller = new hmFavSearchController();
+      
+      try {
+        const allServices = await controller.searchFavourite(userEmail, categoryFilter);
+        const finalFiltered = applyClientSideFilters(allServices, statusFilter, priceFilter);
+
+        displayShortlistedServices(finalFiltered);
+      } catch (error) {
+        console.error("Error applying filters:", error);
+        container.innerHTML = "<p>Failed to apply filters. Please try again later.</p>";
+      }
+
+    });
+    function applyClientSideFilters(bookings, status, priceRange) {
+        return bookings.filter(booking => {
+          // Status filter (client-side only as it's not in Firebase)
+          if (status && status !== "") {
+            // Add your status logic here if needed
+            // Currently just a placeholder as status isn't in your data structure
+            // You might want to add a status field to your booking data
+          }
+          
+          // Price range filter
+          if (priceRange && typeof priceRange === "string" && priceRange.includes("-")) {
+            const [min, max] = priceRange.split("-").map(Number);
+            const price = Number(booking.price) || 0;
+
+            if (price < min || price > max) {
+              return false;
+            }
+          }
+          // if (priceRange && priceRange !== "") {
+          //   const [min, max] = priceRange.split('-').map(Number);
+          //   const price = booking.price || 0;
+          //   return price >= min && price <= max;
+          // }
+          
+          return true;
+        });
+      }
 
     // Load favourites on page load
     window.addEventListener('DOMContentLoaded', loadFavourites);
