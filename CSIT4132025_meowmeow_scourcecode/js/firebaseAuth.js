@@ -1269,7 +1269,12 @@ import {getAuth,
                 const data = doc.data();
                 if (data.cleaner === createdBy){
                     if(categoryName){
-                        if(data.categoryName === categoryName){
+                        
+                        const cleanedInputCat = categoryName.trim().toLowerCase();
+                        const dataCat =  data.categoryName;
+                        const cleanedDataCat = dataCat.trim().toLowerCase();
+
+                        if(cleanedDataCat === cleanedInputCat){
                             results.push({
                                 id: doc.id,
                                 ...data
