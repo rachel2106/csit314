@@ -23,6 +23,37 @@ import {getAuth,
  } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js'
 
 
+
+// Firebase core
+// import { initializeApp } from 'firebase/app';
+
+// // Firebase Auth
+// import {
+//   getAuth,
+//   createUserWithEmailAndPassword,
+//   signInWithEmailAndPassword,
+//   onAuthStateChanged,
+//   updateProfile,
+// } from 'firebase/auth';
+
+// // Firebase Firestore
+// import {
+//   getFirestore,
+//   collection,
+//   doc,
+//   setDoc,
+//   addDoc,
+//   getDoc,
+//   getDocs,
+//   updateDoc,
+//   deleteDoc,
+//   query,
+//   where,
+//   serverTimestamp,
+//   collectionGroup,
+// } from 'firebase/firestore';
+
+
  const firebaseConfig = {
     apiKey: "AIzaSyDdXOWc5V451mFqdVVn0njYfUNLlEJNwzM",
     authDomain: "csit314meowmeow.firebaseapp.com",
@@ -912,6 +943,7 @@ import {getAuth,
             };
         }
     }
+    
     // Create a new service category (used by Platform Manager)
     async createServiceCategory(categoryData) {
         try {
@@ -922,6 +954,14 @@ import {getAuth,
                 return {
                     status: "error",
                     message: "Invalid or missing category name"
+                };
+            }
+
+            // Validate name
+            if (!description || typeof description !== "string" || description.trim() === "") {
+                return {
+                    status: "error",
+                    message: "Invalid or missing description name"
                 };
             }
 

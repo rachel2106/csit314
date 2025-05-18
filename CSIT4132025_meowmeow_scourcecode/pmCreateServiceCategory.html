@@ -32,26 +32,6 @@
         </div>
     </main>
 
-    <!-- <script>
-        document.getElementById("createCategoryButton").addEventListener("click", async function () {
-            const categoryName = document.getElementById("categoryName").value.trim();
-            const categoryDescription = document.getElementById("categoryDescription").value.trim();
-
-            if (!categoryName || !categoryDescription) {
-                alert("Please fill in all fields.");
-                return;
-            }
-
-            await createServiceCategory(categoryName, categoryDescription);
-            window.location.href = "platformManagerPage.html";
-        });
-
-        // Optional: handle logout
-        document.getElementById("logout").addEventListener("click", () => {
-            window.location.href = "loginPage.html";
-        });
-    </script> -->
-
     <script type="module">
         import { pmCreateServicesController } from './js/pmCreateServicesController.js';
 
@@ -68,12 +48,6 @@
                     window.location.href = "loginPage.html";
                     return;
                 }
-
-                // const category = {
-                //     serviceCategory: serviceCategory,
-                //     description: categoryDescription,
-                //     createdBy: currentUserEmail // Pass the logged-in user's email
-                // };
                 const category = {
                     serviceCategory,
                     description: categoryDescription,
@@ -84,7 +58,7 @@
 
                 const result = await controller.createServiceCategory(category);
 
-                if (result === "success") {
+                if (result.status === "success") {
                     alert("Category created successfully.");
                     window.location.href = "platformManagerPage.html";
                 } else {
