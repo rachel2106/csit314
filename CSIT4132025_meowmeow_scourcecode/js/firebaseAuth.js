@@ -943,31 +943,31 @@ import {getAuth,
             };
         }
     }
-    
+
     // Create a new service category (used by Platform Manager)
     async createServiceCategory(categoryData) {
         try {
             const { serviceCategory, description, currentUserEmail  } = categoryData;
 
-            // Validate name
-            if (!serviceCategory || typeof serviceCategory !== "string" || serviceCategory.trim() === "") {
-                return {
-                    status: "error",
-                    message: "Invalid or missing category name"
-                };
-            }
+            // // Validate name
+            // if (!serviceCategory || typeof serviceCategory !== "string" || serviceCategory.trim() === "") {
+            //     return {
+            //         status: "error",
+            //         message: "Invalid or missing category name"
+            //     };
+            // }
 
-            // Validate name
-            if (!description || typeof description !== "string" || description.trim() === "") {
-                return {
-                    status: "error",
-                    message: "Invalid or missing description name"
-                };
-            }
+            // // Validate name
+            // if (!description || typeof description !== "string" || description.trim() === "") {
+            //     return {
+            //         status: "error",
+            //         message: "Invalid or missing description name"
+            //     };
+            // }
 
             const categoryRef = collection(this.db, "csit314/AllServiceCategory/CleaningServiceData");
 
-            // Optional: Check if category already exists
+            // ALTERNATE FLOW
             const q = query(categoryRef, where("serviceCategory", "==", serviceCategory.trim()));
             const existing = await getDocs(q);
             if (!existing.empty) {

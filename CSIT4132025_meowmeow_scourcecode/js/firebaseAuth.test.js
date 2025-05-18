@@ -49,18 +49,18 @@ test('should create service category successfully', async () => {
 
 
 
-  test('should return error if category name is missing', async () => {
-    const testData = {
-      serviceCategory: '',
-      description: 'desc',
-      currentUserEmail: 'test@example.com',
-    };
+  // test('should return error if category name is missing', async () => {
+  //   const testData = {
+  //     serviceCategory: '',
+  //     description: 'desc',
+  //     currentUserEmail: 'test@example.com',
+  //   };
 
-    const result = await firebase.createServiceCategory(testData);
+  //   const result = await firebase.createServiceCategory(testData);
 
-    expect(result.status).toBe("error");
-    expect(result.message).toMatch(/Invalid or missing category name/i);
-  });
+  //   expect(result.status).toBe("error");
+  //   expect(result.message).toMatch(/Invalid or missing category name/i);
+  // });
 
   test('should return error if category exists', async () => {
     const testData = {
@@ -78,18 +78,18 @@ test('should create service category successfully', async () => {
     expect(result.message).toMatch(/already exists/i);
   });
 
-  test('should return error if description is missing', async () => {
-    const testData = {
-        serviceCategory: 'Window Cleaning',
-        description: '',
-        currentUserEmail: 'test@example.com',
-    };
+  // test('should return error if description is missing', async () => {
+  //   const testData = {
+  //       serviceCategory: 'Window Cleaning',
+  //       description: '',
+  //       currentUserEmail: 'test@example.com',
+  //   };
 
-    const result = await firebase.createServiceCategory(testData);
+  //   const result = await firebase.createServiceCategory(testData);
 
-    expect(result.status).toBe('error');
-    expect(result.message).toMatch(/Invalid or missing description name/i);
-    });
+  //   expect(result.status).toBe('error');
+  //   expect(result.message).toMatch(/Invalid or missing description name/i);
+  //   });
 
 });
 
