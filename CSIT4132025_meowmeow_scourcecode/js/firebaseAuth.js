@@ -1297,6 +1297,7 @@ import {getAuth,
                 
               });
 
+            console.log(results);
             return results; 
       
       
