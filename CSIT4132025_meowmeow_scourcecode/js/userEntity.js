@@ -28,11 +28,15 @@ export class userEntity {
                 userType: newUser.userType,
                 userStatus: "Active",
             });
+            const status = "success";
+            return status;
 
-            console.log("User successfully added to Firestore.");
+            // console.log("User successfully added to Firestore.");
         } catch (error) {
+            const status = "fail";
             console.error("Error during Firestore registration:", error);
             throw new Error("Registration failed in Firestore.");
+            return status;
         }
     }
 
@@ -62,7 +66,8 @@ export class userEntity {
             }
 
             if( userData.profileStatus !== "Active"){
-                return { status: "error", message: "Inactive Profile." };
+                const result = { status: "error", message: "Inactive Profile." };
+                return result;
             }
 
             // Check password
@@ -73,6 +78,7 @@ export class userEntity {
                 const result = { status: "error", message: "Incorrect password." };
                 return result ;
             }
+
         } catch (err) {
             console.error("Error during login:", err.message);
             throw new Error("Login failed.");

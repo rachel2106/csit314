@@ -1033,10 +1033,12 @@ import {getAuth,
             // Update the category document
             await updateDoc(categoryDocRef, updateData);
 
-            return {
+            const result = {
                 status: "success", //string
                 message: "Listing created!" //string
             };
+
+            return result;
 
         } catch (error) {
             console.error("Error creating service listing:", error);

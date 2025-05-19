@@ -70,9 +70,14 @@ export class RegistrationController {
     
         try {
             // Create user in Firebase and Firestore
-            await userEntityInstance.createToDB(formData);
+            const status = await userEntityInstance.createToDB(formData);
     
-            alert("Registration successful!");
+            if (status == "success"){
+                alert("Registration successful!");
+            }else {
+                alert("Registration fail!");
+            }
+            
     
             // Redirect to login page or any other page you want after registration
             window.location.href = "loginPage.html";  // You can change this to the desired page
