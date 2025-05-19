@@ -121,7 +121,6 @@
           <p><strong>Cleaner:</strong> ${service.createdBy || 'N/A'}</p>
           <p><strong>Price:</strong> ${service.fee !== undefined ? `$${Number(service.fee).toFixed(2)}` : 'N/A'}</p>
           <p><strong>Details:</strong> ${service.details || ''}</p>
-          <button class="book-btn" data-index="${index}">Book Now</button>
         </div>
       `).join('');
     }
