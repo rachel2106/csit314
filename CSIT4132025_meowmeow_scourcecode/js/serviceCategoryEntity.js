@@ -11,8 +11,8 @@ export class serviceCategoryEntity {
     // Create a new service category
     async createServiceCategory(newCategoryObj) {
         try {
-            const message = await firebase.createServiceCategory(newCategoryObj);
-            return message;
+            const categories = await firebase.createServiceCategory(newCategoryObj);
+            return categories;
         } catch (error) {
             console.error("Error creating service category:", error);
             return { status: "error", message: error.message };
@@ -34,8 +34,8 @@ export class serviceCategoryEntity {
     // Update a service category
     async updateServiceCategory(updatedCategoryObj) {
         try {
-            const updatedCategoryList = await firebase.updateServiceCategory(updatedCategoryObj);
-            return updatedCategoryList;
+            const result = await firebase.updateServiceCategory(updatedCategoryObj);
+            return result;
         } catch (error) {
             console.error("Error updating category:", error);
             return { status: "error", message: error.message };
@@ -56,8 +56,8 @@ export class serviceCategoryEntity {
     // // Optional: Search for category by name
     async searchServiceCategory(searchCategory) {
         try {
-            const searched = await firebase.searchServiceCategory(searchCategory);
-            return searched;
+            const searchedCategoryList = await firebase.searchServiceCategory(searchCategory);
+            return searchedCategoryList;
         } catch (error) {
             console.error("Error searching for category:", error);
             return { status: "error", message: error.message };

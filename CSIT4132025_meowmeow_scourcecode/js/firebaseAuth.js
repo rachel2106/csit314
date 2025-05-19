@@ -778,11 +778,11 @@ import {getAuth,
         try {
             const categoryCollection = collection(db, "csit314/AllServiceCategory/CleaningServiceData");
             const snapshot = await getDocs(categoryCollection);
-            const categoryList = [];
+            const categories = [];
 
             snapshot.forEach(doc => {
                 const serviceData = doc.data();
-                categoryList.push({
+                categories.push({
                     id: doc.id,
                     serviceCategory: serviceData.serviceCategory,
                     description: serviceData.description,
@@ -793,7 +793,7 @@ import {getAuth,
             });
 
 
-            return categoryList; // array
+            return categories; // array
         } catch (error) {
             console.error("Error fetching service categories:", error);
             return [];
@@ -811,49 +811,39 @@ import {getAuth,
         const {categoryId, serviceCategory, description } = updatedCategoryData;
 
         // Validate required category
-        console.log("originalCategory:", categoryId);
-        console.log("serviceCategory:", serviceCategory);
-        console.log("description:", description);
-
-        // // ALTERNATE FLOW
-        // if (!categoryId || !serviceCategory || !description) {
-        //     // console.error("Error: Missing required fields for user update.");
-        //     return {success: false, message: "Missing required fields!"};
-        // }
-
+        // console.log("originalCategory:", categoryId);
+        // console.log("serviceCategory:", serviceCategory);
+        // console.log("description:", description);
         try{
-            // console.log("Updating service data in Firestore:", updatedCategoryData);
 
             // Reference to the Firestore document for the user
             const categoryRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", categoryId);
 
             // Update only Firestore data (not Firebase Authentication)
-           
             await updateDoc(categoryRef, {
                 serviceCategory: serviceCategory.trim(),
                 description: description.trim()
             });
 
-
-
-            // Refresh the page after the update
-            // window.location.reload(); 
-
-            return { 
+            const result = { 
                 success: true, //boolean
                 message: "Service category updated" //string
             };
+            return result;
         } catch (error) {
             console.error("Error updating service category:", error);
-            return { success: false, message: `Error updating category:${error.message}` };
+            const result = { success: false, message: `Error updating category:${error.message}` };
+            return result;
         }
     }
 
-    async deleteServiceCategory(deleteCategoryData){
+    async deleteServiceCategory(deleteCategory){
+
         try {
             // Get user document based on email
+            let success = false;
             const categoryRef = collection(this.db, "csit314/AllServiceCategory/CleaningServiceData");
-            const q = query(categoryRef, where('serviceCategory', '==', deleteCategoryData));
+            const q = query(categoryRef, where('serviceCategory', '==', deleteCategory));
             const querySnapshot = await getDocs(q);
     
             if (querySnapshot.empty) {
@@ -863,10 +853,12 @@ import {getAuth,
             // Correct way: use for...of to await each deleteDoc
             for (const docSnap of querySnapshot.docs) {
                 await deleteDoc(docSnap.ref);
-                // console.log(`Deleted Firestore document for service category: ${deleteCategoryData}`);
+                success = true;
             }
+
+            
     
-            return { success: true }; //boolean
+            return success; //boolean
         } catch (error) {
             console.error("Error deleting Firestore service category:", error);
             throw error;
@@ -880,11 +872,11 @@ import {getAuth,
             const searchData = searchCategoryData.toLowerCase().replace(/\s+/g, '');
             const q = query(categoryRef, where("normalizedCategory", "==", searchData.trim()));
             const snapshot = await getDocs(q);
-            const categoryList = [];
+            const searchedCategoryList = [];
 
             snapshot.docs.map(doc => {
                 const serviceData = doc.data();
-                categoryList.push({
+                searchedCategoryList.push({
                     id: doc.id,
                     serviceCategory: serviceData.serviceCategory,
                     description: serviceData.description,
@@ -894,7 +886,7 @@ import {getAuth,
             });
 
 
-            return categoryList; // array
+            return searchedCategoryList; // array
         }catch (error){
             console.error("Error deleting Firestore user:", error);
             throw error;

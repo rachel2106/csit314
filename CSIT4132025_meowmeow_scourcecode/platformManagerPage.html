@@ -97,7 +97,8 @@
 
             async getCategoryList() {
                 const controller = new pmViewServicesController();
-                return await controller.getCategoryList();
+                const categories = await controller.getCategoryList();
+                return categories;
             }
     
             displayCategoriesList(categoryList) {
@@ -248,13 +249,13 @@
             deleteForm.addEventListener("submit", async(e) =>{
                 e.preventDefault();
 
-                const categoryDelete = deleteForm.dataset.categoryDelete;
+                const deleteCategory = deleteForm.dataset.categoryDelete; //string
                 
                 const deleteController = new pmDeleteServicesController();
                 try{
-                    const result = await deleteController.deleteServiceCategory(categoryDelete);
+                    const success = await deleteController.deleteServiceCategory(deleteCategory);
 
-                    if (result){
+                    if (success){
                         alert("Category deleted!");
                         deleteModal.style.display = "none"; 
                     }
@@ -272,7 +273,7 @@
 
             //Search Button
             searchBtn.addEventListener("click", async () =>{
-                const searchCategory = searchInput.value.trim().toLowerCase();
+                const searchCategory = searchInput.value.trim().toLowerCase(); //string
                 
                 if(!searchCategory){
                     // alert("Please enter a category name to search");
@@ -283,10 +284,10 @@
                 const searchController = new pmSearchServicesController();
 
                 try{
-                    const searchList = await searchController.searchServiceCategory(searchCategory);
+                    const searchedCategoryList = await searchController.searchServiceCategory(searchCategory); // output - array, input - string
 
-                    if(searchList.length > 0){
-                        page.displayCategoriesList(searchList);
+                    if(searchedCategoryList.length > 0){
+                        page.displayCategoriesList(searchedCategoryList);
                     } else{
                         const container = document.getElementById("data-table");
                         container.innerHTML = `<tr><td colspan="4">No matching categories found.</td></tr>`;

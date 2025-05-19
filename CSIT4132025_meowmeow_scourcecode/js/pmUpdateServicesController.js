@@ -7,13 +7,13 @@ export class pmUpdateServicesController {
         console.log("Inside updateCategory with data:", updateCategoryObj);
         const serviceEntity = new serviceCategoryEntity();  // Creating an instance of userEntity
 
-        const updatedCategoryList = await serviceEntity.updateServiceCategory(updateCategoryObj); 
+        const result = await serviceEntity.updateServiceCategory(updateCategoryObj); 
         
         // console.log(controller); // Check what's inside
-        console.log("Category updated successfully");
+        // console.log("Category updated successfully");
         // console.log(this);
 
-        return updatedCategoryList
+        return result;
  
     }
 }

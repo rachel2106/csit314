@@ -180,12 +180,12 @@
                     const end = new Date(start);
                     end.setDate(end.getDate() + 1);
 
-                    const dailyDate = {
+                    const dailyData = {
                         start: start,
                         end: end
                     };
 
-                    report = await page.getReportDaily(dailyDate);
+                    report = await page.getReportDaily(dailyData);
                     title.textContent = reportType;
 
                 } else if (reportType === "weekly") {
