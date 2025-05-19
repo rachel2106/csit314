@@ -240,13 +240,13 @@ describe('Firebase.deleteServiceCategory', () => {
   firestore.deleteDoc.mockResolvedValue(); // resolves successfully
 
   const firebase = new Firebase(); // your Firebase class instance
-  const result = await firebase.deleteServiceCategory("Cleaning");
+  const success = await firebase.deleteServiceCategory("Cleaning");
 
   expect(firestore.collection).toHaveBeenCalled();
   expect(firestore.query).toHaveBeenCalled();
   expect(firestore.getDocs).toHaveBeenCalled();
   expect(firestore.deleteDoc).toHaveBeenCalledWith(fakeDocRef.ref);
-  expect(result.success).toBe(true);
+  expect(success).toBe(true);
 });
 test('should throw error if no matching category found', async () => {
   const fakeQuerySnapshot = {

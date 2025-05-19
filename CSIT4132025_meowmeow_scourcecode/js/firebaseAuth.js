@@ -1,57 +1,57 @@
-import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+// import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
 
-import {getAuth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    onAuthStateChanged,
-    updateProfile
- } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+// import {getAuth,
+//     createUserWithEmailAndPassword,
+//     signInWithEmailAndPassword,
+//     onAuthStateChanged,
+//     updateProfile
+//  } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 
- import {getFirestore,
-    collection,
-    doc,
-    setDoc,
-    addDoc,
-    getDoc,
-    getDocs,
-    updateDoc,
-    deleteDoc,
-    query,
-    where,
-    serverTimestamp,
-    collectionGroup
- } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js'
+//  import {getFirestore,
+//     collection,
+//     doc,
+//     setDoc,
+//     addDoc,
+//     getDoc,
+//     getDocs,
+//     updateDoc,
+//     deleteDoc,
+//     query,
+//     where,
+//     serverTimestamp,
+//     collectionGroup
+//  } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js'
 
 
 
 // Firebase core
-// import { initializeApp } from 'firebase/app';
+import { initializeApp } from 'firebase/app';
 
-// // Firebase Auth
-// import {
-//   getAuth,
-//   createUserWithEmailAndPassword,
-//   signInWithEmailAndPassword,
-//   onAuthStateChanged,
-//   updateProfile,
-// } from 'firebase/auth';
+// Firebase Auth
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  updateProfile,
+} from 'firebase/auth';
 
-// // Firebase Firestore
-// import {
-//   getFirestore,
-//   collection,
-//   doc,
-//   setDoc,
-//   addDoc,
-//   getDoc,
-//   getDocs,
-//   updateDoc,
-//   deleteDoc,
-//   query,
-//   where,
-//   serverTimestamp,
-//   collectionGroup,
-// } from 'firebase/firestore';
+// Firebase Firestore
+import {
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
+  addDoc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  serverTimestamp,
+  collectionGroup,
+} from 'firebase/firestore';
 
 
  const firebaseConfig = {
@@ -811,11 +811,13 @@ import {getAuth,
         const {categoryId, serviceCategory, description } = updatedCategoryData;
 
         // Validate required category
-        // console.log("originalCategory:", categoryId);
-        // console.log("serviceCategory:", serviceCategory);
-        // console.log("description:", description);
+        if (!categoryId || !serviceCategory || !description) {
+            return {
+            success: false,
+            message: "Missing required fields!"
+            };
+        }
         try{
-
             // Reference to the Firestore document for the user
             const categoryRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", categoryId);
 

@@ -60,14 +60,9 @@ export class userEntity {
 
             const userDoc = querySnapshot.docs[0];
             const userData = userDoc.data();
-            if( userData.userStatus !== "Active"){
-                const result = { status: "error", message: "Inactive Account." };
+            if( userData.userStatus !== "Active" || userData.profileStatus !== "Active"){
+                const result = { status: "error", message: "Inactive Account/Profile." };
                 return result ;
-            }
-
-            if( userData.profileStatus !== "Active"){
-                const result = { status: "error", message: "Inactive Profile." };
-                return result;
             }
 
             // Check password
