@@ -11,11 +11,13 @@ export class homeownerEntity {
   // ==================== Cleaning Services ====================
 
   async fetchAllCleaningServices() {
-    return await firebase.fetchAllCleaningServices();
+    const allServices= await firebase.fetchAllCleaningServices();
+    return allServices;
   }
 
   async fetchCleaningServices(filters) {
-    return await firebase.fetchCleaningServices(filters);
+    const allServices = await firebase.fetchCleaningServices(filters);
+    return allServices;
   }
 
   // ==================== Booking ====================
@@ -25,11 +27,13 @@ export class homeownerEntity {
   }
 
   async getUserBookings(userEmail) {
-    return await firebase.getUserBookings(userEmail);
+    const bookingArray = await firebase.getUserBookings(userEmail);
+    return bookingArray;
   }
 
   async searchBookings(userEmail, category) {
-    return await firebase.searchBookings(userEmail, category);
+    const bookingList = await firebase.searchBookings(userEmail, category);
+    return bookingList;
   }
 
   // ==================== Favourites ====================
@@ -40,7 +44,8 @@ export class homeownerEntity {
 
   async addToFavourites(serviceData) {
     // ❗️No userEmail needed — retrieved inside firebaseAuth.js
-    return await firebase.addToFavourites(serviceData);
+    const success =  await firebase.addToFavourites(serviceData);
+    return success;
   }
 
   async removeFromFavourites(userEmail, serviceId) {
@@ -48,11 +53,13 @@ export class homeownerEntity {
   }
 
   async getFavourites(userEmail) {
-    return await firebase.getFavourites(userEmail);
+    const favServices = await firebase.getFavourites(userEmail);
+    return favServices;
   }
 
   async searchFavourite(userEmail, category){
-    return await firebase.searchFavourite(userEmail, category);
+    const allServices = await firebase.searchFavourite(userEmail, category);
+    return allServices;
   }
 
   // ==================== Booking via shortlist ====================

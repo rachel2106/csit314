@@ -1568,10 +1568,16 @@ async getUserBookings(userEmail) {
 
     //async retrieves all docs under the user's bookings subcollection
     const snapshot = await getDocs(userBookingsRef);
-    return snapshot.docs.map(doc => ({ //what each element includes
-      id: doc.id,
-      ...doc.data()
-    }));
+    
+    const bookingArray = [];
+    snapshot.forEach(doc => {
+      bookingArray.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+
+    return bookingArray;
 
     //catches any errors
     //logs them and rethrows the error to let the caller handle
@@ -1611,12 +1617,15 @@ async  searchBookings(userEmail, category) {
 
     //converts each doc to a plain object
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const bookingList = [];
+        snapshot.forEach(doc => {
+        bookingList.push({
+            id: doc.id,
+            ...doc.data()
+        });
+    });
 
-
+    return bookingList; //array
     // catches and logs any error during the fetch or query
   } catch (error) {
     console.error("Error filtering bookings by category:", error);
@@ -1651,12 +1660,15 @@ async addToFavourites(serviceData) {
     const userId = userEmail.replace(/[@.]/g, "_");
     const favouritesRef = collection(db, "csit314", "AllBookings", "Shortlisted", userId, "Shortlisted");
 
+    console.log("Service added to favourites!");
     //creates a new doc with serviceData in the user's shortlisted subcollection
     await addDoc(favouritesRef, serviceData);
-    console.log("Service added to favourites!");
+    const success = true;
+    return success;
   } catch (error) {
+    const success = false;
     console.error("Error adding to favourites:", error.message);
-    throw error;
+    return success;
   }
 }
 
@@ -1686,16 +1698,16 @@ async getFavourites(userEmail) {
     const shortlistRef = collection(db, `csit314/AllBookings/Shortlisted/${userId}/Shortlisted`);
     const snapshot = await getDocs(shortlistRef);
 
-    const services = [];
+    const favServices = [];
     snapshot.forEach(doc => {
-      services.push({
+      favServices.push({
         id: doc.id,
         ...doc.data()
       });
     });
 
-    console.log("Fetched favourites:", services);
-    return services;
+    console.log("Fetched favourites:", favServices);
+    return favServices; //array
   } catch (error) {
     console.error("Error fetching favourites:", error);
     return [];
@@ -1763,24 +1775,19 @@ async searchFavourite(userEmail, category) {
       if (category && category.trim() !== "") {
         q = query(userFavouriteRef, where("serviceCategory", "==", category));
       }
-    //   if (category && category.trim() !== "") {
-    //     q = query(userFavouriteRef, where("serviceCategory", "==", category));
-    //   } else {
-    //     q = query(userFavouriteRef);
-    //   }
   
       //converts each doc to a plain object
         const snapshot = await getDocs(q);
-        const favouriteList = [];
+        const allServices = [];
 
         snapshot.forEach(doc => {
-        favouriteList.push({
+        allServices.push({
             id: doc.id,
             ...doc.data()
         });
         });
   
-        return favouriteList; //Array
+        return allServices; //Array
       // catches and logs any error during the fetch or query
     } catch (error) {
       console.error("Error filtering bookings by category:", error);

@@ -37,7 +37,7 @@ export class hmViewBookListingController {
         }
 
         const hmEntity = new homeownerEntity();
-        const result = await hmEntity.getUserBookings(userEmail);
-        return result;
+        const bookingArray = await hmEntity.getUserBookings(userEmail);
+        return bookingArray;
     }
 }

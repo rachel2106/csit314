@@ -74,14 +74,14 @@
 
       try {
         // Load all bookings initially
-        const allBookings = await controller.getUserBookings(userEmail);
+        const bookingArray = await controller.getUserBookings(userEmail);
         
         //checks if the result is empty and displays a message if so
-        if (!allBookings || allBookings.length === 0) {
+        if (!bookingArray || bookingArray.length === 0) {
           noBookingsMessage.style.display = "block";
         } else {
           noBookingsMessage.style.display = "none";
-          displayBookings(allBookings);
+          displayBookings(bookingArray);
         }
 
         // Set up search functionality
@@ -94,10 +94,10 @@
           const priceRange = document.getElementById("priceFilter").value;
           
           // Get filtered bookings from server
-          const filteredBookings = await searchController.searchBookings(userEmail, category);
+          const bookingList = await searchController.searchBookings(userEmail, category);
           
           // Apply additional client-side filters
-          const finalFiltered = applyClientSideFilters(filteredBookings, status, priceRange);
+          const finalFiltered = applyClientSideFilters(bookingList, status, priceRange);
           displayBookings(finalFiltered);
         });
 

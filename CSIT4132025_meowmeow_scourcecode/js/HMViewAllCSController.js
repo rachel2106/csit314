@@ -5,8 +5,8 @@ export class hmViewAllCSController{
 
     async fetchAllCleaningServices(){
         const hmEntity = new homeownerEntity();
-        const services = await hmEntity.fetchAllCleaningServices();
-        return services;
+        const allServices = await hmEntity.fetchAllCleaningServices();
+        return allServices;
 
     }
 

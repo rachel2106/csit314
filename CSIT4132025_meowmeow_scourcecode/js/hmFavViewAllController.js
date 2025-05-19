@@ -4,7 +4,7 @@ export class hmFavViewAllController {
 
   async getFavourites(userEmail) {
     const hmEntity = new homeownerEntity();
-    const favList = await hmEntity.getFavourites(userEmail);
-    return favList;
+    const favServices = await hmEntity.getFavourites(userEmail);
+    return favServices;
   }
 }

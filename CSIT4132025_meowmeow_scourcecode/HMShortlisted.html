@@ -97,9 +97,9 @@
       //normalizes the data into a consistent object formate and store it in allFavourites
       try {
         const controller = new hmFavViewAllController();
-        const favourites = await controller.getFavourites(userEmail);
+        const favServices = await controller.getFavourites(userEmail);
 
-        displayShortlistedServices(favourites);
+        displayShortlistedServices(favServices);
       } catch (error) {
         console.error("Error loading favourites:", error);
         container.innerHTML = "<p>Failed to load shortlisted services. Please try again later.</p>";

@@ -214,7 +214,7 @@ window.addEventListener("DOMContentLoaded", async () => {
                 return;
             }
 
-            const favData = {
+            const serviceData = {
                 listingName: selected.listingName,
                 serviceCategory: selected.serviceCategory,
                 fee: selected.fee,
@@ -226,9 +226,9 @@ window.addEventListener("DOMContentLoaded", async () => {
 
             try {
                 const favController = new hmFavouritesCSController(userEmail);
-                const added = await favController.toggleFavourite(favData);
+                const success = await favController.toggleFavourite(serviceData);
                 e.target.textContent = added ? "Remove from Favourites" : "Add to Favourites";
-                alert(added ? `"${selected.listingName}" added to shortlist!` : `"${selected.listingName}" removed from shortlist!`);
+                alert(success ? `"${selected.listingName}" added to shortlist!` : `"${selected.listingName}" removed from shortlist!`);
             
 
                 // Added shortlist count
@@ -287,8 +287,8 @@ window.addEventListener("DOMContentLoaded", async () => {
         };
 
         const searchController = new hmSearchAllCSController();
-        const results = await searchController.fetchCleaningServices(filters);
-        page.displayServices(results);
+        const allServices = await searchController.fetchCleaningServices(filters);
+        page.displayServices(allServices);
     });
 });
 </script>
