@@ -1,57 +1,57 @@
-// import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
 
-// import {getAuth,
-//     createUserWithEmailAndPassword,
-//     signInWithEmailAndPassword,
-//     onAuthStateChanged,
-//     updateProfile
-//  } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+import {getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    onAuthStateChanged,
+    updateProfile
+ } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 
-//  import {getFirestore,
-//     collection,
-//     doc,
-//     setDoc,
-//     addDoc,
-//     getDoc,
-//     getDocs,
-//     updateDoc,
-//     deleteDoc,
-//     query,
-//     where,
-//     serverTimestamp,
-//     collectionGroup
-//  } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js'
+ import {getFirestore,
+    collection,
+    doc,
+    setDoc,
+    addDoc,
+    getDoc,
+    getDocs,
+    updateDoc,
+    deleteDoc,
+    query,
+    where,
+    serverTimestamp,
+    collectionGroup
+ } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js'
 
 
 
-// Firebase core
-import { initializeApp } from 'firebase/app';
+// // Firebase core
+// import { initializeApp } from 'firebase/app';
 
-// Firebase Auth
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-  updateProfile,
-} from 'firebase/auth';
+// // Firebase Auth
+// import {
+//   getAuth,
+//   createUserWithEmailAndPassword,
+//   signInWithEmailAndPassword,
+//   onAuthStateChanged,
+//   updateProfile,
+// } from 'firebase/auth';
 
-// Firebase Firestore
-import {
-  getFirestore,
-  collection,
-  doc,
-  setDoc,
-  addDoc,
-  getDoc,
-  getDocs,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
-  serverTimestamp,
-  collectionGroup,
-} from 'firebase/firestore';
+// // Firebase Firestore
+// import {
+//   getFirestore,
+//   collection,
+//   doc,
+//   setDoc,
+//   addDoc,
+//   getDoc,
+//   getDocs,
+//   updateDoc,
+//   deleteDoc,
+//   query,
+//   where,
+//   serverTimestamp,
+//   collectionGroup,
+// } from 'firebase/firestore';
 
 
  const firebaseConfig = {
