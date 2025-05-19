@@ -1,8 +1,8 @@
 // firebaseAuth.test.js
 // import Firebase from './firebaseAuth.js';
+
 import { db, Firebase } from './firebaseAuth.js';
 import * as firestore from 'firebase/firestore';
-// import * as firebaseModule from './firebaseAuth.js';
 
 jest.mock('firebase/firestore', () => ({
   getFirestore: jest.fn(),
@@ -47,21 +47,6 @@ test('should create service category successfully', async () => {
   expect(result.status).toBe("success");  // make sure your function returns this
 });
 
-
-
-  // test('should return error if category name is missing', async () => {
-  //   const testData = {
-  //     serviceCategory: '',
-  //     description: 'desc',
-  //     currentUserEmail: 'test@example.com',
-  //   };
-
-  //   const result = await firebase.createServiceCategory(testData);
-
-  //   expect(result.status).toBe("error");
-  //   expect(result.message).toMatch(/Invalid or missing category name/i);
-  // });
-
   test('should return error if category exists', async () => {
     const testData = {
       serviceCategory: 'Cleaning',
@@ -78,24 +63,11 @@ test('should create service category successfully', async () => {
     expect(result.message).toMatch(/already exists/i);
   });
 
-  // test('should return error if description is missing', async () => {
-  //   const testData = {
-  //       serviceCategory: 'Window Cleaning',
-  //       description: '',
-  //       currentUserEmail: 'test@example.com',
-  //   };
-
-  //   const result = await firebase.createServiceCategory(testData);
-
-  //   expect(result.status).toBe('error');
-  //   expect(result.message).toMatch(/Invalid or missing description name/i);
-  //   });
 
 });
 
 describe('Firebase.viewServiceCategory', () => {
   let firebase;
-
   beforeEach(() => {
     // Clear mocks before each test
     jest.clearAllMocks();
