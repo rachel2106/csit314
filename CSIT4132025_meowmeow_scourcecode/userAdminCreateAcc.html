@@ -104,44 +104,44 @@
 
 
     // TO create 100 user accounts
-    document.getElementById("createUser").addEventListener('click', async function () {
-        // e.preventDefault();
+    // document.getElementById("createUser").addEventListener('click', async function () {
+    //     // e.preventDefault();
 
-        let fName = "PM";
-        let lNum = 1;
-        const maxNum = 19;
-        let lName = "";
+    //     let fName = "UA";
+    //     let lNum = 52;
+    //     const maxNum = 99;
+    //     let lName = "";
 
     
-        for (let i = lNum; i<= maxNum; i++){
-            lNum += 1;
-            lName = lNum.toString();
-            const uEmail = "pm"+lName+"@gmail.com"
-            const uPw = "pm"+lName+"123!"
+    //     for (let i = lNum; i<= maxNum; i++){
+    //         lNum += 1;
+    //         lName = lNum.toString();
+    //         const uEmail = "pm"+lName+"@gmail.com"
+    //         const uPw = "pm"+lName+"123!"
             
-            const newUserObj = {
-            firstName: fName,
-            lastName: lName,
-            userEmail: uEmail,
-            userPass: uPw,
-            userType: "platformManager",
-            };
+    //         const newUserObj = {
+    //         firstName: fName,
+    //         lastName: lName,
+    //         userEmail: uEmail,
+    //         userPass: uPw,
+    //         userType: "platformManager",
+    //         };
 
-            const controller = new adminCreateUserController();
-            const result = await controller.createUserAcc(newUserObj);
+    //         const controller = new adminCreateUserController();
+    //         const result = await controller.createUserAcc(newUserObj);
 
-            if (result.status === "success") {
-                alert(result.message);
-                // console.log("User created successfully:", newUserObj);  // Log the user details to the console
-                // window.location.href = "userAdminViewAccs.html";
-            } else {
-                alert("Failed to create user: " + result.message);
-            }
+    //         if (result.status === "success") {
+    //             alert(result.message);
+    //             // console.log("User created successfully:", newUserObj);  // Log the user details to the console
+    //             // window.location.href = "userAdminViewAccs.html";
+    //         } else {
+    //             alert("Failed to create user: " + result.message);
+    //         }
 
-        }
+    //     }
 
        
-    });
+    // });
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
