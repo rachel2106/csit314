@@ -48,7 +48,7 @@
                     window.location.href = "loginPage.html";
                     return;
                 }
-                const category = {
+                const newCategoryObj = {
                     serviceCategory,
                     description: categoryDescription,
                     currentUserEmail
@@ -56,10 +56,10 @@
 
                 alert (currentUserEmail);
 
-                const result = await controller.createServiceCategory(category);
+                const result = await controller.createServiceCategory(newCategoryObj);
 
                 if (result.status === "success") {
-                    alert("Category created successfully.");
+                    alert(result.message);
                     window.location.href = "platformManagerPage.html";
                 } else {
                     console.error("Creation failed:", result);

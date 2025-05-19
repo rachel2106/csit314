@@ -50,13 +50,15 @@ export class userEntity {
             const querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
-                return { status: "error", message: "No user found with this email and profile." };
+                const result = { status: "error", message: "No user found with this email and profile." }
+                return result;
             }
 
             const userDoc = querySnapshot.docs[0];
             const userData = userDoc.data();
             if( userData.userStatus !== "Active"){
-                return { status: "error", message: "Inactive Account." };
+                const result = { status: "error", message: "Inactive Account." };
+                return result ;
             }
 
             if( userData.profileStatus !== "Active"){
@@ -65,9 +67,11 @@ export class userEntity {
 
             // Check password
             if (userData.password === password) {
-                return { status: "success", userData };
+                const result = { status: "success", userData };
+                return result;
             } else {
-                return { status: "error", message: "Incorrect password." };
+                const result = { status: "error", message: "Incorrect password." };
+                return result ;
             }
         } catch (err) {
             console.error("Error during login:", err.message);

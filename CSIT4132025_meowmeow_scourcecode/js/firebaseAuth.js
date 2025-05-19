@@ -723,25 +723,9 @@ import {getAuth,
     }
 
     // Create a new service category (used by Platform Manager)
-    async createServiceCategory(categoryData) {
+    async createServiceCategory(newCategoryObj) {
         try {
-            const { serviceCategory, description, currentUserEmail  } = categoryData;
-
-            // // Validate name
-            // if (!serviceCategory || typeof serviceCategory !== "string" || serviceCategory.trim() === "") {
-            //     return {
-            //         status: "error",
-            //         message: "Invalid or missing category name"
-            //     };
-            // }
-
-            // // Validate name
-            // if (!description || typeof description !== "string" || description.trim() === "") {
-            //     return {
-            //         status: "error",
-            //         message: "Invalid or missing description name"
-            //     };
-            // }
+            const { serviceCategory, description, currentUserEmail  } = newCategoryObj;
 
             const categoryRef = collection(this.db, "csit314/AllServiceCategory/CleaningServiceData");
 
@@ -749,13 +733,16 @@ import {getAuth,
             const q = query(categoryRef, where("serviceCategory", "==", serviceCategory.trim()));
             const existing = await getDocs(q);
             if (!existing.empty) {
-                return {
+
+                const result = {
                     status: "error",
                     message: "Category with this name already exists"
                 };
+
+                return result;
             }
 
-            const categoryDocRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", `${categoryData.serviceCategory}`);
+            const categoryDocRef = doc(this.db, "csit314/AllServiceCategory/CleaningServiceData", `${newCategoryObj.serviceCategory}`);
             const normalizedNaming = serviceCategory.toLowerCase().replace(/\s+/g, '');
 
             // const categoryDocRef = 
@@ -770,16 +757,19 @@ import {getAuth,
                 numHomeowner: 0 //number of homeowner uses the service in that category
             });
 
-            return {
+            const result =  {
                 status: "success", //string
                 message: "Service category created successfully" //string
             };
+
+            return result;
         } catch (error) {
-            console.error("Error creating service category:", error);
-            return {
+            // console.error("Error creating service category:", error);
+            const result = {
                 status: "error", //string
                 message: error.message //string
             };
+            return result;
         }
     }
 
@@ -1269,7 +1259,7 @@ import {getAuth,
                 const data = doc.data();
                 if (data.cleaner === createdBy){
                     if(categoryName){
-                        
+
                         const cleanedInputCat = categoryName.trim().toLowerCase();
                         const dataCat =  data.categoryName;
                         const cleanedDataCat = dataCat.trim().toLowerCase();
@@ -1796,7 +1786,7 @@ async searchFavourite(userEmail, category) {
         });
         });
   
-        return favouriteList;
+        return favouriteList; //Array
       // catches and logs any error during the fetch or query
     } catch (error) {
       console.error("Error filtering bookings by category:", error);
